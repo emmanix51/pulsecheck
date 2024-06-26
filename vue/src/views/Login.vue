@@ -1,29 +1,5 @@
-<!--
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
--->
 <template>
-    <!--
-    This example requires updating your template:
-
-    ```
-    <html class="h-full bg-white">
-    <body class="h-full">
-    ```
-  -->
-    <div
-        class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8"
-    >
+    <div>
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
             <img
                 class="mx-auto h-10 w-auto"
@@ -38,7 +14,14 @@
         </div>
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form class="space-y-6" action="#" method="POST">
+            <form class="space-y-6" @submit="login">
+                <div
+                    v-if="errorMsg"
+                    class="bg-red-600 text-white px-3 py-2 rounded"
+                    @click="errorMsg = ''"
+                >
+                    {{ errorMsg }}
+                </div>
                 <div>
                     <label
                         for="email"
@@ -47,6 +30,7 @@
                     >
                     <div class="mt-2">
                         <input
+                            v-model="user.email"
                             id="email"
                             name="email"
                             type="email"
@@ -64,17 +48,11 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Password</label
                         >
-                        <div class="text-sm">
-                            <a
-                                href="#"
-                                class="font-semibold text-indigo-600 hover:text-indigo-500"
-                                >Forgot password?</a
-                            >
-                        </div>
                     </div>
                     <div class="mt-2">
                         <input
                             id="password"
+                            v-model="user.password"
                             name="password"
                             type="password"
                             autocomplete="current-password"
@@ -97,14 +75,49 @@
             <p class="mt-10 text-center text-sm text-gray-500">
                 Not a member?
                 {{ " " }}
-                <a
-                    href="#"
+                <router-link
+                    :to="{ name: 'Register' }"
                     class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
-                    >Start a 14 day free trial</a
+                    >Register here</router-link
                 >
             </p>
         </div>
     </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import store from "../store";
+
+const router = useRouter();
+
+const user = {
+    email: "",
+    password: "",
+    remember: false,
+};
+
+let errorMsg = ref("");
+
+function login(ev) {
+    ev.preventDefault();
+    store
+        .dispatch("login", user)
+        .then(() => {
+            router.push({
+                name: "Dashboard",
+            });
+        })
+        .catch((err) => {
+            if (err.response && err.response.data) {
+                errorMsg.value =
+                    err.response.data.message || "An unexpected error occurred";
+            } else {
+                errorMsg.value = "An unexpected error occurred";
+            }
+        });
+}
+</script>
+
+<style></style>
