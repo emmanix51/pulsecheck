@@ -214,4 +214,15 @@ class SurveyController extends Controller
 
         return response()->json(['message' => 'Survey deleted successfully']);
     }
+
+    public function showBySlug($slug)
+    {
+        $survey = Survey::where('slug', $slug)->with(['questions', 'respondentGroups', 'informationFields'])->first();
+
+        if (!$survey) {
+            return response()->json(['error' => 'Survey not found'], 404);
+        }
+
+        return response()->json(['data' => $survey], 200);
+    }
 }

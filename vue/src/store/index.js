@@ -303,6 +303,7 @@ const store = createStore({
             token: sessionStorage.getItem("TOKEN"),
         },
         surveys: [],
+        users: [],
     },
     getters: {
         getSurveyById: (state) => (id) => {
@@ -310,6 +311,31 @@ const store = createStore({
         },
     },
     actions: {
+        fetchSurveyBySlug({ commit }, slug) {
+            return axiosClient.get(`/survey/slug/${slug}`).then(({ data }) => {
+                return data;
+            });
+        },
+        getAllUsers({ commit }) {
+            return axiosClient.get("/admin/users").then(({ data }) => {
+                commit("setUsers", data.users);
+            });
+        },
+        addUser({ dispatch }, user) {
+            return axiosClient.post("/admin/users", user).then(() => {
+                dispatch("getAllUsers");
+            });
+        },
+        updateUser({ dispatch }, user) {
+            return axiosClient.put(`/admin/users/${user.id}`, user).then(() => {
+                dispatch("getAllUsers");
+            });
+        },
+        deleteUser({ dispatch }, id) {
+            return axiosClient.delete(`/admin/users/${id}`).then(() => {
+                dispatch("getAllUsers");
+            });
+        },
         deleteSurvey({ commit }, surveyId) {
             return axiosClient
                 .delete(`/survey/${surveyId}`)
@@ -380,6 +406,12 @@ const store = createStore({
         },
     },
     mutations: {
+        removeUser: (state, userId) => {
+            state.users = state.users.filter((user) => user.id !== userId);
+        },
+        setUsers: (state, users) => {
+            state.users = users;
+        },
         removeSurvey: (state, surveyId) => {
             state.surveys = state.surveys.filter(
                 (survey) => survey.id !== surveyId

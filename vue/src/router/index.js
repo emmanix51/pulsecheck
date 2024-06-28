@@ -5,8 +5,9 @@ import Register from "../views/Register.vue";
 import Dashboard from "../views/Dashboard.vue";
 import ManageAccount from "../views/ManageAccount.vue";
 import Surveys from "../views/Surveys.vue";
-
 import SurveyView from "../views/SurveyView.vue";
+import UserManagement from "../views/UserManagement.vue";
+import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
 
@@ -29,6 +30,16 @@ const routes = [
                 path: "/manage-account",
                 name: "ManageAccount",
                 component: ManageAccount,
+            },
+            {
+                path: "/user-management",
+                name: "UserManagement",
+                component: UserManagement,
+            },
+            {
+                path: "/survey/:slug",
+                name: "SurveyAnswerView",
+                component: () => import("../views/SurveyAnswerView.vue"),
             },
         ],
     },

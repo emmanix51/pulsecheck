@@ -19,6 +19,7 @@ class SurveyResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'image' => $this->image,
+            'slug' => $this->slug,
             'status' => $this->status,
             'description' => $this->description,
             'expire_date' => $this->expire_date,

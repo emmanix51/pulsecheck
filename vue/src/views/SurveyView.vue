@@ -6,6 +6,7 @@
                     {{ route.params.id ? model.title : "Create a Survey" }}
                 </h1>
                 <div class="flex">
+                    <!-- <pre>{{ model }}</pre> -->
                     <a
                         :href="`/view/survey/${model.slug}`"
                         target="_blank"
