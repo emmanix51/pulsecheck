@@ -12,7 +12,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::resource('/survey', \App\Http\Controllers\SurveyController::class);
-    Route::apiResource('respondent-groups', RespondentGroupController::class);
 });
 // Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::post('/register', [AuthController::class, 'register']);

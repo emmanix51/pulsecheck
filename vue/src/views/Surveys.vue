@@ -28,6 +28,7 @@
             </template>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
                 <!-- <pre>{{ surveys }}</pre> -->
+                <pre>{{ user }}</pre>
                 <div
                     v-for="survey in surveys"
                     :key="survey.id"
@@ -98,7 +99,8 @@ import { computed } from "vue";
 import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
 
-const surveys = computed(() => store.state.surveys);
+const surveys = computed(() => store.state.surveys.data);
+store.dispatch("getSurveys");
 
 function deleteSurvey(survey) {
     if (confirm(`you sure you want to delete ${survey.title} survey bruh?`)) {

@@ -18,6 +18,18 @@ class UpdateSurveyRequest extends FormRequest
         return true;
     }
 
+    public function prepareForValidation()
+    {
+        $questions = $this->input('questions', []);
+        foreach ($questions as &$question) {
+            if (is_string($question['data'])) {
+                $question['data'] = json_decode($question['data'], true);
+            }
+        }
+        $this->merge(['questions' => $questions]);
+    }
+
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -32,9 +44,18 @@ class UpdateSurveyRequest extends FormRequest
             'description' => 'nullable|string',
             'expire_date' => 'nullable|date|after:tomorrow',
             'respondent_groups' => 'sometimes|required|array',
-            'respondent_groups.*.respondent_type' => 'required_with:respondent_groups|string|in:student,faculty,staff,stakeholder',
-            'respondent_groups.*.categories' => 'nullable|string',
-            'questions' => 'array'
+            'respondent_groups.*.type' => 'required_with:respondent_groups|string|in:student,faculty,staff,stakeholder',
+            'respondent_groups.*.category' => 'nullable|string',
+            'questions' => 'array',
+            'questions.*.question_type' => 'sometimes|required|string|in:text,radio',
+            'questions.*.question' => 'sometimes|required|string|max:2000',
+            'questions.*.description' => 'nullable|string',
+            'questions.*.data' => 'nullable|array',
+            // 'questions.*.data.*' => 'integer|in:1,2,3,4,5',
+            'information_fields' => 'sometimes|required|array',
+            'information_fields.*.label' => 'required_with:information_fields|string|max:255',
+            'information_fields.*.type' => 'required_with:information_fields|string|in:text,textarea,select',
+            'information_fields.*.options' => 'nullable|string',
         ];
     }
 }

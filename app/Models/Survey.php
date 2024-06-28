@@ -37,4 +37,8 @@ class Survey extends Model
     {
         return $this->hasMany(Question::class);
     }
+    public function informationFields()
+    {
+        return $this->hasMany(InformationField::class);
+    }
 }

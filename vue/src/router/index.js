@@ -5,7 +5,7 @@ import Register from "../views/Register.vue";
 import Dashboard from "../views/Dashboard.vue";
 import ManageAccount from "../views/ManageAccount.vue";
 import Surveys from "../views/Surveys.vue";
-import RespondentMaker from "../views/RespondentMaker.vue";
+
 import SurveyView from "../views/SurveyView.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
@@ -29,11 +29,6 @@ const routes = [
                 path: "/manage-account",
                 name: "ManageAccount",
                 component: ManageAccount,
-            },
-            {
-                path: "/respondents/create",
-                name: "RespondentMaker",
-                component: RespondentMaker,
             },
         ],
     },

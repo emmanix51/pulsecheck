@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('respondent_groups', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
             $table->enum('type', ['student', 'faculty', 'staff', 'stakeholder']);
             $table->string('category')->nullable();
             $table->timestamps();
         });
 
-        // Many-to-many pivot table for surveys and respondent groups
         Schema::create('survey_respondent_group', function (Blueprint $table) {
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');

@@ -200,7 +200,7 @@ import {
 } from "@headlessui/vue";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { useStore } from "vuex";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const store = useStore();
@@ -213,16 +213,46 @@ function logout() {
     });
 }
 
+let navigation = ref("");
+
 const user = computed(() => store.state.user.data);
+console.log(user.value.role);
 
-const navigation = [
-    { name: "Dashboard", to: { name: "Dashboard" }, current: true },
-    { name: "Surveys", to: { name: "Surveys" } },
-    { name: "SurveyTemplates", to: { name: "ManageAccount" } },
-    { name: "Respondent Groups", to: { name: "RespondentMaker" } },
-];
+if (user.value.role === "admin") {
+    navigation.value = [
+        { name: "Dashboard", to: { name: "Dashboard" }, current: true },
+        { name: "Users Management", to: { name: "ManageAccount" } },
+        { name: "Survey Results", to: { name: "Surveys" } },
+    ];
+} else if (user.value.role === "surveymaker") {
+    navigation.value = [
+        { name: "Dashboard", to: { name: "Dashboard" }, current: true },
+        { name: "Surveys", to: { name: "Surveys" } },
+        { name: "Survey Templates", to: { name: "ManageAccount" } },
+    ];
+} else if (user.value.role === "respondent") {
+    navigation.value = [
+        { name: "Dashboard", to: { name: "Dashboard" }, current: true },
+        { name: "Surveys Answer", to: { name: "Surveys" }, current: true },
+    ];
+} else {
+    console.log(error);
+}
 
-const adminNavigation = [];
+// const navigation = [
+//     { name: "Dashboard", to: { name: "Dashboard" }, current: true },
+//     { name: "Surveys", to: { name: "Surveys" } },
+//     { name: "Survey Templates", to: { name: "ManageAccount" } },
+// ];
 
-const respondentNavigation = [];
+// const adminNavigation = [
+//     { name: "Dashboard", to: { name: "Dashboard" }, current: true },
+//     { name: "Users Management", to: { name: "ManageAccount" } },
+//     { name: "Survey Results", to: { name: "Surveys" } },
+// ];
+
+// const respondentNavigation = [
+//     { name: "Dashboard", to: { name: "Dashboard" }, current: true },
+//     { name: "Surveys", to: { name: "Surveys" }, current: true },
+// ];
 </script>

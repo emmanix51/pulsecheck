@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Question extends Model
+class InformationField extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'question_type', 'question', 'description', 'data', 'survey_id'
+        'survey_id', 'label', 'type', 'options',
     ];
 
     public function survey()

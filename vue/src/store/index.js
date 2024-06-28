@@ -302,12 +302,24 @@ const store = createStore({
             data: JSON.parse(sessionStorage.getItem("USER_DATA")) || {},
             token: sessionStorage.getItem("TOKEN"),
         },
-        surveys: [...sampleSurvey],
+        surveys: [],
     },
-    getters: {},
+    getters: {
+        getSurveyById: (state) => (id) => {
+            return state.surveys.find((survey) => survey.id === id);
+        },
+    },
     actions: {
+        getSurveys({ commit }, { url = null } = {}) {
+            // commit('setSurveysLoading', true)
+            url = url || "/survey";
+            return axiosClient.get(url).then((res) => {
+                //   commit('setSurveysLoading', false)
+                commit("setSurveys", res.data);
+                return res;
+            });
+        },
         saveSurvey({ commit }, survey) {
-            console.log(survey);
             let response;
             if (survey.id) {
                 response = axiosClient
@@ -324,27 +336,28 @@ const store = createStore({
             }
             return response;
         },
+        fetchSurvey({ commit }, id) {
+            return axiosClient.get(`/survey/${id}`).then(({ data }) => {
+                commit("setSurvey", data);
+                return data;
+            });
+        },
         register({ commit }, user) {
             return axiosClient
                 .post("/register", user)
                 .then(({ data }) => {
-                    console.log("test+");
                     commit("setUser", data.user);
                     commit("setToken", data.token);
                     return data;
                 })
                 .catch((error) => {
-                    console.log("test-");
-                    // loading.value = false;
                     if (error.response.status === 422) {
-                        error.value = error.response.data;
-                        console.error(error.value);
+                        console.error(error.response.data);
                     }
                 });
         },
         login({ commit }, user) {
             return axiosClient.post("/login", user).then(({ data }) => {
-                console.log("test+");
                 commit("setUser", data.user);
                 commit("setToken", data.token);
                 return data;
@@ -358,16 +371,25 @@ const store = createStore({
         },
     },
     mutations: {
-        saveSurvey: (state, survey) => {
-            state.surveys = [...state.surveys, survey.data];
+        setSurveys: (state, surveys) => {
+            state.surveys.links = surveys.meta.links;
+            state.surveys.data = surveys.data;
         },
-        updateSurvey: (state, survey) => {
-            state.surveys = state.surveys.map((s) => {
-                if (s.id === survey.data.id) {
-                    return survey.data;
-                }
-                return s;
-            });
+        setSurvey: (state, survey) => {
+            const index = state.surveys.findIndex((s) => s.id === survey.id);
+            if (index !== -1) {
+                state.surveys.splice(index, 1, survey);
+            } else {
+                state.surveys.push(survey);
+            }
+        },
+        saveSurvey: (state, survey) => {
+            state.surveys.push(survey);
+        },
+        updateSurvey: (state, updatedSurvey) => {
+            state.surveys = state.surveys.map((survey) =>
+                survey.id === updatedSurvey.id ? updatedSurvey : survey
+            );
         },
         logout: (state) => {
             state.user.data = {};
@@ -377,11 +399,7 @@ const store = createStore({
         },
         setUser(state, user) {
             state.user.data = user;
-            if (user) {
-                sessionStorage.setItem("USER_DATA", JSON.stringify(user));
-            } else {
-                sessionStorage.removeItem("USER_DATA");
-            }
+            sessionStorage.setItem("USER_DATA", JSON.stringify(user));
         },
         setToken: (state, token) => {
             state.user.token = token;

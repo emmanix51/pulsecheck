@@ -19,21 +19,23 @@ class SurveyResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'image' => $this->image,
-            'user_id' => $this->user_id,
             'status' => $this->status,
             'description' => $this->description,
             'expire_date' => $this->expire_date,
-            'respondent_groups' => $this->whenLoaded('respondentGroups', function () {
-                return $this->respondentGroups->map(function ($group) {
-                    return [
-                        'respondent_type' => $group->respondent_type,
-                        'categories' => $group->categories,
-                    ];
-                });
+            'user_id' => $this->user_id,
+            'respondent_groups' => RespondentGroupResource::collection($this->respondentGroups),
+            'questions' => $this->questions->map(function ($question) {
+                return [
+                    'id' => $question->id,
+                    'question_type' => $question->question_type,
+                    'question' => $question->question,
+                    'description' => $question->description,
+                    'data' => json_decode($question->data),  // Decode JSON to array
+                ];
             }),
+            'information_fields' => InformationFieldResource::collection($this->whenLoaded('informationFields')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'questions' => []
         ];
     }
 }

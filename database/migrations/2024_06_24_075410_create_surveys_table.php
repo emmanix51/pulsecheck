@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('image', 255)->nullable();
             $table->string('title', 1000);
             $table->string('slug', 1000)->unique();
-            $table->longText('information_field')->nullable();
+            // $table->longText('information_field')->nullable();
             $table->tinyInteger('status');
             $table->text('description')->nullable();
             $table->timestamps();

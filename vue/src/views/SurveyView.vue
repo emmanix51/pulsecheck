@@ -58,6 +58,7 @@
         </template>
         <pre>{{ model }}</pre>
         <pre>{{ store.state.user.data }}</pre>
+        <pre>{{ model.questions }}</pre>
         <form @submit.prevent="saveSurvey">
             <div class="shadow sm:rounded-md sm:overflow-hidden">
                 <!-- Survey Fields -->
@@ -229,7 +230,7 @@
                             Respondent Group {{ index + 1 }}
                         </label>
                         <select
-                            v-model="group.respondent_type"
+                            v-model="group.type"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                         >
                             <option value="student">Student</option>
@@ -237,10 +238,7 @@
                             <option value="staff">Staff</option>
                             <option value="stakeholder">Stakeholder</option>
                         </select>
-                        <div
-                            v-if="group.respondent_type !== 'stakeholder'"
-                            class="mt-2"
-                        >
+                        <div v-if="group.type !== 'stakeholder'" class="mt-2">
                             <label
                                 class="block text-sm font-medium text-gray-700"
                             >
@@ -248,7 +246,7 @@
                             </label>
                             <input
                                 type="text"
-                                v-model="group.categories"
+                                v-model="group.category"
                                 placeholder="Enter categories separated by commas"
                                 class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             />
@@ -354,7 +352,7 @@
                         <!-- Add new question -->
                         <button
                             type="button"
-                            @click="addQuestion()"
+                            @click="addQuestion"
                             class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
                         >
                             <svg
@@ -387,7 +385,7 @@
                             Question {{ index + 1 }}
                         </label>
                         <select
-                            v-model="question.type"
+                            v-model="question.question_type"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                         >
                             <option value="text">Text</option>
@@ -404,6 +402,31 @@
                             placeholder="Description"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                         />
+                        <div
+                            v-if="question.question_type === 'radio'"
+                            class="mt-2"
+                        >
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                            >
+                                Likert Scale Options (1-5)
+                            </label>
+                            <div class="mt-1">
+                                <span
+                                    v-for="option in [1, 2, 3, 4, 5]"
+                                    :key="option"
+                                    class="mr-2"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        :value="option"
+                                        v-model="question.data"
+                                        checked
+                                    />
+                                    {{ option }}
+                                </span>
+                            </div>
+                        </div>
                         <button
                             type="button"
                             @click="removeQuestion(index)"
@@ -428,10 +451,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
+
 const route = useRoute();
 const router = useRouter();
 
@@ -448,15 +471,18 @@ let model = ref({
 });
 
 if (route.params.id) {
-    model.value = store.state.surveys.find(
-        (survey) => survey.id === parseInt(route.params.id)
-    );
+    store.dispatch("fetchSurvey", route.params.id).then((data) => {
+        data.data.questions.forEach((question) => {
+            question.data = JSON.parse(question.data);
+        });
+        model.value = data.data;
+    });
 }
 
 const addRespondentGroup = () => {
     model.value.respondent_groups.push({
-        respondent_type: "student",
-        categories: "",
+        type: "student",
+        category: "",
     });
 };
 
@@ -465,7 +491,6 @@ const removeRespondentGroup = (index) => {
 };
 
 const selectCategory = (group) => {
-    // Clear category when changing respondent type
     group.category = "";
 };
 
@@ -481,29 +506,40 @@ const removeInformationField = (index) => {
     model.value.information_fields.splice(index, 1);
 };
 
+function onImageChoose(ev) {
+    const file = ev.target.files[0];
+    console.log(file);
+}
+
 const addQuestion = () => {
-    model.value.questions.push({ type: "text", question: "", description: "" });
+    model.value.questions.push({
+        question_type: "",
+        question: "",
+        description: "",
+        data: [1, 2, 3, 4, 5], // Default options for Likert scale questions
+    });
 };
 
 const removeQuestion = (index) => {
     model.value.questions.splice(index, 1);
 };
 
-const onImageChoose = (event) => {
-    // Handle image file input
-    const file = event.target.files[0];
-    // Assume a function uploadImage exists to handle image upload
-    uploadImage(file).then((url) => {
-        model.value.image_url = url;
-    });
-};
-
 const saveSurvey = () => {
-    // Save the survey logic
-    store.dispatch("saveSurvey", model.value).then(({ data }) => {
+    const surveyData = JSON.parse(JSON.stringify(model.value)); // Deep copy to avoid mutating the original model
+
+    surveyData.questions.forEach((question) => {
+        if (Array.isArray(question.data)) {
+            question.data = JSON.stringify(question.data);
+        }
+        if (question.question_type === "text") {
+            question.data = null;
+        }
+    });
+
+    store.dispatch("saveSurvey", surveyData).then(({ data }) => {
         router.push({
             name: "SurveyView",
-            params: { id: data.data.id },
+            params: { id: data.id },
         });
     });
 };
