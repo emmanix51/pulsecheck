@@ -31,6 +31,13 @@ class SurveyController extends Controller
         // Validate the incoming request using StoreSurveyRequest rules
         $validatedData = $request->validated();
 
+        // Handle file upload
+        if ($request->hasFile('image')) {
+            $fileName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images'), $fileName);
+            $validatedData['image'] = $fileName;
+        }
+
         $respondentGroupsData = $validatedData['respondent_groups'] ?? [];
         unset($validatedData['respondent_groups']);
 
@@ -109,6 +116,19 @@ class SurveyController extends Controller
         // Validate the incoming request using UpdateSurveyRequest rules
         $validatedData = $request->validated();
 
+        // Handle file upload
+        if ($request->hasFile('image')) {
+            // Delete the old image if it exists
+            if ($survey->image) {
+                unlink(public_path('images') . '/' . $survey->image);
+            }
+
+            $fileName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images'), $fileName);
+            $validatedData['image'] = $fileName;
+        }
+
+
         // Extract respondent groups data
         $respondentGroupsData = $validatedData['respondent_groups'] ?? [];
         unset($validatedData['respondent_groups']); // Remove from main data
@@ -184,8 +204,14 @@ class SurveyController extends Controller
             return abort(403, 'dili imohang survey');
         }
 
+        // Delete related questions, respondent groups, and information fields
+        $survey->questions()->delete();
+        $survey->respondentGroups()->detach();
+        $survey->informationFields()->delete();
+
+        // Delete the survey itself
         $survey->delete();
 
-        return response('', 204);
+        return response()->json(['message' => 'Survey deleted successfully']);
     }
 }

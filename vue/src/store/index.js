@@ -310,6 +310,14 @@ const store = createStore({
         },
     },
     actions: {
+        deleteSurvey({ commit }, surveyId) {
+            return axiosClient
+                .delete(`/survey/${surveyId}`)
+                .then((response) => {
+                    commit("removeSurvey", surveyId);
+                    return response;
+                });
+        },
         getSurveys({ commit }, { url = null } = {}) {
             // commit('setSurveysLoading', true)
             url = url || "/survey";
@@ -338,8 +346,9 @@ const store = createStore({
         },
         fetchSurvey({ commit }, id) {
             return axiosClient.get(`/survey/${id}`).then(({ data }) => {
-                commit("setSurvey", data);
-                return data;
+                commit("setSurvey", data.data);
+                console.log(data.data);
+                return data.data;
             });
         },
         register({ commit }, user) {
@@ -371,6 +380,11 @@ const store = createStore({
         },
     },
     mutations: {
+        removeSurvey: (state, surveyId) => {
+            state.surveys = state.surveys.filter(
+                (survey) => survey.id !== surveyId
+            );
+        },
         setSurveys: (state, surveys) => {
             state.surveys.links = surveys.meta.links;
             state.surveys.data = surveys.data;
