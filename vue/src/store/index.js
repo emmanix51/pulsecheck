@@ -311,6 +311,35 @@ const store = createStore({
         },
     },
     actions: {
+        submitSurveyAnswers(
+            { commit },
+            {
+                id,
+                userId,
+                answers,
+                infoFields,
+                selectedGroupType,
+                selectedCategory,
+            }
+        ) {
+            return axiosClient
+                .post(`/submit-response`, {
+                    survey_id: id, // assuming slug is the survey ID, adjust if it's different
+                    respondent_id: userId,
+                    respondent_type: selectedGroupType,
+                    respondent_category: selectedCategory,
+                    information_fields: infoFields,
+                    answers: answers,
+                })
+                .then((response) => {
+                    // Handle success, maybe commit some mutation or handle globally
+                    console.log(response);
+                })
+                .catch((error) => {
+                    // Handle error
+                    console.error("Error submitting survey answers:", error);
+                });
+        },
         fetchSurveyBySlug({ commit }, slug) {
             return axiosClient.get(`/survey/slug/${slug}`).then(({ data }) => {
                 return data;

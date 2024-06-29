@@ -9,10 +9,33 @@
             </div>
         </template>
         <pre>{{ survey }}</pre>
+        <pre>{{ infoFields }}</pre>
+        <pre>{{ selectedGroupType }}</pre>
+        <pre>{{ selectedCategory }}</pre>
         <pre>{{ answers }}</pre>
         <form v-if="survey" @submit.prevent="submitAnswers">
             <!-- Respondent Group Selection -->
             <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700">
+                    Select Your Respondent Group Type
+                </label>
+                <select
+                    v-model="selectedGroupType"
+                    @change="updateCategories"
+                    class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
+                >
+                    <option
+                        v-for="group in survey.respondent_groups"
+                        :key="group.id"
+                        :value="group.type"
+                    >
+                        {{ group.type }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Respondent Category Selection -->
+            <div class="mb-6" v-if="selectedGroupType">
                 <label class="block text-sm font-medium text-gray-700">
                     Select Your Category
                 </label>
@@ -21,26 +44,12 @@
                     class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
                 >
                     <option
-                        v-for="group in survey.respondent_groups"
-                        :key="group.id"
-                        disabled
+                        v-for="cat in selectedCategories"
+                        :key="cat"
+                        :value="cat.trim()"
                     >
-                        {{ group.type }}
-                        <!-- Displaying group type as a disabled header -->
+                        {{ cat.trim() }}
                     </option>
-                    <template
-                        v-for="group in survey.respondent_groups"
-                        :key="group.id"
-                    >
-                        <template
-                            v-for="(cat, index) in group.category.split(',')"
-                            :key="index"
-                        >
-                            <option v-if="cat.trim()" :value="cat.trim()">
-                                {{ cat.trim() }}
-                            </option>
-                        </template>
-                    </template>
                 </select>
             </div>
 
@@ -91,9 +100,12 @@
                     :for="'question-' + question.id"
                     class="block text-sm font-medium text-gray-700"
                 >
-                    {{ question.question }}
+                    {{ index + 1 }}. {{ question.question }}
                 </label>
-                <div v-if="question.question_type === 'radio'" class="mt-1">
+                <div
+                    v-if="question.question_type === 'radio'"
+                    class="mt-1 gap-2 flex flex-row"
+                >
                     <div v-for="option in question.data" :key="option">
                         <input
                             type="radio"
@@ -126,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
@@ -135,7 +147,10 @@ const route = useRoute();
 const survey = ref(null);
 const answers = ref({});
 const infoFields = ref({});
+const selectedGroupType = ref(null);
 const selectedCategory = ref(null);
+
+const user = computed(() => store.state.user.data);
 
 onMounted(() => {
     const slug = route.params.slug;
@@ -156,14 +171,29 @@ onMounted(() => {
     });
 });
 
+const selectedCategories = computed(() => {
+    const group = survey.value.respondent_groups.find(
+        (g) => g.type === selectedGroupType.value
+    );
+    return group ? group.category.split(",") : [];
+});
+
+function updateCategories() {
+    selectedCategory.value = null;
+}
+
 function submitAnswers() {
-    const slug = route.params.slug;
+    const id = survey.value.id;
+    const userId = user.value.id;
+    console.log(id);
     store
         .dispatch("submitSurveyAnswers", {
-            slug,
+            id,
+            userId: userId,
             answers: answers.value,
             infoFields: infoFields.value,
-            selectedCategory: selectedCategory.value.split(","),
+            selectedGroupType: selectedGroupType.value,
+            selectedCategory: selectedCategory.value,
         })
         .then(() => {
             alert("Your answers have been submitted successfully!");

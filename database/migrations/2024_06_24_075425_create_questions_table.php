@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('question', 2000);
             $table->longText('description')->nullable();
             $table->longText('data')->nullable(); // JSON data for options or other structured data
-            $table->foreignIdFor(\App\Models\Survey::class, 'survey_id');
+            $table->foreignIdFor(\App\Models\Survey::class, 'survey_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

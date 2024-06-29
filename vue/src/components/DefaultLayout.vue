@@ -221,7 +221,7 @@ console.log(user.value.role);
 if (user.value.role === "admin") {
     navigation.value = [
         { name: "Dashboard", to: { name: "Dashboard" }, current: true },
-        { name: "Users Management", to: { name: "ManageAccount" } },
+        { name: "Users Management", to: { name: "UserManagement" } },
         { name: "Survey Results", to: { name: "Surveys" } },
     ];
 } else if (user.value.role === "surveymaker") {
