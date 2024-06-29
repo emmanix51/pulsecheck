@@ -18,6 +18,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'idnum' => 'required|integer|unique:users,idnum',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -32,6 +33,7 @@ class UserController extends Controller
         }
 
         $user = new User();
+        $user->idnum = $request->idnum;
         $user->first_name = $request->first_name;
         $user->last_name = $request->last_name;
         $user->email = $request->email;

@@ -50,7 +50,7 @@
                         Delete Survey
                     </button>
                     <div v-if="route.params.id">
-                        <router-link :to="{ name: 'ManageAccount' }">
+                        <router-link :to="{ name: 'SurveyResults' }">
                             Survey Result
                         </router-link>
                     </div>

@@ -37,7 +37,19 @@
                 <h2 class="text-xl font-bold mb-4">
                     {{ isEditMode ? "Edit User" : "Add User" }}
                 </h2>
-                <form @submit.prevent="isEditMode ? updateUser() : addUser()">
+                <form
+                    @submit.prevent="isEditMode ? updateUser() : addUser()"
+                    class="grid grid-cols-3"
+                >
+                    <div class="mb-4">
+                        <label class="block text-gray-700">Idnum</label>
+                        <input
+                            v-model="userForm.idnum"
+                            type="number"
+                            class="w-full px-3 py-2 border rounded"
+                            required
+                        />
+                    </div>
                     <div class="mb-4">
                         <label class="block text-gray-700">First Name</label>
                         <input
@@ -100,13 +112,71 @@
                             <option value="stakeholder">Stakeholder</option>
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Category</label>
-                        <input
-                            v-model="userForm.category"
-                            type="text"
-                            class="w-full px-3 py-2 border rounded"
-                        />
+                    <!-- Conditional rendering based on respondentType -->
+                    <div v-if="userForm.respondent_type === 'student'">
+                        <label
+                            for="studentCategory"
+                            class="block text-sm font-medium leading-6 text-gray-900"
+                            >Student Category</label
+                        >
+                        <div class="mt-2">
+                            <select
+                                id="studentCategory"
+                                v-model="userForm.category"
+                                required
+                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            >
+                                <option value="" disabled>
+                                    Select student category
+                                </option>
+                                <option value="BSCS">BSCS</option>
+                                <option value="BSIT">BSIT</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div v-if="userForm.respondent_type === 'faculty'">
+                        <label
+                            for="facultyCategory"
+                            class="block text-sm font-medium leading-6 text-gray-900"
+                            >Faculty Category</label
+                        >
+                        <div class="mt-2">
+                            <select
+                                id="facultyCategory"
+                                v-model="userForm.category"
+                                required
+                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            >
+                                <option value="" disabled>
+                                    Select faculty category
+                                </option>
+                                <option value="HR">HR</option>
+                                <option value="OSAS">OSAS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div v-if="userForm.respondent_type === 'staff'">
+                        <label
+                            for="staffCategory"
+                            class="block text-sm font-medium leading-6 text-gray-900"
+                            >Staff Category</label
+                        >
+                        <div class="mt-2">
+                            <select
+                                id="staffCategory"
+                                v-model="userForm.category"
+                                required
+                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            >
+                                <option value="" disabled>
+                                    Select staff category
+                                </option>
+                                <option value="HR">HR</option>
+                                <option value="OSAS">OSAS</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="flex justify-end">
                         <button
@@ -234,6 +304,7 @@ const showAddUserForm = ref(false);
 const isEditMode = ref(false);
 const userForm = ref({
     id: null,
+    idnum: "",
     first_name: "",
     last_name: "",
     email: "",

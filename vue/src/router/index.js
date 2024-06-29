@@ -8,6 +8,7 @@ import Surveys from "../views/Surveys.vue";
 import SurveyView from "../views/SurveyView.vue";
 import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
+import SurveyResults from "../views/SurveyResults.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
 
@@ -40,6 +41,11 @@ const routes = [
                 path: "/survey/:slug",
                 name: "SurveyAnswerView",
                 component: () => import("../views/SurveyAnswerView.vue"),
+            },
+            {
+                path: "/survey/results",
+                name: "SurveyResults",
+                component: SurveyResults,
             },
         ],
     },
