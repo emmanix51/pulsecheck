@@ -57,6 +57,7 @@
                 </div>
             </div>
         </template>
+        <pre>{{ model }}</pre>
         <!-- <pre>{{ model }}</pre>
         <pre>{{ store.state.user.data }}</pre>
         <pre>{{ model.questions }}</pre> -->
@@ -141,6 +142,26 @@
                         </div>
                     </div>
                     <!--/ Status -->
+                    <!-- Public access -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input
+                                id="status"
+                                name="status"
+                                type="checkbox"
+                                v-model="model.is_public"
+                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                            />
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label
+                                for="status"
+                                class="font-medium text-gray-700"
+                                >Public survey</label
+                            >
+                        </div>
+                    </div>
+                    <!-- /Public access -->
                 </div>
                 <!-- /Survey Fields -->
 
@@ -421,6 +442,7 @@ let model = ref({
     title: "",
     slug: "",
     status: false,
+    is_public: false,
     description: null,
     respondent_groups: [],
     expire_date: null,

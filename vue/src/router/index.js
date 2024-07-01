@@ -11,6 +11,7 @@ import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import SurveyResults from "../views/SurveyResults.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
+import { useStore } from "vuex";
 
 const routes = [
     {
@@ -37,10 +38,16 @@ const routes = [
                 name: "UserManagement",
                 component: UserManagement,
             },
+            // {
+            //     path: "/survey/:slug",
+            //     name: "SurveyAnswerView",
+            //     component: () => import("../views/SurveyAnswerView.vue"),
+            // },
             {
                 path: "/survey/:slug",
                 name: "SurveyAnswerView",
-                component: () => import("../views/SurveyAnswerView.vue"),
+                component: SurveyAnswerView,
+                meta: { requiresSurveyAuth: true },
             },
             {
                 path: "/survey/results",
@@ -67,11 +74,33 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+    // Use the imported store instance instead of `useStore()`
     if (to.meta.requiresAuth && !store.state.user.token) {
         next({ name: "Login" });
     } else if (store.state.user.token && to.meta.isGuest) {
         next({ name: "Dashboard" });
+    } else if (to.meta.requiresSurveyAuth) {
+        const slug = to.params.slug;
+
+        const survey = await store.dispatch("fetchSurveyBySlug", slug);
+
+        if (survey.data.is_public) {
+            next();
+        } else if (store.state.user.token) {
+            const user = store.state.user.data;
+            const group = survey.data.respondent_groups.find(
+                (g) => g.type === user.respondent_type
+            );
+
+            if (group || group.category.split(",").includes(user.category)) {
+                next();
+            } else {
+                next({ name: "Dashboard" });
+            }
+        } else {
+            next({ name: "Login" });
+        }
     } else {
         next();
     }

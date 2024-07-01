@@ -152,22 +152,26 @@ const selectedCategory = ref(null);
 
 const user = computed(() => store.state.user.data);
 
-onMounted(() => {
+onMounted(async () => {
     const slug = route.params.slug;
-    store.dispatch("fetchSurveyBySlug", slug).then((data) => {
-        survey.value = data.data;
+    const response = await store.dispatch("fetchSurveyBySlug", slug);
+    survey.value = response.data;
 
-        // Parse question data if it's a radio question
-        survey.value.questions.forEach((question) => {
-            if (question.question_type === "radio") {
-                question.data = JSON.parse(question.data);
-            }
-            answers.value[question.id] = "";
-        });
+    if (!survey.value.is_public && !user.value) {
+        router.push({ name: "Login" });
+        return;
+    }
 
-        survey.value.information_fields.forEach((field) => {
-            infoFields.value[field.id] = "";
-        });
+    // Parse question data if it's a radio question
+    survey.value.questions.forEach((question) => {
+        if (question.question_type === "radio") {
+            question.data = JSON.parse(question.data);
+        }
+        answers.value[question.id] = "";
+    });
+
+    survey.value.information_fields.forEach((field) => {
+        infoFields.value[field.id] = "";
     });
 });
 
@@ -184,12 +188,12 @@ function updateCategories() {
 
 function submitAnswers() {
     const id = survey.value.id;
-    const userId = user.value.id;
-    console.log(id);
+    const userId = user.value ? user.value.id : null;
+
     store
         .dispatch("submitSurveyAnswers", {
             id,
-            userId: userId,
+            userId,
             answers: answers.value,
             infoFields: infoFields.value,
             selectedGroupType: selectedGroupType.value,

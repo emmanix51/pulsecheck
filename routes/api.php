@@ -5,8 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SurveyController;
-use App\Http\Controllers\RespondentGroupController;
+use App\Http\Middleware\CheckSurveyAccess;
 use App\Http\Controllers\ResponseController;
+use App\Http\Controllers\RespondentGroupController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -21,8 +22,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/submit-response', [ResponseController::class, 'store']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::resource('/survey', \App\Http\Controllers\SurveyController::class);
-    Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug']);
+    // Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug']);
+    Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug'])->middleware(CheckSurveyAccess::class);
 });
 // Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/public/survey/{slug}', [SurveyController::class, 'showBySlug']);
