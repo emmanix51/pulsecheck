@@ -8,6 +8,7 @@ import Surveys from "../views/Surveys.vue";
 import SurveyView from "../views/SurveyView.vue";
 import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
+import ErrorPage from "../views/ErrorPage.vue";
 import SurveyResults from "../views/SurveyResults.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
@@ -38,23 +39,28 @@ const routes = [
                 name: "UserManagement",
                 component: UserManagement,
             },
-            // {
-            //     path: "/survey/:slug",
-            //     name: "SurveyAnswerView",
-            //     component: () => import("../views/SurveyAnswerView.vue"),
-            // },
-            {
-                path: "/survey/:slug",
-                name: "SurveyAnswerView",
-                component: SurveyAnswerView,
-                meta: { requiresSurveyAuth: true },
-            },
             {
                 path: "/survey/results",
                 name: "SurveyResults",
                 component: SurveyResults,
             },
         ],
+    },
+    {
+        path: "/survey/:slug",
+        name: "SurveyAnswerView",
+        component: SurveyAnswerView,
+        meta: { requiresSurveyAuth: true },
+    },
+    {
+        path: "/public/survey/:slug",
+        name: "PublicSurveyAnswerView",
+        component: SurveyAnswerView, // You can use the same component or create a new one if needed
+    },
+    {
+        path: "/error",
+        name: "ErrorPage",
+        component: ErrorPage,
     },
     {
         path: "/auth",
@@ -75,31 +81,28 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-    // Use the imported store instance instead of `useStore()`
     if (to.meta.requiresAuth && !store.state.user.token) {
         next({ name: "Login" });
     } else if (store.state.user.token && to.meta.isGuest) {
         next({ name: "Dashboard" });
     } else if (to.meta.requiresSurveyAuth) {
         const slug = to.params.slug;
+        try {
+            const response = await store.dispatch("fetchSurveyBySlug", slug);
+            // console.log(response);
+            const { data, status } = response;
 
-        const survey = await store.dispatch("fetchSurveyBySlug", slug);
-
-        if (survey.data.is_public) {
-            next();
-        } else if (store.state.user.token) {
-            const user = store.state.user.data;
-            const group = survey.data.respondent_groups.find(
-                (g) => g.type === user.respondent_type
-            );
-
-            if (group || group.category.split(",").includes(user.category)) {
+            if (status === 200 || data.is_public) {
                 next();
-            } else {
+            } else if (status === 401) {
+                next({ name: "Login" });
+            } else if (status === 403) {
                 next({ name: "Dashboard" });
+            } else {
+                next({ name: "ErrorPage" });
             }
-        } else {
-            next({ name: "Login" });
+        } catch (error) {
+            next({ name: "ErrorPage" });
         }
     } else {
         next();

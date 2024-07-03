@@ -216,7 +216,7 @@
                             <option value="staff">Staff</option>
                             <option value="stakeholder">Stakeholder</option>
                         </select>
-                        <div v-if="group.type !== 'stakeholder'" class="mt-2">
+                        <div class="mt-2">
                             <label
                                 class="block text-sm font-medium text-gray-700"
                             >
@@ -441,8 +441,8 @@ let model = ref({
     image: "",
     title: "",
     slug: "",
-    status: false,
-    is_public: false,
+    status: null,
+    is_public: null,
     description: null,
     respondent_groups: [],
     expire_date: null,

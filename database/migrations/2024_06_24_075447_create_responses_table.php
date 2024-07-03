@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('responses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');
-            $table->foreignId('respondent_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('respondent_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('respondent_type');
             $table->string('respondent_category')->nullable();
             $table->json('information_fields')->nullable(); // Adding information_fields as JSON

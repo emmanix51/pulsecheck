@@ -225,4 +225,18 @@ class SurveyController extends Controller
 
         return response()->json(['data' => $survey], 200);
     }
+    public function showPublicBySlug($slug)
+    {
+        $survey = Survey::where('slug', $slug)->with(['questions', 'respondentGroups', 'informationFields'])->first();
+
+        if (!$survey) {
+            return response()->json(['error' => 'Survey not founsd'], 404);
+        }
+
+        if ($survey->is_public != true) {
+            return response()->json(['error' => 'this survey is not for the publisc'], 404);
+        }
+
+        return response()->json(['data' => $survey], 200);
+    }
 }

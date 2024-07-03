@@ -299,8 +299,8 @@ const sampleSurvey = [
 const store = createStore({
     state: {
         user: {
-            data: JSON.parse(sessionStorage.getItem("USER_DATA")) || {},
-            token: sessionStorage.getItem("TOKEN"),
+            data: JSON.parse(localStorage.getItem("USER_DATA")) || {},
+            token: localStorage.getItem("TOKEN"),
         },
         surveys: [],
         users: [],
@@ -341,9 +341,31 @@ const store = createStore({
                 });
         },
         fetchSurveyBySlug({ commit }, slug) {
-            return axiosClient.get(`/survey/slug/${slug}`).then(({ data }) => {
-                return data;
-            });
+            return axiosClient
+                .get(`/survey/slug/${slug}`)
+                .then(({ data, status }) => {
+                    return { data, status };
+                })
+                .catch((error) => {
+                    console.log(error.response);
+                    return {
+                        error: error.response.data,
+                        status: error.response.status,
+                    };
+                });
+        },
+        fetchPublicSurveyBySlug({ commit }, slug) {
+            return axiosClient
+                .get(`/public/survey/slug/${slug}`)
+                .then(({ data, status }) => {
+                    return { data, status };
+                })
+                .catch((error) => {
+                    return {
+                        error: error.response.data,
+                        status: error.response.status,
+                    };
+                });
         },
         getAllUsers({ commit }) {
             return axiosClient.get("/admin/users").then(({ data }) => {
@@ -472,14 +494,18 @@ const store = createStore({
             state.user.token = null;
             sessionStorage.removeItem("USER_DATA");
             sessionStorage.removeItem("TOKEN");
+            localStorage.removeItem("USER_DATA");
+            localStorage.removeItem("TOKEN");
         },
         setUser(state, user) {
             state.user.data = user;
             sessionStorage.setItem("USER_DATA", JSON.stringify(user));
+            localStorage.setItem("USER_DATA", JSON.stringify(user));
         },
         setToken: (state, token) => {
             state.user.token = token;
             sessionStorage.setItem("TOKEN", token);
+            localStorage.setItem("TOKEN", token);
         },
     },
     modules: {},

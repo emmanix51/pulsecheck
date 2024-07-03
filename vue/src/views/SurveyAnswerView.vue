@@ -139,11 +139,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
 
 const route = useRoute();
+const router = useRouter();
 const survey = ref(null);
 const answers = ref({});
 const infoFields = ref({});
@@ -154,13 +155,29 @@ const user = computed(() => store.state.user.data);
 
 onMounted(async () => {
     const slug = route.params.slug;
-    const response = await store.dispatch("fetchSurveyBySlug", slug);
-    survey.value = response.data;
-
-    if (!survey.value.is_public && !user.value) {
-        router.push({ name: "Login" });
-        return;
+    const isPublic = route.path.includes("/public/");
+    let response = null;
+    if (isPublic) {
+        response = await store.dispatch("fetchPublicSurveyBySlug", slug);
+    } else {
+        response = await store.dispatch("fetchSurveyBySlug", slug);
     }
+
+    // console.log(response);
+    if (response.status === 200) {
+        survey.value = response.data.data;
+    } else if (response.status === 401) {
+        router.push({ name: "Login" });
+    } else if (response.status === 403) {
+        alert(response.error.error);
+        router.push({ name: "Dashboard" });
+    } else if (response.status === 404) {
+        alert(response.error.error);
+        router.push({ name: "ErrorPage" }); // or any other route for not found
+    }
+
+    survey.value = response.data.data;
+    console.log(survey.value);
 
     // Parse question data if it's a radio question
     survey.value.questions.forEach((question) => {

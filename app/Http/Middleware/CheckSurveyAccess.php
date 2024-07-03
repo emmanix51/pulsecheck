@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
-
 class CheckSurveyAccess
 {
     public function handle(Request $request, Closure $next)
@@ -33,9 +32,11 @@ class CheckSurveyAccess
         $userType = $user->respondent_type;
         $userCategory = $user->category;
 
-        foreach ($survey->respondentGroups as $group) {
-            if ($group->type === $userType && in_array($userCategory, explode(',', $group->category))) {
-                return $next($request);
+        if (!is_null($survey->respondentGroups)) {
+            foreach ($survey->respondentGroups as $group) {
+                if ($group->type === $userType || in_array($userCategory, explode(',', $group->category))) {
+                    return $next($request);
+                }
             }
         }
 

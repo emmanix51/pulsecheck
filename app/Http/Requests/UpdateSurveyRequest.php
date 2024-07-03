@@ -41,6 +41,8 @@ class UpdateSurveyRequest extends FormRequest
             'title' => 'sometimes|required|string|max:1000',
             'image' => 'nullable|string',
             'status' => 'sometimes|required|boolean',
+            'is_public' => 'required|boolean',
+
             'description' => 'nullable|string',
             'expire_date' => 'nullable|date|after:tomorrow',
             'respondent_groups' => 'sometimes|required|array',
