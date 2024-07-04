@@ -429,6 +429,13 @@ const store = createStore({
                 return data.data;
             });
         },
+        fetchSurveyResultData({ commit }, id) {
+            return axiosClient.get(`/survey/${id}/results`).then(({ data }) => {
+                // console.log(data.survey);
+                commit("setSurvey", data.survey);
+                return data.survey;
+            });
+        },
         register({ commit }, user) {
             return axiosClient
                 .post("/register", user)

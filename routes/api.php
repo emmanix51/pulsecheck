@@ -8,6 +8,7 @@ use App\Http\Controllers\SurveyController;
 use App\Http\Middleware\CheckSurveyAccess;
 use App\Http\Controllers\ResponseController;
 use App\Http\Middleware\CheckPublicSurveyAccess;
+use App\Http\Controllers\SurveyResultsController;
 use App\Http\Controllers\RespondentGroupController;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -27,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug']);
     Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug'])
         ->middleware(CheckSurveyAccess::class);
+    Route::get('/survey/{id}/descriptive-analysis', [SurveyResultsController::class, 'getDescriptiveAnalysis']);
+    Route::get('/survey/{id}/results', [SurveyResultsController::class, 'show']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);

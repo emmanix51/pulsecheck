@@ -29,6 +29,11 @@ class Survey extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function responses()
+    {
+        return $this->hasMany(Response::class);
+    }
+
     public function respondentGroups()
     {
         return $this->belongsToMany(RespondentGroup::class, 'survey_respondent_group');

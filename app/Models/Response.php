@@ -16,4 +16,14 @@ class Response extends Model
         'respondent_category',
         'information_fields',
     ];
+
+    public function survey()
+    {
+        return $this->belongsTo(Survey::class);
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
+    }
 }

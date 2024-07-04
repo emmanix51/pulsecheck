@@ -40,7 +40,7 @@ const routes = [
                 component: UserManagement,
             },
             {
-                path: "/survey/results",
+                path: "/survey/:id/results",
                 name: "SurveyResults",
                 component: SurveyResults,
             },

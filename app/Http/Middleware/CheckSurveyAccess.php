@@ -34,7 +34,7 @@ class CheckSurveyAccess
 
         if (!is_null($survey->respondentGroups)) {
             foreach ($survey->respondentGroups as $group) {
-                if ($group->type === $userType || in_array($userCategory, explode(',', $group->category))) {
+                if ($group->type === $userType) {
                     return $next($request);
                 }
             }

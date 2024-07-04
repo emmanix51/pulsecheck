@@ -3,55 +3,15 @@
         <template v-slot:header>
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-900">
-                    Survey Result for: Survey Title
+                    Survey Result for: {{ model.title }}
                 </h1>
-                <!-- <div class="flex">
-                    
-                    <a
-                        :href="`/view/survey/${model.slug}`"
-                        target="_blank"
-                        v-if="model.slug"
-                        class="flex py-2 px-4 border border-transparent text-sm rounded-md text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-2"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                        </svg>
-                        View Public link
-                    </a>
-                    <button
-                        v-if="route.params.id"
-                        type="button"
-                        @click="deleteSurvey()"
-                        class="py-2 px-3 text-white bg-red-500 rounded-md hover:bg-red-600"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 -mt-1 inline-block"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                        >
-                            <path
-                                fill-rule="evenodd"
-                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                clip-rule="evenodd"
-                            />
-                        </svg>
-                        Delete Survey
-                    </button>
-                </div> -->
             </div>
         </template>
+        <!-- <pre>{{ model }}</pre> -->
+        <pre>{{ totalResponse }}</pre>
+        <pre>{{ totalAnswerScale }}</pre>
+        <pre>{{ averageAnswerScale }}</pre>
+        <!-- <pre>{{ Object.keys(surveyData.responses).length }}</pre> -->
         <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700"
         >
@@ -63,19 +23,24 @@
                     <h3 class="font-bold text-xl mb-3">Survey Title</h3>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Total Responses:</div>
-                        <div>419</div>
+                        <div>{{ totalResponse }}</div>
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Respondent Groups:</div>
-                        <div>Student, Faculty</div>
+                        <div
+                            v-for="(group, i) of model.respondent_groups"
+                            :key="i"
+                        >
+                            {{ group.type }}
+                        </div>
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Status:</div>
                         <div>Active</div>
                     </div>
                     <div class="flex justify-between text-sm mb-1">
-                        <div>Questions:</div>
-                        <div>100</div>
+                        <div>Overall Mean:</div>
+                        <div>{{ averageAnswerScale }}</div>
                     </div>
 
                     <div class="flex justify-between">
@@ -189,7 +154,12 @@
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Respondent Groups:</div>
-                        <div>Student, Faculty</div>
+                        <div
+                            v-for="(group, i) of model.respondent_groups"
+                            :key="i"
+                        >
+                            {{ group.type }}
+                        </div>
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Status:</div>
@@ -231,7 +201,61 @@
 </template>
 
 <script setup>
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import store from "../store";
+
 import PageComponent from "../components/PageComponent.vue";
+
+const route = useRoute();
+const router = useRouter();
+
+let model = ref({
+    title: "",
+    slug: "",
+    status: null,
+    is_public: null,
+    description: null,
+    respondent_groups: [],
+    expire_date: null,
+    information_fields: [],
+    questions: [],
+    responses: [],
+});
+
+const totalResponse = computed(() => model.value.responses.length);
+
+const totalAnswerScale = computed(() => {
+    return model.value.responses.reduce((total, response) => {
+        return (
+            total +
+            response.answers.reduce((answerTotal, answer) => {
+                return answerTotal + answer.answer_scale;
+            }, 0)
+        );
+    }, 0);
+});
+
+const totalAnswers = computed(() => {
+    return model.value.responses.reduce((total, response) => {
+        return total + response.answers.length;
+    }, 0);
+});
+
+const averageAnswerScale = computed(() => {
+    const total = totalAnswerScale.value;
+    const count = totalAnswers.value;
+    return count > 0 ? (total / count).toFixed(2) : 0;
+});
+
+if (route.params.id) {
+    store
+        .dispatch("fetchSurveyResultData", route.params.id)
+        .then((surveyData) => {
+            // console.log(surveyData.responses);
+            model.value = surveyData;
+        });
+}
 </script>
 
 <style></style>
