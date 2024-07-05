@@ -28,8 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug']);
     Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug'])
         ->middleware(CheckSurveyAccess::class);
-    Route::get('/survey/{id}/descriptive-analysis', [SurveyResultsController::class, 'getDescriptiveAnalysis']);
     Route::get('/survey/{id}/results', [SurveyResultsController::class, 'show']);
+    Route::get('/survey/{id}/results/descriptive', [SurveyResultsController::class, 'showDescriptiveData']);
+    Route::get('/survey/{id}/details', [SurveyResultsController::class, 'getSurveyDetails']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);

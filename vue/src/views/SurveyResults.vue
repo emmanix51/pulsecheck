@@ -7,10 +7,10 @@
                 </h1>
             </div>
         </template>
-        <!-- <pre>{{ model }}</pre> -->
-        <pre>{{ totalResponse }}</pre>
+        <pre>{{ model }}</pre>
+        <!-- <pre>{{ totalResponse }}</pre>
         <pre>{{ totalAnswerScale }}</pre>
-        <pre>{{ averageAnswerScale }}</pre>
+        <pre>{{ averageAnswerScale }}</pre> -->
         <!-- <pre>{{ Object.keys(surveyData.responses).length }}</pre> -->
         <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700"
@@ -23,7 +23,7 @@
                     <h3 class="font-bold text-xl mb-3">Survey Title</h3>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Total Responses:</div>
-                        <div>{{ totalResponse }}</div>
+                        <div>{{ totalResponses }}</div>
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Respondent Groups:</div>
@@ -36,7 +36,8 @@
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Status:</div>
-                        <div>Active</div>
+                        <div v-if="model.status == true">Active</div>
+                        <div v-else>Not active</div>
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Overall Mean:</div>
@@ -65,10 +66,13 @@
                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                                 />
                             </svg>
-                            Edit Survey
+                            Tallied Responses
                         </router-link>
 
-                        <button
+                        <router-link
+                            :to="{
+                                name: 'ResultsDescriptive',
+                            }"
                             class="flex py-2 px-4 border border-transparent text-sm rounded-md text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             <svg
@@ -84,8 +88,8 @@
                                     clip-rule="evenodd"
                                 />
                             </svg>
-                            View Answers
-                        </button>
+                            View Analysis
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -223,38 +227,17 @@ let model = ref({
     responses: [],
 });
 
-const totalResponse = computed(() => model.value.responses.length);
-
-const totalAnswerScale = computed(() => {
-    return model.value.responses.reduce((total, response) => {
-        return (
-            total +
-            response.answers.reduce((answerTotal, answer) => {
-                return answerTotal + answer.answer_scale;
-            }, 0)
-        );
-    }, 0);
-});
-
-const totalAnswers = computed(() => {
-    return model.value.responses.reduce((total, response) => {
-        return total + response.answers.length;
-    }, 0);
-});
-
-const averageAnswerScale = computed(() => {
-    const total = totalAnswerScale.value;
-    const count = totalAnswers.value;
-    return count > 0 ? (total / count).toFixed(2) : 0;
-});
+let totalResponses = ref(0);
+let totalAnswerScale = ref(0);
+let averageAnswerScale = ref(0);
 
 if (route.params.id) {
-    store
-        .dispatch("fetchSurveyResultData", route.params.id)
-        .then((surveyData) => {
-            // console.log(surveyData.responses);
-            model.value = surveyData;
-        });
+    store.dispatch("fetchSurveyResultData", route.params.id).then((data) => {
+        totalResponses.value = data.totalResponses;
+        totalAnswerScale.value = data.totalAnswerScale;
+        averageAnswerScale.value = data.averageAnswerScale;
+        model.value = data.survey;
+    });
 }
 </script>
 

@@ -51,6 +51,85 @@ class SurveyResultsController extends Controller
             return response()->json(['error' => 'Survey not found'], 404);
         }
 
-        return response()->json(['survey' => $survey]);
+        $totalResponses = $survey->responses->count();
+
+        $totalAnswerScale = $survey->responses->flatMap(function ($response) {
+            return $response->answers;
+        })->sum('answer_scale');
+
+        $totalAnswers = $survey->responses->flatMap(function ($response) {
+            return $response->answers;
+        })->count();
+
+        $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
+
+        return response()->json([
+            'survey' => $survey, 'totalResponses' => $totalResponses,
+            'totalAnswerScale' => $totalAnswerScale,
+            'averageAnswerScale' => $averageAnswerScale,
+        ]);
+    }
+
+    public function getSurveyDetails($id)
+    {
+        $survey = Survey::with(['respondentGroups', 'informationFields'])->findOrFail($id);
+
+        return response()->json([
+            'survey' => $survey,
+            'respondentGroups' => $survey->respondentGroups,
+            'informationFields' => $survey->informationFields,
+        ]);
+    }
+
+
+    public function showDescriptiveData(Request $request, $id)
+    {
+        $query = Survey::with(['questions', 'respondentGroups', 'informationFields', 'responses.answers'])
+            ->findOrFail($id)
+            ->responses();
+
+        if ($request->has('respondent_groups') && count($request->respondent_groups) > 0) {
+            $query->whereIn('respondent_type', $request->respondent_groups);
+        }
+
+        if ($request->has('respondent_categories') && count($request->respondent_categories) > 0) {
+            $query->whereIn('respondent_category', $request->respondent_categories);
+        }
+
+        if ($request->has('information_field')) {
+            foreach ($request->information_field as $key => $values) {
+                if (is_array($values)) {
+                    foreach ($values as $value) {
+                        $query->whereJsonContains('information_fields->' . $key, $value);
+                    }
+                } else {
+                    $query->whereJsonContains('information_fields->' . $key, $values);
+                }
+            }
+        }
+
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+        }
+
+        $filteredResponses = $query->get();
+
+        $totalResponses = $filteredResponses->count();
+        $totalAnswerScale = $filteredResponses->flatMap(function ($response) {
+            return $response->answers;
+        })->sum('answer_scale');
+
+        $totalAnswers = $filteredResponses->flatMap(function ($response) {
+            return $response->answers;
+        })->count();
+
+        $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
+
+        return response()->json([
+            'filteredResponses' => $filteredResponses,
+            'totalResponses' => $totalResponses,
+            'totalAnswerScale' => $totalAnswerScale,
+            'averageAnswerScale' => $averageAnswerScale,
+        ]);
     }
 }

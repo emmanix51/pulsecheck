@@ -432,10 +432,24 @@ const store = createStore({
         fetchSurveyResultData({ commit }, id) {
             return axiosClient.get(`/survey/${id}/results`).then(({ data }) => {
                 // console.log(data.survey);
-                commit("setSurvey", data.survey);
-                return data.survey;
+                return data;
             });
         },
+        fetchResultDescriptiveData({ commit }, { id, params }) {
+            return axiosClient
+                .get(`/survey/${id}/results/descriptive`, {
+                    params,
+                })
+                .then(({ data }) => {
+                    return data;
+                });
+        },
+        fetchSurveyDetails({ commit }, id) {
+            return axiosClient.get(`/survey/${id}/details`).then(({ data }) => {
+                return data;
+            });
+        },
+
         register({ commit }, user) {
             return axiosClient
                 .post("/register", user)

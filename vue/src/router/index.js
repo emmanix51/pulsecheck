@@ -10,6 +10,7 @@ import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 import SurveyResults from "../views/SurveyResults.vue";
+import ResultsDescriptive from "../views/ResultsDescriptive.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
 import { useStore } from "vuex";
@@ -43,6 +44,11 @@ const routes = [
                 path: "/survey/:id/results",
                 name: "SurveyResults",
                 component: SurveyResults,
+            },
+            {
+                path: "/survey/:id/results/descriptive",
+                name: "ResultsDescriptive",
+                component: ResultsDescriptive,
             },
         ],
     },
