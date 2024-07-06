@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('surveys', function (Blueprint $table) {
             $table->id();
             $table->boolean('is_public')->default(false); // For public accessibility
-            // $table->boolean('is_restricted')->default(false);
+
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('image', 255)->nullable();
             $table->string('title', 1000);
             $table->string('slug', 1000)->unique();
-            // $table->longText('information_field')->nullable();
+
             $table->tinyInteger('status');
             $table->text('description')->nullable();
             $table->timestamps();

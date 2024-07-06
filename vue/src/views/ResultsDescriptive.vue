@@ -3,7 +3,7 @@
         <template v-slot:header>
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-900">
-                    Response Analysis for {{ surveyTitle }}
+                    Result Analysis for: Survey1
                 </h1>
             </div>
         </template>
@@ -46,13 +46,6 @@
                                         />
                                     </label>
                                     <label>
-                                        Questions
-                                        <input
-                                            type="checkbox"
-                                            v-model="showInformationFieldFilter"
-                                        />
-                                    </label>
-                                    <label>
                                         Date
                                         <input
                                             type="date"
@@ -76,7 +69,7 @@
                                         <input
                                             type="checkbox"
                                             :value="group.type"
-                                            v-model="filters.respondent_groups"
+                                            v-model="filters.respondent_types"
                                         />
                                         {{ group.type }}
                                     </div>
@@ -165,20 +158,19 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
+import axiosClient from "../axios";
 import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
 
 const route = useRoute();
 
 const filters = ref({
-    respondent_groups: [],
+    respondent_types: [],
     respondent_categories: [],
     information_field: {},
     start_date: null,
     end_date: null,
 });
-
-const surveyTitle = ref("");
 
 const totalResponses = ref(0);
 const totalAnswerScale = ref(0);
@@ -195,13 +187,49 @@ const availableCategories = ref([]);
 
 const applyFilters = () => {
     const params = { ...filters.value };
-    store
-        .dispatch("fetchResultDescriptiveData", { id: route.params.id, params })
-        .then((data) => {
+
+    const informationFieldEntries = Object.entries(params.information_field)
+        .map(([key, value]) => {
+            return value
+                .map(
+                    (option) =>
+                        `information_field[${key}][]=${encodeURIComponent(
+                            option
+                        )}`
+                )
+                .join("&");
+        })
+        .join("&");
+
+    const respondentGroupsParams = params.respondent_types
+        .map((group) => `respondent_types[]=${encodeURIComponent(group)}`)
+        .join("&");
+    const respondentCategoriesParams = params.respondent_categories
+        .map(
+            (category) =>
+                `respondent_categories[]=${encodeURIComponent(category)}`
+        )
+        .join("&");
+
+    const queryString = `${respondentGroupsParams}&${respondentCategoriesParams}&${informationFieldEntries}&start_date=${params.start_date}&end_date=${params.end_date}`;
+
+    console.log(
+        "Request URL:",
+        `/survey/${route.params.id}/results/descriptive?${queryString}`
+    );
+
+    axiosClient
+        .get(`/survey/${route.params.id}/results/descriptive?${queryString}`)
+        .then((response) => {
+            console.log(response);
+            const data = response.data;
             totalResponses.value = data.totalResponses;
             totalAnswerScale.value = data.totalAnswerScale;
             averageAnswerScale.value = data.averageAnswerScale;
             filteredResponses.value = data.filteredResponses;
+        })
+        .catch((error) => {
+            console.error("Error fetching descriptive analysis:", error);
         });
 };
 
@@ -235,7 +263,7 @@ watch(
 
 const updateCategories = () => {
     const selectedGroups = respondentGroups.value.filter((group) =>
-        filters.value.respondent_groups.includes(group.type)
+        filters.value.respondent_types.includes(group.type)
     );
 
     const categories = selectedGroups.flatMap((group) =>
@@ -247,7 +275,6 @@ const updateCategories = () => {
 
 onMounted(() => {
     store.dispatch("fetchSurveyDetails", route.params.id).then((data) => {
-        surveyTitle.value = data.survey.title;
         respondentGroups.value = data.respondentGroups;
         informationFields.value = data.informationFields.map((field) => {
             field.options = field.options ? field.options.split(",") : [];
