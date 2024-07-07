@@ -7,6 +7,7 @@
                 </h1>
             </div>
         </template>
+        <pre>{{ testData }}</pre>
         <div class="text-gray-700">
             <div class="shadow-md sm:rounded-md sm:overflow-hidden">
                 <div class="px-4 py-5 bg-white space-y-1 sm:p-6">
@@ -46,14 +47,10 @@
                                         />
                                     </label>
                                     <label>
-                                        Date
+                                        Questions
                                         <input
-                                            type="date"
-                                            v-model="filters.start_date"
-                                        />
-                                        <input
-                                            type="date"
-                                            v-model="filters.end_date"
+                                            type="checkbox"
+                                            v-model="showQuestionFieldFilter"
                                         />
                                     </label>
                                     <button @click="applyFilters">Apply</button>
@@ -140,6 +137,22 @@
                                     />
                                 </label>
                             </div>
+                            <div v-if="showQuestionFieldFilter" class="mt-2">
+                                <label>
+                                    Select Question
+                                    <div
+                                        v-for="question in questions"
+                                        :key="question.id"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :value="question.id"
+                                            v-model="filters.question_ids"
+                                        />
+                                        {{ question.question }}
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -147,7 +160,7 @@
             <div class="mt-4">
                 <h2 class="text-xl font-bold">Analysis Results</h2>
                 <p>Number of Responses: {{ totalResponses }}</p>
-                <p>Total Answer Scale: {{ totalAnswerScale }}</p>
+                <p>Total Answers: {{ totalAnswers }}</p>
                 <p>Average Answer Scale: {{ averageAnswerScale.toFixed(2) }}</p>
                 <!-- Render filtered responses here -->
             </div>
@@ -168,22 +181,25 @@ const filters = ref({
     respondent_types: [],
     respondent_categories: [],
     information_field: {},
+    question_ids: [],
     start_date: null,
     end_date: null,
 });
 
 const totalResponses = ref(0);
-const totalAnswerScale = ref(0);
+const totalAnswers = ref(0);
 const averageAnswerScale = ref(0);
 const filteredResponses = ref([]);
 
 const showRespondentGroupFilter = ref(false);
 const showRespondentCategoryFilter = ref(false);
 const showInformationFieldFilter = ref(false);
+const showQuestionFieldFilter = ref(false);
 
 const respondentGroups = ref([]);
 const informationFields = ref([]);
 const availableCategories = ref([]);
+const questions = ref([]);
 
 const applyFilters = () => {
     const params = { ...filters.value };
@@ -210,8 +226,11 @@ const applyFilters = () => {
                 `respondent_categories[]=${encodeURIComponent(category)}`
         )
         .join("&");
+    const questionIdsParams = params.question_ids
+        .map((id) => `question_ids[]=${encodeURIComponent(id)}`)
+        .join("&");
 
-    const queryString = `${respondentGroupsParams}&${respondentCategoriesParams}&${informationFieldEntries}&start_date=${params.start_date}&end_date=${params.end_date}`;
+    const queryString = `${respondentGroupsParams}&${respondentCategoriesParams}&${informationFieldEntries}&${questionIdsParams}`;
 
     console.log(
         "Request URL:",
@@ -224,7 +243,7 @@ const applyFilters = () => {
             console.log(response);
             const data = response.data;
             totalResponses.value = data.totalResponses;
-            totalAnswerScale.value = data.totalAnswerScale;
+            totalAnswers.value = data.totalAnswers;
             averageAnswerScale.value = data.averageAnswerScale;
             filteredResponses.value = data.filteredResponses;
         })
@@ -272,14 +291,16 @@ const updateCategories = () => {
 
     availableCategories.value = [...new Set(categories)];
 };
-
+const testData = ref({});
 onMounted(() => {
     store.dispatch("fetchSurveyDetails", route.params.id).then((data) => {
+        testData.value = data;
         respondentGroups.value = data.respondentGroups;
         informationFields.value = data.informationFields.map((field) => {
             field.options = field.options ? field.options.split(",") : [];
             return field;
         });
+        questions.value = data.questions;
     });
 });
 </script>

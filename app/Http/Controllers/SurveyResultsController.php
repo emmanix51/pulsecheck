@@ -72,12 +72,13 @@ class SurveyResultsController extends Controller
 
     public function getSurveyDetails($id)
     {
-        $survey = Survey::with(['respondentGroups', 'informationFields'])->findOrFail($id);
+        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions'])->findOrFail($id);
 
         return response()->json([
             'survey' => $survey,
             'respondentGroups' => $survey->respondentGroups,
             'informationFields' => $survey->informationFields,
+            'questions' => $survey->questions,
         ]);
     }
 
@@ -87,6 +88,7 @@ class SurveyResultsController extends Controller
         // Enable query log for debugging
         \Illuminate\Support\Facades\DB::enableQueryLog();
 
+        // \Illuminate\Support\Facades\Log::info($request->query());
         // Base query
         $query = Response::where('survey_id', $id);
 
@@ -110,51 +112,111 @@ class SurveyResultsController extends Controller
         // Filter by information fields
         if ($request->has('information_field')) {
             $informationFields = $request->get('information_field');
+
             $query->where(function ($q) use ($informationFields) {
                 foreach ($informationFields as $field => $values) {
-                    $q->where(function ($subQuery) use ($field, $values) {
-                        foreach ($values as $value) {
-                            $subQuery->orWhereJsonContains('information_fields->' . $field, $value);
-                        }
-                    });
+                    // Ensure $values is always an array for consistency
+                    $values = is_array($values) ? $values : [$values];
+
+                    foreach ($values as $value) {
+                        // Log the field and value for debugging
+                        // \Illuminate\Support\Facades\Log::info([$field => $value]);
+
+                        // Use whereJsonContains for JSON fields
+                        $q->orWhereJsonContains('information_fields->' . $field, $value);
+                    }
                 }
             });
         }
 
-        // Filter by date range
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $startDate = $request->get('start_date');
-            $endDate = $request->get('end_date');
-            if ($startDate && $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate]);
-            }
+        if ($request->has('question_ids')) {
+            $questionIds = $request->get('question_ids');
+
+            // Join with the answers table to filter by question IDs
+            $query->whereHas('answers', function ($q) use ($questionIds) {
+                $q->whereIn('question_id', $questionIds);
+            });
         }
+        \Illuminate\Support\Facades\Log::info($query->toSql());
+
+        // // Filter by date range
+        // if ($request->has('start_date') && $request->has('end_date')) {
+        //     $startDate = $request->get('start_date');
+        //     $endDate = $request->get('end_date');
+        //     if ($startDate && $endDate) {
+        //         $query->whereBetween('created_at', [$startDate, $endDate]);
+        //     }
+        // }
 
         // Log the actual query for debugging
         // \Illuminate\Support\Facades\Log::info($query->toSql());
         // \Illuminate\Support\Facades\Log::info($query->getBindings());
 
+
         // Get the filtered responses
-        $filteredResponses = $query->with('answers')->get();
+        $filteredResponses = $query->with(['answers' => function ($q) use ($request) {
+            if ($request->has('question_ids')) {
+                $questionIds = $request->get('question_ids');
+                $q->whereIn('question_id', $questionIds);
+            }
+        }])->get();
 
         // Calculate the required statistics
         $totalResponses = $filteredResponses->count();
-        \Illuminate\Support\Facades\Log::info($totalResponses);
         $totalAnswers = 0;
+        $totalAnswerScale = 0;
+
         foreach ($filteredResponses as $response) {
-            $totalAnswers += $response->answers->count();
+            foreach ($response->answers as $answer) {
+                $totalAnswers++;
+                $totalAnswerScale += $answer->answer_scale;
+            }
         }
 
-        $totalAnswerScale = $filteredResponses->sum(function ($response) {
-            return $response->answers->sum('answer_scale');
-        });
-        $averageAnswerScale = $totalResponses > 0 ? $totalAnswerScale / $totalAnswers : 0;
+        $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
+
 
         return response()->json([
             'filteredResponses' => $filteredResponses,
             'totalResponses' => $totalResponses,
-            'totalAnswerScale' => $totalAnswerScale,
+            'totalAnswers' => $totalAnswers,
             'averageAnswerScale' => $averageAnswerScale,
         ]);
     }
+
+
+    // This works
+    // public function showDescriptiveData(Request $request, $id)
+    // {
+    //     $query = Survey::with(['questions', 'respondentGroups', 'informationFields', 'responses.answers'])
+    //         ->findOrFail($id)
+    //         ->responses();
+
+    //     // Simplify to only check respondent_groups filter
+    //     if ($request->has('respondent_groups') && count($request->respondent_groups) > 0) {
+    //         $query->whereIn('respondent_type', $request->respondent_groups);
+    //     }
+
+    //     $filteredResponses = $query->get();
+
+    //     $answers = $filteredResponses->flatMap(function ($response) {
+    //         return $response->answers;
+    //     });
+
+    //     $totalResponses = $filteredResponses->count();
+    //     $totalAnswerScale = $answers->sum('answer_scale');
+    //     $totalAnswers = $answers->count();
+
+    //     $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
+
+    //     $queries = \Illuminate\Support\Facades\DB::getQueryLog();
+    //     \Illuminate\Support\Facades\Log::info($queries);
+
+    //     return response()->json([
+    //         'filteredResponses' => $filteredResponses,
+    //         'totalResponses' => $totalResponses,
+    //         'totalAnswerScale' => $totalAnswerScale,
+    //         'averageAnswerScale' => $averageAnswerScale,
+    //     ]);
+    // }
 }

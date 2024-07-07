@@ -8,10 +8,10 @@
                 Loading...
             </div>
         </template>
-        <pre>{{ survey }}</pre>
+        <!-- <pre>{{ survey }}</pre> -->
         <pre>{{ infoFields }}</pre>
-        <pre>{{ selectedGroupType }}</pre>
-        <pre>{{ selectedCategory }}</pre>
+        <!-- <pre>{{ selectedGroupType }}</pre> -->
+        <!-- <pre>{{ selectedCategory }}</pre> -->
         <pre>{{ answers }}</pre>
         <form v-if="survey" @submit.prevent="submitAnswers">
             <!-- Respondent Group Selection -->
@@ -207,12 +207,25 @@ function submitAnswers() {
     const id = survey.value.id;
     const userId = user.value ? user.value.id : null;
 
+    // Prepare infoFieldsData with labels instead of IDs
+    const infoFieldsData = {};
+    for (const key in infoFields.value) {
+        if (infoFields.value.hasOwnProperty(key)) {
+            const field = survey.value.information_fields.find(
+                (field) => field.id === parseInt(key)
+            );
+            if (field) {
+                infoFieldsData[field.label] = infoFields.value[key];
+            }
+        }
+    }
+
     store
         .dispatch("submitSurveyAnswers", {
             id,
             userId,
             answers: answers.value,
-            infoFields: infoFields.value,
+            infoFields: infoFieldsData,
             selectedGroupType: selectedGroupType.value,
             selectedCategory: selectedCategory.value,
         })
