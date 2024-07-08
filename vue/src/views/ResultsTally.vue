@@ -7,7 +7,10 @@
                 </h1>
             </div>
         </template>
-        <pre>{{ testData }}</pre>
+        <!-- <pre>{{ testData }}</pre> -->
+        <pre>{{ filteredResponses }}</pre>
+        <pre>{{ respondentGroups }}</pre>
+        <pre>{{ informationFields }}</pre>
         <div class="text-gray-700">
             <div class="shadow-md sm:rounded-md sm:overflow-hidden">
                 <div class="px-4 py-5 bg-white space-y-1 sm:p-6">
@@ -46,13 +49,7 @@
                                             v-model="showInformationFieldFilter"
                                         />
                                     </label>
-                                    <label>
-                                        Questions
-                                        <input
-                                            type="checkbox"
-                                            v-model="showQuestionFieldFilter"
-                                        />
-                                    </label>
+
                                     <button @click="applyFilters">Apply</button>
                                 </span>
                             </div>
@@ -101,8 +98,8 @@
                                     v-for="field in informationFields"
                                     :key="field.id"
                                 >
-                                    {{ field.label }}
                                     <div v-if="field.type === 'select'">
+                                        {{ field.label }}
                                         <div
                                             v-for="option in field.options"
                                             :key="option"
@@ -128,32 +125,85 @@
                                     </div>
                                 </label>
                             </div>
-                            <div v-if="showQuestionFieldFilter" class="mt-2">
-                                <label>
-                                    Select Question
-                                    <div
-                                        v-for="question in questions"
-                                        :key="question.id"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :value="question.id"
-                                            v-model="filters.question_ids"
-                                        />
-                                        {{ question.question }}
-                                    </div>
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="mt-4">
-                <h2 class="text-xl font-bold">Analysis Results</h2>
-                <p>Number of Responses: {{ totalResponses }}</p>
-                <p>Total Answers: {{ totalAnswers }}</p>
-                <p>Average Answer Scale: {{ averageAnswerScale.toFixed(2) }}</p>
-                <!-- Render filtered responses here -->
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
+                <table
+                    class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                >
+                    <thead
+                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+                    >
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Response ID</th>
+                            <th scope="col" class="px-6 py-3">
+                                Respondent Group/s
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Respondent Category/s
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Information Fields
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Response Answer Average
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                View Response Answers
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="response in filteredResponses"
+                            :key="response.id"
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                        >
+                            <th
+                                scope="row"
+                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                            >
+                                {{ response.id }}
+                            </th>
+                            <td class="px-6 py-4">
+                                {{ response.respondent_type }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {{ response.respondent_category }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div
+                                    v-for="(value, key) in parseJson(
+                                        response.information_fields
+                                    )"
+                                    :key="key"
+                                >
+                                    {{ key }}: {{ value }}
+                                </div>
+                                <!-- <div>wew</div> -->
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div>
+                                    {{ calculateAverage(response.answers) }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a
+                                    :href="`/survey/responses/${response.id}`"
+                                    target="_blank"
+                                >
+                                    View response answers
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="p-4">
+                    Selected Responses Average:
+                    {{ averageAnswerScale.toFixed(2) }}
+                </div>
             </div>
         </div>
     </PageComponent>
@@ -191,6 +241,12 @@ const respondentGroups = ref([]);
 const informationFields = ref([]);
 const availableCategories = ref([]);
 const questions = ref([]);
+
+const calculateAverage = (answers) => {
+    if (!answers || !answers.length) return 0;
+    const total = answers.reduce((sum, answer) => sum + answer.answer_scale, 0);
+    return (total / answers.length).toFixed(2);
+};
 
 const applyFilters = () => {
     const params = { ...filters.value };
@@ -283,15 +339,29 @@ const updateCategories = () => {
     availableCategories.value = [...new Set(categories)];
 };
 const testData = ref({});
+
+const parseJson = (jsonString) => {
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error("Error parsing JSON string:", error);
+        return {};
+    }
+};
+
 onMounted(() => {
     store.dispatch("fetchSurveyDetails", route.params.id).then((data) => {
         testData.value = data;
+        filteredResponses.value = data.allResponses;
         respondentGroups.value = data.respondentGroups;
         informationFields.value = data.informationFields.map((field) => {
             field.options = field.options ? field.options.split(",") : [];
             return field;
         });
         questions.value = data.questions;
+
+        // Apply filters to initialize averages
+        applyFilters();
     });
 });
 </script>

@@ -70,15 +70,43 @@ class SurveyResultsController extends Controller
         ]);
     }
 
+
+
     public function getSurveyDetails($id)
     {
         $survey = Survey::with(['respondentGroups', 'informationFields', 'questions'])->findOrFail($id);
-
+        $allResponses = $survey->responses;
+        \Illuminate\Support\Facades\Log::info($allResponses);
         return response()->json([
+            'allResponses' => $allResponses,
             'survey' => $survey,
             'respondentGroups' => $survey->respondentGroups,
             'informationFields' => $survey->informationFields,
             'questions' => $survey->questions,
+        ]);
+    }
+
+    public function getResponse($id)
+    {
+        $response = Response::with(['answers', 'answers.question'])->findorFail($id);
+        // Iterate through each answer in $response->answers
+        foreach ($response->answers as $answer) {
+            // Access the answer_scale property of each answer object
+            $answerScale = $answer->answer_scale;
+
+            // Access the question associated with the answer
+            $question = $answer->question;
+
+            // Build an array containing both answer scale and question details
+            $answerDetails[] = [
+                'answer_scale' => $answerScale,
+                'question' => $question
+            ];
+        }
+        \Illuminate\Support\Facades\Log::info($response);
+        return response()->json([
+            'response' => $response,
+            'answerDetails' => $answerDetails,
         ]);
     }
 
@@ -175,8 +203,11 @@ class SurveyResultsController extends Controller
 
         $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
 
+        $allResponses = Response::where('survey_id', $id);
+
 
         return response()->json([
+            'allResponses' => $allResponses,
             'filteredResponses' => $filteredResponses,
             'totalResponses' => $totalResponses,
             'totalAnswers' => $totalAnswers,

@@ -10,6 +10,8 @@ import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 import SurveyResults from "../views/SurveyResults.vue";
+import SurveyResponse from "../views/SurveyResponse.vue";
+import ResultsTally from "../views/ResultsTally.vue";
 import ResultsDescriptive from "../views/ResultsDescriptive.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
@@ -46,9 +48,19 @@ const routes = [
                 component: SurveyResults,
             },
             {
+                path: "/survey/:id/results/tally",
+                name: "ResultsTally",
+                component: ResultsTally,
+            },
+            {
                 path: "/survey/:id/results/descriptive",
                 name: "ResultsDescriptive",
                 component: ResultsDescriptive,
+            },
+            {
+                path: "/survey/responses/:id",
+                name: "SurveyResponse",
+                component: SurveyResponse,
             },
         ],
     },

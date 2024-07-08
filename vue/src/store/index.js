@@ -449,7 +449,13 @@ const store = createStore({
                 return data;
             });
         },
-
+        fetchResponse({}, id) {
+            return axiosClient
+                .get(`/survey/responses/${id}`)
+                .then(({ data }) => {
+                    return data;
+                });
+        },
         register({ commit }, user) {
             return axiosClient
                 .post("/register", user)
