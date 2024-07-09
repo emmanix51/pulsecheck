@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\Survey;
 use App\Models\Response;
 use App\Models\Answer;
+use Rap2hpoutre\FastExcel\FastExcel;
+use Illuminate\Support\Facades\Log;
 
 class SurveyResultsController extends Controller
 {
@@ -214,6 +216,31 @@ class SurveyResultsController extends Controller
             'averageAnswerScale' => $averageAnswerScale,
         ]);
     }
+
+    public function exportAllResponses($id)
+    {
+        // Log the survey ID
+        Log::info('Survey ID: ' . $id);
+
+        // Fetch all responses for the given survey ID
+        $responses = Response::where('survey_id', $id)->get();
+
+        // Check if any responses are found
+        if ($responses->isEmpty()) {
+            Log::info('No responses found for survey ID: ' . $id);
+            return response()->json('error bruh');
+        } else {
+            Log::info('Responses found: ' . $responses->count());
+            Log::info('First response: ' . $responses->first()->toJson());
+            $fileName = 'survey_responses_' . $id . '.csv';
+
+            return (new FastExcel($responses))->download($fileName);
+        }
+
+        // Define the file name
+
+    }
+
 
 
     // This works

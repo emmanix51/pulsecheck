@@ -8,8 +8,6 @@
             </div>
         </template>
         <pre>{{ filteredResponses }}</pre>
-        <pre>{{ respondentGroups }}</pre>
-        <pre>{{ informationFields }}</pre>
         <div class="text-gray-700">
             <div class="shadow-md sm:rounded-md sm:overflow-hidden">
                 <div class="px-4 py-5 bg-white space-y-1 sm:p-6">
@@ -48,7 +46,6 @@
                                             v-model="showInformationFieldFilter"
                                         />
                                     </label>
-
                                     <button @click="applyFilters">Apply</button>
                                 </span>
                             </div>
@@ -129,80 +126,11 @@
                 </div>
             </div>
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
-                <table
-                    class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
-                >
-                    <thead
-                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-                    >
-                        <tr>
-                            <th scope="col" class="px-6 py-3">Response ID</th>
-                            <th scope="col" class="px-6 py-3">
-                                Respondent Group/s
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                Respondent Category/s
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                Information Fields
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                Response Answer Average
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                View Response Answers
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="response in filteredResponses"
-                            :key="response.id"
-                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                        >
-                            <th
-                                scope="row"
-                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                            >
-                                {{ response.id }}
-                            </th>
-                            <td class="px-6 py-4">
-                                {{ response.respondent_type }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ response.respondent_category }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div
-                                    v-for="(value, key) in parseJson(
-                                        response.information_fields
-                                    )"
-                                    :key="key"
-                                >
-                                    {{ key }}: {{ value }}
-                                </div>
-                                <!-- <div>wew</div> -->
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div>
-                                    {{ calculateAverage(response.answers) }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <a
-                                    :href="`/survey/responses/${response.id}`"
-                                    target="_blank"
-                                >
-                                    View response answers
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="p-4">
-                    Selected Responses Average:
-                    {{ averageAnswerScale.toFixed(2) }}
-                </div>
+                <Bar
+                    id="average-chart"
+                    :data="chartData"
+                    :options="chartOptions"
+                />
             </div>
         </div>
     </PageComponent>
@@ -214,6 +142,25 @@ import { useRoute } from "vue-router";
 import axiosClient from "../axios";
 import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
+import { Bar } from "vue-chartjs";
+import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+} from "chart.js";
+
+ChartJS.register(
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale
+);
 
 const route = useRoute();
 
@@ -240,6 +187,31 @@ const respondentGroups = ref([]);
 const informationFields = ref([]);
 const availableCategories = ref([]);
 const questions = ref([]);
+
+const chartData = ref({
+    labels: [],
+    datasets: [
+        {
+            label: "Average Answer Scale",
+            backgroundColor: "#42A5F5",
+            data: [], // Initial data will be updated in updateChartData
+        },
+    ],
+});
+
+const chartOptions = ref({
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: "Average Answer Scale",
+            },
+        },
+    },
+});
 
 const calculateAverage = (answers) => {
     if (!answers || !answers.length) return 0;
@@ -292,10 +264,31 @@ const applyFilters = () => {
             totalAnswers.value = data.totalAnswers;
             averageAnswerScale.value = data.averageAnswerScale;
             filteredResponses.value = data.filteredResponses;
+
+            updateChartData();
         })
         .catch((error) => {
             console.error("Error fetching descriptive analysis:", error);
         });
+};
+
+const updateChartData = () => {
+    chartData.value.labels = questions.value.map((q) => q.title);
+    chartData.value.datasets[0].data = questions.value.map((q) => {
+        const responses = filteredResponses.value.filter((response) =>
+            response.answers.some((answer) => answer.question_id === q.id)
+        );
+        if (responses.length === 0) {
+            return 0;
+        }
+        const totalScale = responses.reduce((sum, response) => {
+            const answer = response.answers.find(
+                (answer) => answer.question_id === q.id
+            );
+            return sum + answer.answer_scale;
+        }, 0);
+        return (totalScale / responses.length).toFixed(2);
+    });
 };
 
 const isOptionSelected = (fieldLabel, option) => {
@@ -337,16 +330,8 @@ const updateCategories = () => {
 
     availableCategories.value = [...new Set(categories)];
 };
-const surveyTitle = ref("");
 
-const parseJson = (jsonString) => {
-    try {
-        return JSON.parse(jsonString);
-    } catch (error) {
-        console.error("Error parsing JSON string:", error);
-        return {};
-    }
-};
+const surveyTitle = ref("");
 
 onMounted(() => {
     store.dispatch("fetchSurveyDetails", route.params.id).then((data) => {
@@ -365,4 +350,4 @@ onMounted(() => {
 });
 </script>
 
-<style></style>
+<style scoped></style>

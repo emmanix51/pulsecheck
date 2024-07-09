@@ -13,6 +13,7 @@ import SurveyResults from "../views/SurveyResults.vue";
 import SurveyResponse from "../views/SurveyResponse.vue";
 import ResultsTally from "../views/ResultsTally.vue";
 import ResultsDescriptive from "../views/ResultsDescriptive.vue";
+import ResultsVisual from "../views/ResultsVisual.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
 import { useStore } from "vuex";
@@ -56,6 +57,11 @@ const routes = [
                 path: "/survey/:id/results/descriptive",
                 name: "ResultsDescriptive",
                 component: ResultsDescriptive,
+            },
+            {
+                path: "/survey/:id/results/visualization",
+                name: "ResultsVisual",
+                component: ResultsVisual,
             },
             {
                 path: "/survey/responses/:id",

@@ -449,6 +449,28 @@ const store = createStore({
                 return data;
             });
         },
+        responseCsv({}, id) {
+            console.log("Survey ID:", id); // Log the survey ID to check its value
+            axiosClient({
+                url: `/survey/${id}/export`,
+                method: "GET",
+                responseType: "blob", // Important for handling binary data
+            })
+                .then((response) => {
+                    const url = window.URL.createObjectURL(
+                        new Blob([response.data])
+                    );
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.setAttribute("download", `survey_responses_${id}.csv`); // Define the file name
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                })
+                .catch((error) => {
+                    console.error("Error downloading the file:", error);
+                });
+        },
         fetchResponse({}, id) {
             return axiosClient
                 .get(`/survey/responses/${id}`)

@@ -19,6 +19,7 @@
                 class="row-span-2 animate-fade-in-down order-3 lg:order-1 bg-white shadow-md p-4"
             >
                 <h3 class="text-2xl font-semibold">About The Survey</h3>
+                <button @click="logIdAndExportCsv">Response CSV</button>
                 <div>
                     <h3 class="font-bold text-xl mb-3">Survey Title</h3>
                     <div class="flex justify-between text-sm mb-1">
@@ -47,8 +48,8 @@
                     <div class="flex justify-between">
                         <router-link
                             :to="{
-                                name: 'SurveyView',
-                                params: { id: 2 },
+                                name: 'ResultsTally',
+                                params: { id: model.id },
                             }"
                             class="flex py-2 px-4 border border-transparent text-sm rounded-md text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
@@ -125,7 +126,11 @@
                             Interpretation
                         </router-link>
 
-                        <button
+                        <router-link
+                            :to="{
+                                name: 'ResultsVisual',
+                                params: { id: model.id },
+                            }"
                             class="flex py-2 px-4 border border-transparent text-sm rounded-md text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             <svg
@@ -142,7 +147,7 @@
                                 />
                             </svg>
                             Charts
-                        </button>
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -215,6 +220,7 @@ const route = useRoute();
 const router = useRouter();
 
 let model = ref({
+    id: 0,
     title: "",
     slug: "",
     status: null,
@@ -230,6 +236,17 @@ let model = ref({
 let totalResponses = ref(0);
 let totalAnswerScale = ref(0);
 let averageAnswerScale = ref(0);
+
+const logIdAndExportCsv = () => {
+    console.log("Survey ID:", model.value.id); // Log the ID
+    console.log("Type of Survey ID:", typeof model.value.id); // Log the type of the ID
+    responseCsv(Number(model.value.id)); // Ensure it is passed as a number
+};
+const responseCsv = (id) => {
+    store.dispatch("responseCsv", id).then((data) => {
+        console.log(data);
+    });
+};
 
 if (route.params.id) {
     store.dispatch("fetchSurveyResultData", route.params.id).then((data) => {
