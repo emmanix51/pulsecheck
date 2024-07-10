@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/survey/{id}/results/descriptive', [SurveyResultsController::class, 'showDescriptiveData']);
     Route::get('/survey/{id}/details', [SurveyResultsController::class, 'getSurveyDetails']);
     Route::get('/survey/{id}/export', [SurveyResultsController::class, 'exportAllResponses']);
+    Route::get('/survey/{id}/results/visualization', [SurveyResultsController::class, 'surveyResultsVisual']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);

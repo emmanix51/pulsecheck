@@ -7,142 +7,65 @@
                 </h1>
             </div>
         </template>
-        <pre>{{ filteredResponses }}</pre>
         <div class="text-gray-700">
-            <div class="shadow-md sm:rounded-md sm:overflow-hidden">
-                <div class="px-4 py-5 bg-white space-y-1 sm:p-6">
-                    <div>
-                        <h1>Filter Data Analysis Here</h1>
+            <div class="shadow-md sm:rounded-md sm:overflow-hidden"></div>
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
+                <div class="flex flex-wrap justify-between">
+                    <div class="w-full lg:w-1/2 px-4 mb-8">
+                        <h2 class="text-2xl font-semibold mb-4">
+                            Respondent Type Distribution
+                        </h2>
+                        <Bar
+                            v-if="respondentTypeChartData"
+                            :data="respondentTypeChartData"
+                            :options="chartOptions"
+                        />
                     </div>
-                    <div>
-                        <div class="mt-2">
-                            <div class="mt-1">
-                                <span class="mr-2 flex flex-row items-center">
-                                    <h3
-                                        class="block text-sm font-medium text-gray-700"
-                                    >
-                                        Filter By:
-                                    </h3>
-                                    <label>
-                                        Respondent group
-                                        <input
-                                            type="checkbox"
-                                            v-model="showRespondentGroupFilter"
-                                        />
-                                    </label>
-                                    <label>
-                                        Respondent category
-                                        <input
-                                            type="checkbox"
-                                            v-model="
-                                                showRespondentCategoryFilter
-                                            "
-                                        />
-                                    </label>
-                                    <label>
-                                        Information field
-                                        <input
-                                            type="checkbox"
-                                            v-model="showInformationFieldFilter"
-                                        />
-                                    </label>
-                                    <button @click="applyFilters">Apply</button>
-                                </span>
-                            </div>
-                            <div v-if="showRespondentGroupFilter" class="mt-2">
-                                <label>
-                                    Select Respondent Group
-                                    <div
-                                        v-for="group in respondentGroups"
-                                        :key="group.id"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :value="group.type"
-                                            v-model="filters.respondent_types"
-                                        />
-                                        {{ group.type }}
-                                    </div>
-                                </label>
-                            </div>
-                            <div
-                                v-if="
-                                    showRespondentCategoryFilter &&
-                                    availableCategories.length
-                                "
-                                class="mt-2"
-                            >
-                                <label>
-                                    Select Respondent Category
-                                    <div
-                                        v-for="category in availableCategories"
-                                        :key="category"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :value="category"
-                                            v-model="
-                                                filters.respondent_categories
-                                            "
-                                        />
-                                        {{ category }}
-                                    </div>
-                                </label>
-                            </div>
-                            <div v-if="showInformationFieldFilter" class="mt-2">
-                                <label
-                                    v-for="field in informationFields"
-                                    :key="field.id"
-                                >
-                                    <div v-if="field.type === 'select'">
-                                        {{ field.label }}
-                                        <div
-                                            v-for="option in field.options"
-                                            :key="option"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                :value="option"
-                                                :checked="
-                                                    isOptionSelected(
-                                                        field.label,
-                                                        option
-                                                    )
-                                                "
-                                                @change="
-                                                    toggleInformationField(
-                                                        field.label,
-                                                        option
-                                                    )
-                                                "
-                                            />
-                                            {{ option }}
-                                        </div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
+                    <div class="w-full lg:w-1/2 px-4 mb-8">
+                        <h2 class="text-2xl font-semibold mb-4">
+                            Respondent Category Distribution
+                        </h2>
+                        <Doughnut
+                            v-if="respondentCategoryChartData"
+                            :data="respondentCategoryChartData"
+                            :options="chartOptions"
+                        />
                     </div>
                 </div>
-            </div>
-            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
-                <Bar
-                    id="average-chart"
-                    :data="chartData"
-                    :options="chartOptions"
-                />
+
+                <div class="flex flex-wrap justify-between">
+                    <div
+                        v-for="(field, index) in informationFields"
+                        :key="field.name"
+                        class="w-full lg:w-1/2 px-4 mb-8 relative"
+                    >
+                        <button
+                            @click="closeChart(index)"
+                            class="shadow-md px-2 absolute top-2 right-2 text-red-500 hover:px-4 hover:transition-all"
+                        >
+                            close
+                        </button>
+                        <h2 class="text-2xl font-semibold mb-4">
+                            {{ field.name }} Distribution
+                        </h2>
+                        <Bar
+                            v-if="field.chartData"
+                            :data="field.chartData"
+                            :options="chartOptions"
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     </PageComponent>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axiosClient from "../axios";
-import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
-import { Bar } from "vue-chartjs";
+import { Bar, Doughnut } from "vue-chartjs";
 import {
     Chart as ChartJS,
     Title,
@@ -151,6 +74,7 @@ import {
     BarElement,
     CategoryScale,
     LinearScale,
+    ArcElement,
 } from "chart.js";
 
 ChartJS.register(
@@ -159,195 +83,165 @@ ChartJS.register(
     Legend,
     BarElement,
     CategoryScale,
-    LinearScale
+    LinearScale,
+    ArcElement
 );
 
 const route = useRoute();
 
-const filters = ref({
-    respondent_types: [],
-    respondent_categories: [],
-    information_field: {},
-    question_ids: [],
-    start_date: null,
-    end_date: null,
-});
-
-const totalResponses = ref(0);
-const totalAnswers = ref(0);
-const averageAnswerScale = ref(0);
-const filteredResponses = ref([]);
-
-const showRespondentGroupFilter = ref(false);
-const showRespondentCategoryFilter = ref(false);
-const showInformationFieldFilter = ref(false);
-const showQuestionFieldFilter = ref(false);
-
-const respondentGroups = ref([]);
+const surveyTitle = ref("");
+const respondentTypeChartData = ref(null);
+const respondentCategoryChartData = ref(null);
 const informationFields = ref([]);
-const availableCategories = ref([]);
-const questions = ref([]);
 
-const chartData = ref({
-    labels: [],
-    datasets: [
-        {
-            label: "Average Answer Scale",
-            backgroundColor: "#42A5F5",
-            data: [], // Initial data will be updated in updateChartData
-        },
-    ],
-});
-
-const chartOptions = ref({
+const BarchartOptions = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
     scales: {
         y: {
             beginAtZero: true,
             title: {
                 display: true,
-                text: "Average Answer Scale",
+                text: "Count",
             },
         },
     },
-});
-
-const calculateAverage = (answers) => {
-    if (!answers || !answers.length) return 0;
-    const total = answers.reduce((sum, answer) => sum + answer.answer_scale, 0);
-    return (total / answers.length).toFixed(2);
+};
+const DoughnutchartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
 };
 
-const applyFilters = () => {
-    const params = { ...filters.value };
-
-    const informationFieldEntries = Object.entries(params.information_field)
-        .map(([key, value]) => {
-            return value
-                .map(
-                    (option) =>
-                        `information_field[${key}][]=${encodeURIComponent(
-                            option
-                        )}`
-                )
-                .join("&");
-        })
-        .join("&");
-
-    const respondentGroupsParams = params.respondent_types
-        .map((group) => `respondent_types[]=${encodeURIComponent(group)}`)
-        .join("&");
-    const respondentCategoriesParams = params.respondent_categories
-        .map(
-            (category) =>
-                `respondent_categories[]=${encodeURIComponent(category)}`
-        )
-        .join("&");
-    const questionIdsParams = params.question_ids
-        .map((id) => `question_ids[]=${encodeURIComponent(id)}`)
-        .join("&");
-
-    const queryString = `${respondentGroupsParams}&${respondentCategoriesParams}&${informationFieldEntries}&${questionIdsParams}`;
-
-    console.log(
-        "Request URL:",
-        `/survey/${route.params.id}/results/descriptive?${queryString}`
-    );
-
-    axiosClient
-        .get(`/survey/${route.params.id}/results/descriptive?${queryString}`)
-        .then((response) => {
-            console.log(response);
-            const data = response.data;
-            totalResponses.value = data.totalResponses;
-            totalAnswers.value = data.totalAnswers;
-            averageAnswerScale.value = data.averageAnswerScale;
-            filteredResponses.value = data.filteredResponses;
-
-            updateChartData();
-        })
-        .catch((error) => {
-            console.error("Error fetching descriptive analysis:", error);
-        });
-};
-
-const updateChartData = () => {
-    chartData.value.labels = questions.value.map((q) => q.title);
-    chartData.value.datasets[0].data = questions.value.map((q) => {
-        const responses = filteredResponses.value.filter((response) =>
-            response.answers.some((answer) => answer.question_id === q.id)
-        );
-        if (responses.length === 0) {
-            return 0;
+// Function to count occurrences of respondent types
+const countOccurrences = (details, key) => {
+    const counts = {};
+    details.forEach((detail) => {
+        const value = detail[key];
+        if (counts[value]) {
+            counts[value]++;
+        } else {
+            counts[value] = 1;
         }
-        const totalScale = responses.reduce((sum, response) => {
-            const answer = response.answers.find(
-                (answer) => answer.question_id === q.id
+    });
+    return counts;
+};
+// Function to count occurrences of information fields
+const countInformationFieldOccurrences = (details, fieldName) => {
+    const counts = {};
+    details.forEach((detail) => {
+        const fieldValues = detail.information_fields;
+        if (fieldValues && fieldValues[fieldName]) {
+            const value = fieldValues[fieldName];
+            if (counts[value]) {
+                counts[value]++;
+            } else {
+                counts[value] = 1;
+            }
+        }
+    });
+    return counts;
+};
+
+// Function to get unique responses by response_id
+const getUniqueResponses = (details) => {
+    const uniqueResponses = [];
+    const responseIds = new Set();
+
+    details.forEach((detail) => {
+        if (!responseIds.has(detail.response_id)) {
+            responseIds.add(detail.response_id);
+            uniqueResponses.push(detail);
+        }
+    });
+
+    return uniqueResponses;
+};
+
+const closeChart = (index) => {
+    informationFields.value.splice(index, 1);
+};
+
+const fetchSurveyData = async () => {
+    try {
+        const response = await axiosClient.get(
+            `/survey/${route.params.id}/results/visualization`
+        );
+        const data = response.data;
+
+        surveyTitle.value = data.survey.title || "";
+
+        // Filter unique responses
+        const uniqueResponseDetails = getUniqueResponses(data.responseDetails);
+
+        // Process respondent types
+        const respondentTypeCounts = countOccurrences(
+            uniqueResponseDetails,
+            "respondent_type"
+        );
+        respondentTypeChartData.value = {
+            labels: Object.keys(respondentTypeCounts),
+            datasets: [
+                {
+                    label: "Count",
+                    backgroundColor: "#42A5F5",
+                    data: Object.values(respondentTypeCounts),
+                },
+            ],
+        };
+
+        // Process respondent categories
+        const respondentCategoryCounts = countOccurrences(
+            uniqueResponseDetails,
+            "respondent_category"
+        );
+        respondentCategoryChartData.value = {
+            labels: Object.keys(respondentCategoryCounts),
+            datasets: [
+                {
+                    label: "Count",
+                    backgroundColor: [
+                        "#FF6384",
+                        "#36A2EB",
+                        "#FFCE56",
+                        "#4BC0C0",
+                        "#9966FF",
+                        "#FF9F40",
+                    ],
+                    data: Object.values(respondentCategoryCounts),
+                },
+            ],
+        };
+
+        // Process information fields
+        const allInformationFields = Object.keys(
+            uniqueResponseDetails[0].information_fields
+        );
+        informationFields.value = allInformationFields.map((field) => {
+            const fieldCounts = countInformationFieldOccurrences(
+                uniqueResponseDetails,
+                field
             );
-            return sum + answer.answer_scale;
-        }, 0);
-        return (totalScale / responses.length).toFixed(2);
-    });
-};
-
-const isOptionSelected = (fieldLabel, option) => {
-    return (
-        filters.value.information_field[fieldLabel]?.includes(option) || false
-    );
-};
-
-const toggleInformationField = (fieldLabel, option) => {
-    if (!filters.value.information_field[fieldLabel]) {
-        filters.value.information_field[fieldLabel] = [];
-    }
-
-    const index = filters.value.information_field[fieldLabel].indexOf(option);
-
-    if (index === -1) {
-        filters.value.information_field[fieldLabel].push(option);
-    } else {
-        filters.value.information_field[fieldLabel].splice(index, 1);
-    }
-};
-
-watch(
-    filters.value,
-    (newFilters) => {
-        updateCategories();
-    },
-    { deep: true }
-);
-
-const updateCategories = () => {
-    const selectedGroups = respondentGroups.value.filter((group) =>
-        filters.value.respondent_types.includes(group.type)
-    );
-
-    const categories = selectedGroups.flatMap((group) =>
-        group.category ? group.category.split(",") : []
-    );
-
-    availableCategories.value = [...new Set(categories)];
-};
-
-const surveyTitle = ref("");
-
-onMounted(() => {
-    store.dispatch("fetchSurveyDetails", route.params.id).then((data) => {
-        surveyTitle.value = data.survey.title;
-        filteredResponses.value = data.allResponses;
-        respondentGroups.value = data.respondentGroups;
-        informationFields.value = data.informationFields.map((field) => {
-            field.options = field.options ? field.options.split(",") : [];
-            return field;
+            return {
+                name: field,
+                chartData: {
+                    labels: Object.keys(fieldCounts),
+                    datasets: [
+                        {
+                            label: "Count",
+                            backgroundColor: "#FFA726",
+                            data: Object.values(fieldCounts),
+                        },
+                    ],
+                },
+            };
         });
-        questions.value = data.questions;
+    } catch (error) {
+        console.error("Error fetching survey data:", error);
+    }
+};
 
-        // Apply filters to initialize averages
-        applyFilters();
-    });
-});
+onMounted(fetchSurveyData);
 </script>
-
-<style scoped></style>
+<style scoped>
+/* Add any relevant styles here */
+</style>

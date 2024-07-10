@@ -5,12 +5,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+
+use App\Models\Answer;
 use App\Models\Survey;
 use App\Models\Response;
-use App\Models\Answer;
-use Rap2hpoutre\FastExcel\FastExcel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Rap2hpoutre\FastExcel\FastExcel;
 
 class SurveyResultsController extends Controller
 {
@@ -78,7 +79,7 @@ class SurveyResultsController extends Controller
     {
         $survey = Survey::with(['respondentGroups', 'informationFields', 'questions'])->findOrFail($id);
         $allResponses = $survey->responses;
-        \Illuminate\Support\Facades\Log::info($allResponses);
+        // \Illuminate\Support\Facades\Log::info($allResponses);
         return response()->json([
             'allResponses' => $allResponses,
             'survey' => $survey,
@@ -241,6 +242,97 @@ class SurveyResultsController extends Controller
 
     }
 
+    // // FOR VISUALS
+
+    public function surveyResultsVisual($id)
+    {
+        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions'])->findOrFail($id);
+        $respondent_types = [];
+        foreach ($survey->respondentGroups as $respondentGroup) {
+            $respondent_types[] = $respondentGroup->type;
+        }
+        $respondent_categories = [];
+
+        foreach ($survey->respondentGroups as $respondentGroup) {
+            // Split the comma-separated categories into an array
+            $categories = explode(',', $respondentGroup->category);
+
+            // Add each category to the $respondent_categories array
+            foreach ($categories as $category) {
+                $respondent_categories[] = trim($category); // Trim whitespace around each category if needed
+            }
+        }
+        // // Iterate over respondent groups and collect respondent types
+        // // $informationFields = $survey->information_fields->toJson();
+        // foreach ($survey->information_fields as $information_field) {
+
+        //     $info_label = $information_field->label   
+        // }
+        // Log::info('Respondent Types:', $informationFields);
+        $responses = Response::where('survey_id', $id)->get();
+        $responseDetails = [];
+
+
+        foreach ($responses as $response) {
+            foreach ($response->answers as $answer) {
+                $responseDetails[] = [
+                    'response_id' => $response->id,
+                    'respondent_id' => $response->respondent_id,
+                    'respondent_type' => $response->respondent_type,
+                    'respondent_category' => $response->respondent_category,
+                    'information_fields' => json_decode($response->information_fields, true),
+                    'created_at' => $response->created_at,
+                    'updated_at' => $response->updated_at,
+                    'question_id' => $answer->question_id,
+                    'question' => $answer->question->question,
+                    'question_type' => $answer->question->question_type,
+                    'answer_text' => $answer->answer_text,
+                    'answer_scale' => $answer->answer_scale,
+                ];
+            }
+        }
+
+        return response()->json([
+            'survey' => $survey,
+            'responseDetails' => $responseDetails,
+            'respondent_types' => $respondent_types,
+            'respondent_categories' => $respondent_categories,
+        ]);
+    }
+
+    // public function surveyResultsVisual($id)
+    // {
+    //     $survey = Survey::findOrFail($id);
+    //     $responses = Response::where('survey_id', $id)->get();
+    //     // $questions = $survey->questions;
+    //     // Log::info('questions are :' . $questions);
+    //     // Log::info('responses is :' . $responses->toJson());
+    //     foreach ($responses as $response) {
+    //         // Log::info('responses is :' . $response);
+    //         foreach ($response->answers as $answer) {
+    //             // Access the answer_scale property of each answer object
+    //             $answerScale = $answer->answer_scale;
+
+    //             // Access the question associated with the answer
+    //             $question = $answer->question;
+
+    //             // Build an array containing both answer scale and question details
+    //             $answerDetails[] = [
+    //                 'answer_scale' => $answerScale,
+    //                 'question' => $question
+    //             ];
+    //             // Log::info('answers is :' . $answerScale);
+    //             // Log::info('question is :' . $question);
+    //         }
+    //     }
+    //     // $answers = $responses->answers;
+    //     // Log::info('Survey is :' . $survey);
+    //     return response()->json([
+    //         // 'questions' => $questions,
+    //         // 'answerDetails' => $answerDetails,
+    //         'responses' => $responses
+    //     ]);
+    // }
 
 
     // This works
