@@ -11,9 +11,11 @@ import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 import SurveyResults from "../views/SurveyResults.vue";
 import SurveyResponse from "../views/SurveyResponse.vue";
+import SurveyQuestion from "../views/SurveyQuestion.vue";
 import ResultsTally from "../views/ResultsTally.vue";
 import ResultsDescriptive from "../views/ResultsDescriptive.vue";
 import ResultsVisual from "../views/ResultsVisual.vue";
+import ResultsVisualQuestions from "../views/ResultsVisualQuestions.vue";
 import DefaultLayout from "../components/DefaultLayout.vue";
 import AuthLayout from "../components/AuthLayout.vue";
 import { useStore } from "vuex";
@@ -62,6 +64,16 @@ const routes = [
                 path: "/survey/:id/results/visualization",
                 name: "ResultsVisual",
                 component: ResultsVisual,
+            },
+            {
+                path: "/survey/:id/results/visualization/questions",
+                name: "ResultsVisualQuestions",
+                component: ResultsVisualQuestions,
+            },
+            {
+                path: "/survey/question/:id",
+                name: "SurveyQuestion",
+                component: SurveyQuestion,
             },
             {
                 path: "/survey/responses/:id",

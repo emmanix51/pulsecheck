@@ -129,6 +129,7 @@
                                 id="status"
                                 name="status"
                                 type="checkbox"
+                                :checked="model.status === 1"
                                 v-model="model.status"
                                 class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
                             />
@@ -149,6 +150,7 @@
                                 id="status"
                                 name="status"
                                 type="checkbox"
+                                :checked="model.is_public === 1"
                                 v-model="model.is_public"
                                 class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
                             />
@@ -417,6 +419,9 @@
                 <!-- Questions field -->
             </div>
             <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                <!-- <button @click="saveAsTemplate" type="button">
+                    Save as template
+                </button> -->
                 <button
                     type="submit"
                     class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -497,6 +502,34 @@ const addQuestion = () => {
 
 const removeQuestion = (index) => {
     model.value.questions.splice(index, 1);
+};
+
+const saveAsTemplate = () => {
+    const formData = JSON.parse(JSON.stringify(model.value));
+    formData.questions.forEach((question) => {
+        if (Array.isArray(question.data)) {
+            question.data = JSON.stringify(question.data);
+        }
+        if (question.question_type === "text") {
+            question.data = null;
+        }
+    });
+
+    const templateData = {
+        title: formData.title,
+        description: formData.description,
+        data: JSON.stringify(formData),
+    };
+
+    store
+        .dispatch("saveAsTemplate", templateData)
+        .then(() => {
+            alert("Template saved successfully");
+        })
+        .catch((error) => {
+            console.error(error);
+            alert("Error saving template");
+        });
 };
 
 const saveSurvey = () => {

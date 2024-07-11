@@ -113,17 +113,26 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
-
+const route = useRoute();
+const router = useRouter();
 const surveys = computed(() => store.state.surveys.data);
+
 store.dispatch("getSurveys");
 
 function deleteSurvey(survey) {
     if (confirm(`you sure you want to delete ${survey.title} survey bruh?`)) {
         //delete survey
-        console.log("delete survey bruh");
+
+        store.dispatch("deleteSurvey", survey.id).then(() => {
+            router.push({ name: "Surveys" });
+            store.dispatch("getSurveys");
+        });
+    } else {
+        alert("okii");
     }
 }
 </script>

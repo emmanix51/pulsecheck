@@ -404,6 +404,9 @@ const store = createStore({
                 return res;
             });
         },
+        saveAsTemplate({}, formData) {
+            return axiosClient.post("/template", formData);
+        },
         saveSurvey({ commit }, survey) {
             let response;
             if (survey.id) {

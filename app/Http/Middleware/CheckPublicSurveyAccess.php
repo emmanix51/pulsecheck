@@ -18,6 +18,9 @@ class CheckPublicSurveyAccess
         if (!$survey) {
             return response()->json(['error' => 'Survey not founds'], 404);
         }
+        if (!$survey->status) {
+            return response()->json(['error' => 'Survey not active'], 405);
+        }
 
         if ($survey->is_public != 1) {
             return response()->json(['error' => 'this survey is not for the publics'], 404);

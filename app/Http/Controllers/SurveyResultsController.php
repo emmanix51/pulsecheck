@@ -8,6 +8,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Answer;
 use App\Models\Survey;
+use App\Models\Question;
 use App\Models\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -86,6 +87,51 @@ class SurveyResultsController extends Controller
             'respondentGroups' => $survey->respondentGroups,
             'informationFields' => $survey->informationFields,
             'questions' => $survey->questions,
+        ]);
+    }
+
+    public function getSurveyQuestions($id)
+    {
+        $survey = Survey::with('questions')->findOrFail($id);
+        $surveyTitle = $survey->title;
+        $questions = $survey->questions;
+        return response()->json([
+            'questions' => $questions,
+            'surveyTitle' => $surveyTitle
+        ]);
+    }
+
+    public function getSurveyQuestion($id)
+    {
+        $question = Question::where('id', $id)->first();
+        $survey = $question->survey_id;
+        $responses = Response::where('survey_id', $survey)->with('answers')->get();
+        $responseAnswers = $responses->flatMap->answers->where('question_id', $id);
+        $responseAnswersData = [];
+        foreach ($responses as $response) {
+            foreach ($response->answers as $answer) {
+                Log::info($answer->question_id);
+
+                if ($answer->question_id == $id) {
+                    $responseAnswersData[] = [
+                        'respondent_type' => $response->respondent_type,
+                        'respondent_category' => $response->respondent_category,
+                        'info_field' => json_decode($response->information_fields, true),
+                        'answer_scale' => $answer->answer_scale,
+                        'response_id' => $response->id
+                        // 'question' => $question
+                    ];
+                }
+            }
+        }
+        return response()->json([
+            // 'question' => $question,
+            // 'survey' => $survey,
+            // 'answers' => $answers,
+            // 'responses' => $responses,
+            'responseAnswersData' => $responseAnswersData,
+            // 'responseAnswer' => $responseAnswers
+
         ]);
     }
 

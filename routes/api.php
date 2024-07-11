@@ -10,6 +10,7 @@ use App\Http\Controllers\ResponseController;
 use App\Http\Middleware\CheckPublicSurveyAccess;
 use App\Http\Controllers\SurveyResultsController;
 use App\Http\Controllers\RespondentGroupController;
+use App\Http\Controllers\TemplateController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -23,17 +24,21 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::resource('/survey', \App\Http\Controllers\SurveyController::class);
+    Route::resource('/template', TemplateController::class);
     // Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug'])
     //     ->middleware(CheckSurveyAccess::class);
     // Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug']);
     Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug'])
         ->middleware(CheckSurveyAccess::class);
+
     Route::get('/survey/responses/{id}', [SurveyResultsController::class, 'getResponse']);
     Route::get('/survey/{id}/results', [SurveyResultsController::class, 'show']);
     Route::get('/survey/{id}/results/descriptive', [SurveyResultsController::class, 'showDescriptiveData']);
     Route::get('/survey/{id}/details', [SurveyResultsController::class, 'getSurveyDetails']);
     Route::get('/survey/{id}/export', [SurveyResultsController::class, 'exportAllResponses']);
     Route::get('/survey/{id}/results/visualization', [SurveyResultsController::class, 'surveyResultsVisual']);
+    Route::get('/survey/{id}/results/visualization/questions', [SurveyResultsController::class, 'getSurveyQuestions']);
+    Route::get('/survey/question/{id}', [SurveyResultsController::class, 'getSurveyQuestion']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);
