@@ -21,6 +21,12 @@ class CheckSurveyAccess
         if (!$survey->status) {
             return response()->json(['error' => 'Survey not active'], 405);
         }
+        $now = now();  // Assuming Carbon instance
+        $expireDate = $survey->expire_date;
+
+        if ($expireDate && $now > $expireDate) {
+            return response()->json(['error' => 'Survey has expired'], 403);
+        }
 
         if ($survey->is_public) {
             return $next($request);

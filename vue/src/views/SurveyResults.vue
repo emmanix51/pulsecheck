@@ -182,8 +182,8 @@
                     <div class="flex justify-between">
                         <router-link
                             :to="{
-                                name: 'SurveyView',
-                                params: { id: 2 },
+                                name: 'ResultsPCA',
+                                params: { id: model.id },
                             }"
                             class="flex py-2 px-4 border border-transparent text-sm rounded-md text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >

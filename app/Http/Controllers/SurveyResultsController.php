@@ -11,8 +11,12 @@ use App\Models\Survey;
 use App\Models\Question;
 use App\Models\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Rap2hpoutre\FastExcel\FastExcel;
+use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class SurveyResultsController extends Controller
 {
@@ -134,6 +138,18 @@ class SurveyResultsController extends Controller
 
         ]);
     }
+
+    public function getSurveyResponses($surveyId)
+    {
+        $responses = DB::table('responses')
+            ->where('survey_id', $surveyId)
+            ->join('answers', 'responses.id', '=', 'answers.response_id')
+            ->select('answers.question_id', 'answers.answer')
+            ->get();
+
+        return $responses;
+    }
+
 
     public function getResponse($id)
     {
@@ -343,6 +359,59 @@ class SurveyResultsController extends Controller
             'responseDetails' => $responseDetails,
             'respondent_types' => $respondent_types,
             'respondent_categories' => $respondent_categories,
+        ]);
+    }
+
+    // PCA
+    public function performPCA($id)
+    {
+        $survey = Survey::with('responses.answers')->findOrFail($id);
+
+        if ($survey->responses->isEmpty()) {
+            return response()->json(['error' => 'No responses found for this survey'], 404);
+        }
+
+        // Prepare data for PCA
+        $data = [];
+        foreach ($survey->responses as $response) {
+            foreach ($response->answers as $answer) {
+                $data[] = [
+                    'response_id' => $response->id,
+                    'question_id' => $answer->question_id,
+                    'answer_scale' => $answer->answer_scale,
+                ];
+            }
+        }
+
+        // Save data to a CSV file
+        $fileName = 'pca_input.csv';
+        $filePath = storage_path('app/' . $fileName);
+        $file = fopen($filePath, 'w');
+        fputcsv($file, ['response_id', 'question_id', 'answer_scale']);
+        foreach ($data as $row) {
+            fputcsv($file, $row);
+        }
+        fclose($file);
+
+        // Call the Python script for PCA
+        $pythonScriptPath = base_path('scripts/pca_analysis.py');
+        $process = new Process(['python3', $pythonScriptPath, $filePath]);
+        $process->run();
+
+        // Check for errors
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        // Parse the PCA result
+        $pcaResult = json_decode($process->getOutput(), true);
+
+        // Clean up the CSV file
+        Storage::delete($fileName);
+
+        return response()->json([
+            'surveyTitle' => $survey->title,
+            'pcaData' => $pcaResult,
         ]);
     }
 

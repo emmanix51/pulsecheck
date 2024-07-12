@@ -29,6 +29,14 @@
                     :options="BarchartOptionsWithCategory"
                 />
             </div>
+            <div
+                v-for="(data, key) in infoFieldChartData"
+                :key="key"
+                class="shadow-md sm:rounded-md sm:overflow-hidden mt-6"
+            >
+                <h2 class="text-2xl font-bold">{{ key }}</h2>
+                <Radar v-if="data" :data="data" :options="RadarChartOptions" />
+            </div>
         </div>
     </PageComponent>
 </template>
@@ -38,7 +46,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axiosClient from "../axios";
 import PageComponent from "../components/PageComponent.vue";
-import { Bar, PolarArea } from "vue-chartjs";
+import { Bar, PolarArea, Radar } from "vue-chartjs";
 import {
     Chart as ChartJS,
     Title,
@@ -49,6 +57,9 @@ import {
     BarElement,
     CategoryScale,
     LinearScale,
+    PointElement,
+    LineElement,
+    Filler,
 } from "chart.js";
 
 ChartJS.register(
@@ -59,7 +70,10 @@ ChartJS.register(
     RadialLinearScale,
     BarElement,
     CategoryScale,
-    LinearScale
+    LinearScale,
+    PointElement,
+    LineElement,
+    Filler
 );
 
 const route = useRoute();
@@ -67,31 +81,24 @@ const route = useRoute();
 const responseChartData = ref(null);
 const respondentTypeChartData = ref(null);
 const respondentCategoryChartData = ref(null);
+const infoFieldChartData = ref({});
+const RadarChartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    scales: {
+        r: {
+            beginAtZero: true,
+            ticks: {
+                stepSize: 1,
+            },
+        },
+    },
+};
 
 const PolarAreachartOptions = {
     responsive: true,
     maintainAspectRatio: true,
 };
-
-// const BarchartOptions = {
-//     responsive: true,
-//     maintainAspectRatio: true,
-//     scales: {
-//         y: {
-//             beginAtZero: true,
-//             title: {
-//                 display: true,
-//                 text: "Count",
-//             },
-//         },
-//         x: {
-//             title: {
-//                 display: true,
-//                 text: "Categories",
-//             },
-//         },
-//     },
-// };
 
 // Function to map numeric scale to descriptive labels
 const mapScaleToLabel = (scale) => {
@@ -139,6 +146,21 @@ const countOccurrencesByCategory = (data, categoryKey, scaleKey) => {
     return counts;
 };
 
+const createBarChartData = (counts, labels) => {
+    const categories = Object.keys(counts);
+    const datasets = labels.map((label) => ({
+        label: mapScaleToLabel(label), // Use descriptive labels
+        backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(
+            16
+        )}`, // Generate random color
+        data: categories.map((category) => counts[category][label]),
+    }));
+    return {
+        labels: categories,
+        datasets: datasets,
+    };
+};
+
 const fetchQuestionData = async () => {
     try {
         const response = await axiosClient.get(
@@ -182,70 +204,58 @@ const fetchQuestionData = async () => {
             "answer_scale"
         );
 
-        const createBarChartData = (counts) => {
-            const categories = Object.keys(counts);
-            const datasets = labels.map((label) => ({
-                label: mapScaleToLabel(label), // Use descriptive labels
-                backgroundColor: `#${Math.floor(
-                    Math.random() * 16777215
-                ).toString(16)}`, // Generate random color
-                data: categories.map((category) => counts[category][label]),
-            }));
-            return {
-                labels: categories,
+        respondentTypeChartData.value = createBarChartData(typeCounts, labels);
+        respondentCategoryChartData.value = createBarChartData(
+            categoryCounts,
+            labels
+        );
+
+        // Process data for info_field charts
+        const infoFieldCounts = {};
+        data.forEach((item) => {
+            for (const [key, value] of Object.entries(item.info_field)) {
+                if (!infoFieldCounts[key]) {
+                    infoFieldCounts[key] = {};
+                }
+                if (!infoFieldCounts[key][value]) {
+                    infoFieldCounts[key][value] = {
+                        1: 0,
+                        2: 0,
+                        3: 0,
+                        4: 0,
+                        5: 0,
+                    };
+                }
+                infoFieldCounts[key][value][item.answer_scale]++;
+            }
+        });
+
+        // Create chart data for each info field
+        for (const [key, valueCounts] of Object.entries(infoFieldCounts)) {
+            const datasets = [];
+            for (const [value, counts] of Object.entries(valueCounts)) {
+                datasets.push({
+                    label: value,
+                    data: labels.map((label) => counts[label]),
+                    backgroundColor: `rgba(${Math.floor(
+                        Math.random() * 255
+                    )}, ${Math.floor(Math.random() * 255)}, ${Math.floor(
+                        Math.random() * 255
+                    )}, 0.2)`,
+                    borderColor: `rgba(${Math.floor(
+                        Math.random() * 255
+                    )}, ${Math.floor(Math.random() * 255)}, ${Math.floor(
+                        Math.random() * 255
+                    )}, 1)`,
+                    borderWidth: 1,
+                });
+            }
+
+            infoFieldChartData.value[key] = {
+                labels: labelDescriptions,
                 datasets: datasets,
             };
-        };
-
-        // Set options for Bar charts
-        const BarchartOptionsWithType = {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: "Count",
-                    },
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: "Respondent Type",
-                    },
-                },
-            },
-        };
-
-        const BarchartOptionsWithCategory = {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: "Count",
-                    },
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: "Respondent Category",
-                    },
-                },
-            },
-        };
-
-        respondentTypeChartData.value = createBarChartData(typeCounts);
-        respondentCategoryChartData.value = createBarChartData(categoryCounts);
-
-        // Assign the appropriate options based on the chart type
-        BarchartOptions =
-            route.params.chartType === "respondentTypeChartData"
-                ? BarchartOptionsWithType
-                : BarchartOptionsWithCategory;
+        }
     } catch (error) {
         console.error("Error fetching survey data:", error);
     }

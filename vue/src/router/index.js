@@ -13,6 +13,7 @@ import SurveyResults from "../views/SurveyResults.vue";
 import SurveyResponse from "../views/SurveyResponse.vue";
 import SurveyQuestion from "../views/SurveyQuestion.vue";
 import ResultsTally from "../views/ResultsTally.vue";
+import ResultsPCA from "../views/ResultsPCA.vue";
 import ResultsDescriptive from "../views/ResultsDescriptive.vue";
 import ResultsVisual from "../views/ResultsVisual.vue";
 import ResultsVisualQuestions from "../views/ResultsVisualQuestions.vue";
@@ -54,6 +55,11 @@ const routes = [
                 path: "/survey/:id/results/tally",
                 name: "ResultsTally",
                 component: ResultsTally,
+            },
+            {
+                path: "/survey/:id/results/PCA",
+                name: "ResultsPCA",
+                component: ResultsPCA,
             },
             {
                 path: "/survey/:id/results/descriptive",
