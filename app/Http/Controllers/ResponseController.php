@@ -74,4 +74,9 @@ class ResponseController extends Controller
 
         return response()->json(['message' => 'Response submitted successfully']);
     }
+    public function show($id)
+    {
+        $response = Response::with('answers')->findOrFail($id);
+        return response()->json($response);
+    }
 }

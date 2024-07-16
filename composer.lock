@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f101aeeb2aa52ece03b8b0bd0d41788",
+    "content-hash": "9543f97e861d04dec3adafd9aa76c74b",
     "packages": [
         {
             "name": "brick/math",
@@ -2474,6 +2474,59 @@
             "time": "2024-06-17T08:53:37+00:00"
         },
         {
+            "name": "php-ai/php-ml",
+            "version": "0.10.0",
+            "source": {
+                "type": "git",
+                "url": "git@gitlab.com:php-ai/php-ml.git",
+                "reference": "543f11158c57bf64ef8ddecd5bab51d396d39f50"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://gitlab.com/api/v4/projects/php-ai%2Fphp-ml/repository/archive.zip?sha=543f11158c57bf64ef8ddecd5bab51d396d39f50",
+                "reference": "543f11158c57bf64ef8ddecd5bab51d396d39f50",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpbench/phpbench": "^1.2",
+                "phpstan/phpstan": "^0.12",
+                "phpstan/phpstan-phpunit": "^0.12",
+                "phpstan/phpstan-strict-rules": "^0.12",
+                "phpunit/phpunit": "^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Phpml\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Arkadiusz Kondas",
+                    "email": "arkadiusz.kondas@gmail.com"
+                }
+            ],
+            "description": "PHP-ML - Machine Learning library for PHP",
+            "homepage": "https://gitlab.com/php-ai/php-ml",
+            "keywords": [
+                "Neural network",
+                "artificial intelligence",
+                "computational learning theory",
+                "data science",
+                "feature extraction",
+                "machine learning",
+                "pattern recognition"
+            ],
+            "time": "2022-11-09T09:25:29+00:00"
+        },
+        {
             "name": "phpoption/phpoption",
             "version": "1.9.2",
             "source": {
@@ -3333,6 +3386,53 @@
                 }
             ],
             "time": "2024-06-03T08:00:43+00:00"
+        },
+        {
+            "name": "sciphp/numphp",
+            "version": "0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sciphp/numphp.git",
+                "reference": "102e63f633f131f3f5ff7424650b3addbc32a5bb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sciphp/numphp/zipball/102e63f633f131f3f5ff7424650b3addbc32a5bb",
+                "reference": "102e63f633f131f3f5ff7424650b3addbc32a5bb",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2",
+                "webmozart/assert": "^1.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SciPhp\\": "src/SciPhp/",
+                    "SciPhpTest\\": "test/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHP library for scientific computing.",
+            "homepage": "https://github.com/sciphp/numphp",
+            "keywords": [
+                "computing",
+                "linear-algebra",
+                "matrix",
+                "numeric",
+                "scientific"
+            ],
+            "support": {
+                "issues": "https://github.com/sciphp/numphp/issues",
+                "source": "https://github.com/sciphp/numphp/tree/0.4.0"
+            },
+            "time": "2020-10-14T19:37:14+00:00"
         },
         {
             "name": "spatie/laravel-sluggable",

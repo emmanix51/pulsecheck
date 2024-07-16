@@ -38,8 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/survey/{id}/export', [SurveyResultsController::class, 'exportAllResponses']);
     Route::get('/survey/{id}/results/visualization', [SurveyResultsController::class, 'surveyResultsVisual']);
     Route::get('/survey/{id}/results/visualization/questions', [SurveyResultsController::class, 'getSurveyQuestions']);
-    Route::get('/survey/{id}/pca', [SurveyResultsController::class, 'performPCA']);
+    Route::get('/survey/{id}/pca', [SurveyResultsController::class, 'runPCA']);
+
     Route::get('/survey/question/{id}', [SurveyResultsController::class, 'getSurveyQuestion']);
+    Route::get('/response/{id}', [ResponseController::class, 'show']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);

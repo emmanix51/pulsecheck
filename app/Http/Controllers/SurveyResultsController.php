@@ -11,12 +11,18 @@ use App\Models\Survey;
 use App\Models\Question;
 use App\Models\Response;
 use Illuminate\Http\Request;
+use Phpml\Math\Statistic\Mean;
+use Phpml\DimensionReduction\PCA;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Phpml\Preprocessing\Normalizer;
+use SciPhp\NdArray;
+use SciPhp\LinAlg;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Phpml\Math\LinearAlgebra\SVD;
 
 class SurveyResultsController extends Controller
 {
@@ -363,7 +369,7 @@ class SurveyResultsController extends Controller
     }
 
     // PCA
-    public function performPCA($id)
+    public function exportSurveyResponsesToCSV($id)
     {
         $survey = Survey::with('responses.answers')->findOrFail($id);
 
@@ -371,49 +377,162 @@ class SurveyResultsController extends Controller
             return response()->json(['error' => 'No responses found for this survey'], 404);
         }
 
-        // Prepare data for PCA
-        $data = [];
+        // Prepare data for CSV
+        $csvData = [];
         foreach ($survey->responses as $response) {
+            $row = [
+                'response_id' => $response->id,
+                'respondent_type' => $response->respondent_type,
+                'respondent_category' => $response->respondent_category,
+                'information_fields' => $response->information_fields
+            ];
             foreach ($response->answers as $answer) {
-                $data[] = [
-                    'response_id' => $response->id,
-                    'question_id' => $answer->question_id,
-                    'answer_scale' => $answer->answer_scale,
-                ];
+                $row['answer_' . $answer->question_id] = $answer->answer_scale;
             }
+            $csvData[] = $row;
         }
+        Log::info($csvData);
 
-        // Save data to a CSV file
-        $fileName = 'pca_input.csv';
-        $filePath = storage_path('app/' . $fileName);
-        $file = fopen($filePath, 'w');
-        fputcsv($file, ['response_id', 'question_id', 'answer_scale']);
-        foreach ($data as $row) {
-            fputcsv($file, $row);
-        }
-        fclose($file);
-
-        // Call the Python script for PCA
-        $pythonScriptPath = base_path('scripts/pca_analysis.py');
-        $process = new Process(['python3', $pythonScriptPath, $filePath]);
-        $process->run();
-
-        // Check for errors
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        // Parse the PCA result
-        $pcaResult = json_decode($process->getOutput(), true);
-
-        // Clean up the CSV file
-        Storage::delete($fileName);
+        // Save CSV to storage
+        $filePath = storage_path('app/survey_responses.csv');
+        (new \Rap2hpoutre\FastExcel\FastExcel(collect($csvData)))->export($filePath);
 
         return response()->json([
-            'surveyTitle' => $survey->title,
-            'pcaData' => $pcaResult,
+            'message' => 'CSV file created successfully',
+            'filePath' => $filePath,
         ]);
     }
+
+
+
+    public function runPCA($id)
+    {
+        $csvExportResponse = $this->exportSurveyResponsesToCSV($id);
+
+        if ($csvExportResponse->status() !== 200) {
+            return $csvExportResponse;
+        }
+
+        // Define paths
+        $csvFilePath = storage_path('app/survey_responses.csv');
+        $pcaResultPath = storage_path('app/pca_results.csv');
+        $pcaMetadataPath = storage_path('app/pca_metadata.json');
+
+        // Execute the Python script
+        $command = "..\\venv\\Scripts\\activate.bat && python ..\\scripts\\pca_analysis.py";
+        exec($command, $output, $returnVar);
+
+        if ($returnVar !== 0) {
+            return response()->json([
+                'error' => 'Failed to run PCA analysis',
+                'output' => $output,
+                'command' => $command
+            ], 500);
+        }
+
+        // Read PCA results
+        $pcaResults = array_map('str_getcsv', file($pcaResultPath));
+        $pcaMetadata = json_decode(file_get_contents($pcaMetadataPath), true);
+
+        // Parse PCA results
+        $header = array_shift($pcaResults);
+        Log::info($header);
+        $pcaData = array_map(function ($row) use ($header) {
+            return array_combine($header, $row);
+        }, $pcaResults);
+
+        $survey = Survey::with('questions')->findOrFail($id);
+        $surveyTitle = $survey->title;
+        $questions = $survey->questions->keyBy('id');
+
+        // Use headers from the metadata JSON to map question IDs to texts in the component weights
+        $numericColumns = $pcaMetadata['headers'];
+        $components = $pcaMetadata['components'];
+        $componentsWithText = [];
+        foreach ($components as $index => $component) {
+            $componentWithText = [];
+            foreach ($component as $key => $weight) {
+                if (isset($numericColumns[$key]) && preg_match('/answer_(\d+)/', $numericColumns[$key], $matches)) {
+                    $questionId = $matches[1];
+                    if (isset($questions[$questionId])) {
+                        $questionText = $questions[$questionId]->question;
+                        $componentWithText["Question $questionId ($questionText)"] = $weight;
+                    } else {
+                        $componentWithText["Question $questionId"] = $weight;
+                    }
+                }
+            }
+            $componentsWithText[$index] = $componentWithText;
+        }
+
+        return response()->json([
+            'surveyTitle' => $surveyTitle,
+            'explainedVariance' => $pcaMetadata['explained_variance'],
+            'componentWeights' => $components,
+            'pairedComponentWeights' => $componentsWithText,
+            'pcaData' => $pcaData,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // public function performPCA($id)
+    // {
+    //     $venvPath = base_path('venv/Scripts/activate'); // Path to virtual environment activation script
+    //     $pythonPath = base_path('venv/Scripts/python.exe'); // Full path to Python executable within virtual environment
+    //     $scriptPath = base_path('scripts/pca_script.py');
+
+    //     // Use the virtual environment's Python executable
+    //     $process = new Process([$pythonPath, $scriptPath, $id], null, [
+    //         'VIRTUAL_ENV' => $venvPath,
+    //         'PATH' => 'C:\\Users\\Emman\\Desktop\\CS STUFF\\thesis\\pulsecheck\\venv\\Scripts;' . getenv('PATH'),
+    //     ]);
+    //     $process->run();
+
+    //     if (!$process->isSuccessful()) {
+    //         Log::error('Process failed', [
+    //             'command' => $process->getCommandLine(),
+    //             'output' => $process->getOutput(),
+    //             'errorOutput' => $process->getErrorOutput(),
+    //         ]);
+    //         throw new ProcessFailedException($process);
+    //     }
+
+    //     $pcaResult = json_decode($process->getOutput(), true);
+
+    //     if (isset($pcaResult['error'])) {
+    //         return response()->json(['error' => $pcaResult['error']], 404);
+    //     }
+
+    //     return response()->json([
+    //         'surveyTitle' => 'Survey Title', // Replace with actual title if needed
+    //         'explainedVariance' => $pcaResult['explainedVariance'],
+    //         'componentWeights' => $pcaResult['componentWeights'],
+    //         'pcaData' => $pcaResult['pcaData'],
+    //     ]);
+    // }
+}   
 
     // public function surveyResultsVisual($id)
     // {
@@ -484,4 +603,3 @@ class SurveyResultsController extends Controller
     //         'averageAnswerScale' => $averageAnswerScale,
     //     ]);
     // }
-}
