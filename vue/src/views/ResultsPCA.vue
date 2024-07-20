@@ -19,13 +19,15 @@
             <div class="mt-4">
                 <h2 class="text-xl font-bold">Component Weights</h2>
                 <!-- <pre>{{ pairedComponentWeights }}</pre> -->
-                <div
-                    v-for="(weights, index) in pairedComponentWeights"
-                    :key="index"
-                >
+                <div v-for="weights in pairedComponentWeights">
                     <div>
-                        <strong>Question {{ index }}:</strong>
+                        <strong
+                            >Question {{ weights.question_id }}:
+                            {{ weights.question_text }}</strong
+                        >
                         <br />
+                        <h3>PC1: {{ weights.PC1 }}</h3>
+                        <h3>PC2: {{ weights.PC2 }}</h3>
                     </div>
                     <br />
                 </div>

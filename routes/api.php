@@ -3,14 +3,16 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Middleware\CheckSurveyAccess;
 use App\Http\Controllers\ResponseController;
+use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Middleware\CheckPublicSurveyAccess;
 use App\Http\Controllers\SurveyResultsController;
 use App\Http\Controllers\RespondentGroupController;
-use App\Http\Controllers\TemplateController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -30,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug']);
     Route::get('/survey/slug/{slug}', [SurveyController::class, 'showBySlug'])
         ->middleware(CheckSurveyAccess::class);
-
+    Route::post('/survey/{id}/distribute', [SurveyController::class, 'distribute']);
     Route::get('/survey/responses/{id}', [SurveyResultsController::class, 'getResponse']);
     Route::get('/survey/{id}/results', [SurveyResultsController::class, 'show']);
     Route::get('/survey/{id}/results/descriptive', [SurveyResultsController::class, 'showDescriptiveData']);
@@ -42,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/survey/question/{id}', [SurveyResultsController::class, 'getSurveyQuestion']);
     Route::get('/response/{id}', [ResponseController::class, 'show']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);
@@ -49,3 +53,4 @@ Route::post('/submit-response', [ResponseController::class, 'store']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/public/survey/slug/{slug}', [SurveyController::class, 'showPublicBySlug'])->middleware(CheckPublicSurveyAccess::class);
+Route::get('/public-surveys', [DashboardController::class, 'getPublicSurveys']);

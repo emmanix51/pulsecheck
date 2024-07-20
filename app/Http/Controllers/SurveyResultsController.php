@@ -387,7 +387,11 @@ class SurveyResultsController extends Controller
                 'information_fields' => $response->information_fields
             ];
             foreach ($response->answers as $answer) {
-                $row['answer_' . $answer->question_id] = $answer->answer_scale;
+                $curQuestion = Question::where('id', $answer->question_id)->first(['question_type']);
+                if ($curQuestion && $curQuestion->question_type == 'radio') {
+                    Log::info('wew');
+                    $row['answer_' . $answer->question_id] = $answer->answer_scale;
+                }
             }
             $csvData[] = $row;
         }
@@ -449,20 +453,25 @@ class SurveyResultsController extends Controller
         $numericColumns = $pcaMetadata['headers'];
         $components = $pcaMetadata['components'];
         $componentsWithText = [];
-        foreach ($components as $index => $component) {
-            $componentWithText = [];
-            foreach ($component as $key => $weight) {
-                if (isset($numericColumns[$key]) && preg_match('/answer_(\d+)/', $numericColumns[$key], $matches)) {
-                    $questionId = $matches[1];
-                    if (isset($questions[$questionId])) {
-                        $questionText = $questions[$questionId]->question;
-                        $componentWithText["Question $questionId ($questionText)"] = $weight;
-                    } else {
-                        $componentWithText["Question $questionId"] = $weight;
-                    }
+
+        foreach ($numericColumns as $index => $header) {
+            if (preg_match('/answer_(\d+)/', $header, $matches)) {
+                $questionId = $matches[1];
+                if (isset($questions[$questionId])) {
+                    $questionText = $questions[$questionId]->question;
+                } else {
+                    $questionText = '';
                 }
+
+                $componentWithText = [
+                    'question_id' => $questionId,
+                    'question_text' => $questionText,
+                    'PC1' => $components[0][$index],
+                    'PC2' => $components[1][$index]
+                ];
+
+                $componentsWithText[] = $componentWithText;
             }
-            $componentsWithText[$index] = $componentWithText;
         }
 
         return response()->json([

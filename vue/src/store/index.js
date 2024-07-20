@@ -1,5 +1,6 @@
 import { createStore } from "vuex";
 import axiosClient from "../axios";
+import notificationsModule from "./modules/notifications";
 
 // const tmpSurveys = [
 //     {
@@ -395,6 +396,34 @@ const store = createStore({
                     return response;
                 });
         },
+        async distributeSurvey({ dispatch }, surveyId) {
+            try {
+                await axiosClient.post(`/survey/${surveyId}/distribute`);
+                dispatch("getSurveys");
+                dispatch("notifyRespondents", surveyId);
+            } catch (error) {
+                console.error("Error distributing survey:", error);
+            }
+        },
+        // async notifyRespondents({ commit }, surveyId) {
+        //     try {
+        //         const response = await axiosClient.post(
+        //             `/survey/${surveyId}/notify-respondents`
+        //         );
+        //         console.log("Notification response:", response);
+        //         // Fetch notifications after notifying respondents
+        //         await dispatch("notifications/fetchNotifications", null, {
+        //             root: true,
+        //         });
+        //     } catch (error) {
+        //         console.error("Error notifying respondents:", error);
+        //     }
+        // },
+        getPublicSurveys() {
+            return axiosClient.get("/public-surveys").then(({ data }) => {
+                return data.public_surveys;
+            });
+        },
         getSurveys({ commit }, { url = null } = {}) {
             // commit('setSurveysLoading', true)
             url = url || "/survey";
@@ -560,7 +589,9 @@ const store = createStore({
             localStorage.setItem("TOKEN", token);
         },
     },
-    modules: {},
+    modules: {
+        notifications: notificationsModule,
+    },
 });
 
 export default store;

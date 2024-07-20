@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Illuminate\Database\Eloquent\Model;
+use App\Notifications\SurveyNotification;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Survey extends Model
 {
@@ -23,6 +25,18 @@ class Survey extends Model
             ->generateSlugsFrom('title')
             ->saveSlugsTo('slug');
     }
+
+    // public function distribute()
+    // {
+    //     if (!$this->is_public) {
+    //         $respondentGroup = $this->respondentGroups()->first();
+    //         $respondents = User::where('respondent_type', $respondentGroup->type)
+    //             // ->where('category', $respondentGroup->category)
+    //             ->get();
+
+    //         Notification::send($respondents, new SurveyNotification($this));
+    //     }
+    // }
 
     public function user()
     {

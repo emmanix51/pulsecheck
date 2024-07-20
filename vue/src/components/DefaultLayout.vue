@@ -43,11 +43,39 @@
                             <button
                                 type="button"
                                 class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                @click="toggleNotifications"
                             >
-                                <span class="absolute -inset-1.5" />
                                 <span class="sr-only">View notifications</span>
                                 <BellIcon class="h-6 w-6" aria-hidden="true" />
+                                <span
+                                    v-if="unreadCount > 0"
+                                    class="absolute top-0 right-0 inline-block h-2 w-2 transform rounded-full bg-red-600 ring-2 ring-white"
+                                />
                             </button>
+
+                            <!-- Notifications dropdown -->
+                            <transition
+                                enter-active-class="transition ease-out duration-100"
+                                enter-from-class="transform opacity-0 scale-95"
+                                enter-to-class="transform opacity-100 scale-100"
+                                leave-active-class="transition ease-in duration-75"
+                                leave-from-class="transform opacity-100 scale-100"
+                                leave-to-class="transform opacity-0 scale-95"
+                            >
+                                <div
+                                    v-if="showNotifications"
+                                    class="absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                >
+                                    <div
+                                        v-for="notification in notifications"
+                                        :key="notification.id"
+                                        class="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+                                        @click="markAsRead(notification.id)"
+                                    >
+                                        {{ notification.message }}
+                                    </div>
+                                </div>
+                            </transition>
 
                             <!-- Profile dropdown -->
                             <Menu as="div" class="relative ml-3">
@@ -162,10 +190,15 @@
                         <button
                             type="button"
                             class="relative ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                            @click="toggleNotifications"
                         >
                             <span class="absolute -inset-1.5" />
                             <span class="sr-only">View notifications</span>
                             <BellIcon class="h-6 w-6" aria-hidden="true" />
+                            <span
+                                v-if="unreadCount > 0"
+                                class="absolute top-0 right-0 inline-block h-2 w-2 transform rounded-full bg-red-600 ring-2 ring-white"
+                            />
                         </button>
                     </div>
                     <div class="mt-3 space-y-1 px-2">
@@ -200,7 +233,7 @@ import {
 } from "@headlessui/vue";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { useStore } from "vuex";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const store = useStore();
@@ -216,7 +249,23 @@ function logout() {
 let navigation = ref("");
 
 const user = computed(() => store.state.user.data);
+const notifications = computed(() => store.state.notifications.notifications);
+const unreadCount = computed(() => store.state.notifications.unreadCount);
 console.log(user.value.role);
+console.log(store);
+
+const showNotifications = ref(false);
+
+const toggleNotifications = () => {
+    showNotifications.value = !showNotifications.value;
+};
+
+const markAsRead = async (notificationId) => {
+    await store.dispatch("notifications/markAsRead", notificationId);
+};
+onMounted(async () => {
+    await store.dispatch("fetchNotifications");
+});
 
 if (user.value.role === "admin") {
     navigation.value = [
@@ -229,30 +278,44 @@ if (user.value.role === "admin") {
         { name: "Dashboard", to: { name: "Dashboard" }, current: true },
         { name: "Surveys", to: { name: "Surveys" } },
         { name: "Survey Templates", to: { name: "ManageAccount" } },
+        { name: "Users Management", to: { name: "UserManagement" } },
     ];
 } else if (user.value.role === "respondent") {
     navigation.value = [
         { name: "Dashboard", to: { name: "Dashboard" }, current: true },
-        { name: "Surveys Answer", to: { name: "Surveys" }, current: true },
+        {
+            name: "Surveys Answer",
+            to: { name: "RespondentSurveys" },
+            current: true,
+        },
+        { name: "Surveys", to: { name: "Surveys" }, current: true },
+        { name: "Users Management", to: { name: "UserManagement" } },
     ];
 } else {
     console.log(error);
 }
-
-// const navigation = [
-//     { name: "Dashboard", to: { name: "Dashboard" }, current: true },
-//     { name: "Surveys", to: { name: "Surveys" } },
-//     { name: "Survey Templates", to: { name: "ManageAccount" } },
-// ];
-
-// const adminNavigation = [
-//     { name: "Dashboard", to: { name: "Dashboard" }, current: true },
-//     { name: "Users Management", to: { name: "ManageAccount" } },
-//     { name: "Survey Results", to: { name: "Surveys" } },
-// ];
-
-// const respondentNavigation = [
-//     { name: "Dashboard", to: { name: "Dashboard" }, current: true },
-//     { name: "Surveys", to: { name: "Surveys" }, current: true },
-// ];
 </script>
+
+<style scoped>
+.notifications-dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    right: 0;
+    top: 100%;
+    width: 300px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.notifications-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.notifications-dropdown li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+.notifications-dropdown li:last-child {
+    border-bottom: none;
+}
+</style>

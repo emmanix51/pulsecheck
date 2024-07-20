@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Survey;
 use App\Models\Question;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\RespondentGroup;
+use Illuminate\Support\Facades\Log;
 use App\Http\Resources\SurveyResource;
 use App\Http\Requests\StoreSurveyRequest;
+use App\Notifications\SurveyNotification;
 use App\Http\Requests\UpdateSurveyRequest;
 
 class SurveyController extends Controller
@@ -238,5 +242,44 @@ class SurveyController extends Controller
         }
 
         return response()->json(['data' => $survey], 200);
+    }
+
+    public function distribute($surveyId)
+    {
+        $survey = Survey::findOrFail($surveyId);
+        // Logic for distributing the survey
+        Log::info($survey->respondentGroups);
+        // Fetch all respondent groups related to the survey
+        $respondentGroups = $survey->respondentGroups;
+
+        // Notify respondents based on each respondent group
+        foreach ($respondentGroups as $group) {
+            // Fetch users belonging to the current respondent group
+            $respondents = User::where('respondent_type', $group->type)->get();
+
+            // Notify each respondent
+            foreach ($respondents as $respondent) {
+                Notification::create([
+                    'user_id' => $respondent->id,
+                    'title' => 'New Survey Available',
+                    'message' => "A new survey titled '{$survey->title}' is available for you to take.",
+                    'read' => false,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Survey distributed and respondents notified successfully']);
+    }
+
+    public function notifyRespondents($surveyId)
+    {
+        $survey = Survey::findOrFail($surveyId);
+        $respondents = User::where('respondent_type', $survey->respondent_type)->get();
+
+        foreach ($respondents as $respondent) {
+            $respondent->notify(new SurveyNotification($survey));
+        }
+
+        return response()->json(['message' => 'Respondents notified successfully']);
     }
 }

@@ -8,7 +8,9 @@ import Surveys from "../views/Surveys.vue";
 import SurveyView from "../views/SurveyView.vue";
 import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
+import RespondentSurveys from "../views/RespondentSurveys.vue";
 import ErrorPage from "../views/ErrorPage.vue";
+import PublicSurveys from "../views/PublicSurveys.vue";
 import SurveyResults from "../views/SurveyResults.vue";
 import SurveyResponse from "../views/SurveyResponse.vue";
 import SurveyQuestion from "../views/SurveyQuestion.vue";
@@ -86,6 +88,11 @@ const routes = [
                 name: "SurveyResponse",
                 component: SurveyResponse,
             },
+            {
+                path: "/my-survey",
+                name: "RespondentSurveys",
+                component: RespondentSurveys,
+            },
         ],
     },
     {
@@ -99,6 +106,12 @@ const routes = [
         name: "PublicSurveyAnswerView",
         component: SurveyAnswerView, // You can use the same component or create a new one if needed
     },
+    {
+        path: "/public-surveys",
+        name: "PublicSurveys",
+        component: PublicSurveys,
+    },
+
     {
         path: "/error",
         name: "ErrorPage",

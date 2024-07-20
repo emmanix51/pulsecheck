@@ -105,6 +105,13 @@
                                 />
                             </svg>
                         </button>
+                        <button
+                            type="button"
+                            @click="distributeSurvey(survey)"
+                            class="h-8 w-8 flex items-center justify-center rounded-full border border-transparent text-sm text-emerald-500 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                        >
+                            Distribute
+                        </button>
                     </div>
                 </div>
             </div>
@@ -133,6 +140,19 @@ function deleteSurvey(survey) {
         });
     } else {
         alert("okii");
+    }
+}
+function distributeSurvey(survey) {
+    if (
+        confirm(`Are you sure you want to distribute ${survey.title} survey?`)
+    ) {
+        // distribute survey
+        store.dispatch("distributeSurvey", survey.id).then(() => {
+            alert("Survey distributed successfully!");
+            store.dispatch("getSurveys");
+        });
+    } else {
+        alert("Distribution cancelled.");
     }
 }
 </script>
