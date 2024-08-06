@@ -19,7 +19,6 @@
                 class="row-span-2 animate-fade-in-down order-3 lg:order-1 bg-white shadow-md p-4"
             >
                 <h3 class="text-2xl font-semibold">About The Survey</h3>
-                <button @click="logIdAndExportCsv">Response CSV</button>
                 <div>
                     <h3 class="font-bold text-xl mb-3">Survey Title</h3>
                     <div class="flex justify-between text-sm mb-1">
@@ -180,6 +179,13 @@
                     </div>
 
                     <div class="flex justify-between">
+                        <button
+                            @click="logIdAndExportCsv"
+                            class="flex py-2 px-4 border border-transparent text-sm rounded-md text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            CSV Data
+                        </button>
+
                         <router-link
                             :to="{
                                 name: 'ResultsPCA',

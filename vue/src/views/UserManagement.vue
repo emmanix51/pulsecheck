@@ -293,10 +293,65 @@
                 </div>
             </div>
         </section>
+        <!-- Pagination -->
+        <div
+            class="max-w-full md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl mx-auto bg-white p-6 rounded-lg shadow-sm"
+        >
+            <div class="flex justify-center">
+                <nav class="flex space-x-2" aria-label="Pagination">
+                    <a
+                        href="#"
+                        @click.prevent="fetchUsers(currentPage - 1)"
+                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                        :class="{
+                            'opacity-50 cursor-not-allowed': currentPage === 1,
+                        }"
+                        :disabled="currentPage === '1'"
+                    >
+                        Previous
+                    </a>
+                    <div v-for="(link, i) of pageLinks" :key="i">
+                        <a
+                            :href="link.url"
+                            class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                            :class="{
+                                'opacity-50 cursor-not-allowed':
+                                    !link.url ||
+                                    parseInt(link.label) === currentPage,
+                                'bg-blue-500': link.active, // Optional: Apply active page styling
+                            }"
+                            :disabled="
+                                !link.url ||
+                                parseInt(link.label) === currentPage
+                            "
+                            @click.prevent="
+                                !(
+                                    !link.url ||
+                                    parseInt(link.label) === currentPage
+                                ) && fetchUsers(parseInt(link.label))
+                            "
+                        >
+                            {{ link.label }}
+                        </a>
+                    </div>
+                    <a
+                        href="#"
+                        @click.prevent="fetchUsers(currentPage + 1)"
+                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                        :class="{
+                            'opacity-50 cursor-not-allowed': !hasNextPage,
+                        }"
+                        :disabled="!hasNextPage"
+                    >
+                        Next
+                    </a>
+                </nav>
+            </div>
+        </div>
     </PageComponent>
 </template>
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
 
@@ -313,9 +368,41 @@ const userForm = ref({
     respondent_type: "student",
     category: "",
 });
+const currentPage = ref(1);
+const pageLinks = ref([]);
 
 const users = computed(() => store.state.users);
-store.dispatch("getAllUsers");
+onMounted(async () => {
+    try {
+        const response = await store.dispatch("getAllUsers");
+        const links = response.users.links;
+
+        if (links.length > 0) {
+            // Assuming the first link is "Previous" and the last is "Next"
+
+            pageLinks.value = links.slice(1, -1); // Exclude the first and last elements
+        }
+        // pageLinks.value = response.users.links;
+        currentPage.value = 1;
+        console.log(pageLinks);
+    } catch (error) {}
+});
+
+async function fetchUsers(page) {
+    try {
+        const response = await store.dispatch("getAllUsers", page); // Pass the page number
+        const links = response.users.links;
+
+        if (links.length > 0) {
+            // Update pageLinks to exclude the first ("Previous") and last ("Next") links
+            pageLinks.value = links.slice(1, -1);
+        }
+        currentPage.value = page;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        // Handle error if needed
+    }
+}
 
 function closeForm() {
     showAddUserForm.value = false;

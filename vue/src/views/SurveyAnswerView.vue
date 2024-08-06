@@ -231,6 +231,7 @@ function submitAnswers() {
         })
         .then(() => {
             alert("Your answers have been submitted successfully!");
+            router.push({ name: "Dashboard" });
         });
 }
 </script>

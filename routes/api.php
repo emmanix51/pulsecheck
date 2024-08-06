@@ -24,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/users/{id}', [UserController::class, 'update']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
     });
+    Route::get('/results', [SurveyResultsController::class, 'index']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::resource('/survey', \App\Http\Controllers\SurveyController::class);
     Route::resource('/template', TemplateController::class);
@@ -46,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/response/{id}', [ResponseController::class, 'show']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::get('/dashboard/{id}', [DashboardController::class, 'getDashboard']);
+    Route::get('/my-surveys/{id}', [DashboardController::class, 'getRespondentSurveys']);
+    Route::get('/my-responses/{id}', [DashboardController::class, 'getRespondentResponses']);
 });
 
 Route::post('/submit-response', [ResponseController::class, 'store']);

@@ -312,6 +312,19 @@ const store = createStore({
         },
     },
     actions: {
+        fetchDashboard({ commit }, id) {
+            return axiosClient
+                .get(`/dashboard/${id}`)
+                .then(({ data }) => {
+                    return data;
+                })
+                .catch((error) => {
+                    return {
+                        error: error.response.data,
+                        status: error.response.status,
+                    };
+                });
+        },
         submitSurveyAnswers(
             { commit },
             {
@@ -368,9 +381,18 @@ const store = createStore({
                     };
                 });
         },
-        getAllUsers({ commit }) {
-            return axiosClient.get("/admin/users").then(({ data }) => {
-                commit("setUsers", data.users);
+        getAllUsers({ commit }, page = 1) {
+            return axiosClient
+                .get(`/admin/users?page=${page}`)
+                .then(({ data }) => {
+                    commit("setUsers", data.users.data);
+                    return data;
+                });
+        },
+        getAllResults({ commit }, page = 1) {
+            return axiosClient.get(`/results?page=${page}`).then(({ data }) => {
+                console.log(data);
+                return data;
             });
         },
         addUser({ dispatch }, user) {
@@ -419,10 +441,13 @@ const store = createStore({
         //         console.error("Error notifying respondents:", error);
         //     }
         // },
-        getPublicSurveys() {
-            return axiosClient.get("/public-surveys").then(({ data }) => {
-                return data.public_surveys;
-            });
+        getPublicSurveys({ commit }, page) {
+            // console.log(page);
+            return axiosClient
+                .get(`/public-surveys?page=${page}`)
+                .then(({ data }) => {
+                    return data;
+                });
         },
         getSurveys({ commit }, { url = null } = {}) {
             // commit('setSurveysLoading', true)

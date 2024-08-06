@@ -21,28 +21,50 @@
                             <th scope="col" class="px-6 py-3">
                                 Expiration Date
                             </th>
+                            <th scope="col" class="px-6 py-3">Responded</th>
                             <th scope="col" class="px-6 py-3">Survey Link</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
+                            v-for="survey in surveys"
+                            :key="survey.id"
                             class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
                         >
                             <th
                                 scope="row"
                                 class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                             >
-                                Apple MacBook Pro 17"
+                                {{ survey.title }}
                             </th>
-                            <td class="px-6 py-4">Silver</td>
-                            <td class="px-6 py-4">Laptop</td>
                             <td class="px-6 py-4">
-                                <a
-                                    target="_blank"
-                                    href="#"
-                                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                    >Answer Survey</a
-                                >
+                                <div v-if="survey.status">Active</div>
+                                <div v-else>Not active</div>
+                            </td>
+                            <td class="px-6 py-4">{{ survey.expire_date }}</td>
+                            <td class="px-6 py-4">
+                                <div v-if="survey.responded">Yes</div>
+                                <div v-else>No</div>
+                            </td>
+
+                            <td class="px-6 py-4">
+                                <div v-if="survey.status">
+                                    <a
+                                        v-if="!survey.is_public"
+                                        target="_blank"
+                                        :href="`localhost:3000/survey/${survey.slug}`"
+                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                        >Answer Survey</a
+                                    >
+                                    <a
+                                        v-else
+                                        target="_blank"
+                                        :href="`localhost:3000/public/survey/${survey.slug}`"
+                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                        >Answer Survey</a
+                                    >
+                                </div>
+                                <div v-else>Not active</div>
                             </td>
                         </tr>
                     </tbody>
@@ -53,14 +75,26 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
+import axiosClient from "../axios";
 const route = useRoute();
 const router = useRouter();
-const surveys = computed(() => store.state.surveys.data);
-store.dispatch("getSurveys");
+const surveys = ref([]);
+// store.dispatch("getSurveys");
+onMounted(async () => {
+    const user = computed(() => store.state.user.data);
+
+    try {
+        const response = await axiosClient.get(`/my-surveys/${user.value.id}`);
+        console.log(response.data);
+        surveys.value = response.data; // Assuming you want to log the response data
+    } catch (error) {
+        console.error("Error fetching descriptive analysis:", error);
+    }
+});
 </script>
 
 <style></style>

@@ -15,6 +15,16 @@ PCA to the survey result and visualizing it.
 Respondent My Responses
 Home For Public Surveys Available
 
+MGA KULANG:
+Paginations -unya ra
+loading content when waiting for backend response - unya
+prompts after success or error - dali ra, alert nlang gamita
+survey notification(email-done modify nlang if public or not,sms)
+Survey Templates
+CSV data extraction
+Respondent My Responses -need nlang uf design
+Home For Public Surveys Available - header with home link nlang
+
 so far based on our progress this are still the missing things we need to add in our system:
 loading content when waiting for backend response
 prompts after success or error

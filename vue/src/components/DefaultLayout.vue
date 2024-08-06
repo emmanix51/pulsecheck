@@ -1,12 +1,4 @@
 <template>
-    <!--
-    This example requires updating your template:
-
-    ```
-    <html class="h-full bg-gray-100">
-    <body class="h-full">
-    ```
-  -->
     <div class="min-h-full">
         <Disclosure as="nav" class="bg-gray-800" v-slot="{ open }">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -36,7 +28,6 @@
                                 </router-link>
                             </div>
                         </div>
-                        active-class=""
                     </div>
                     <div class="hidden md:block">
                         <div class="ml-4 flex items-center md:ml-6">
@@ -47,10 +38,12 @@
                             >
                                 <span class="sr-only">View notifications</span>
                                 <BellIcon class="h-6 w-6" aria-hidden="true" />
+
                                 <span
                                     v-if="unreadCount > 0"
-                                    class="absolute top-0 right-0 inline-block h-2 w-2 transform rounded-full bg-red-600 ring-2 ring-white"
-                                />
+                                    class="absolute top-0 right-0 inline-block h-4 w-4 transform rounded-full bg-red-600 ring-2 text-white ring-white"
+                                    >1</span
+                                >
                             </button>
 
                             <!-- Notifications dropdown -->
@@ -64,12 +57,16 @@
                             >
                                 <div
                                     v-if="showNotifications"
-                                    class="absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                    class="absolute right-[13%] mt-3 w-80 origin-top-left bg-white py-1 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                                 >
+                                    <button
+                                        @click="toggleNotifications"
+                                        class="absolute top-0 right-0 text-gray-400 hover:text-gray-600"
+                                    ></button>
                                     <div
                                         v-for="notification in notifications"
                                         :key="notification.id"
-                                        class="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+                                        class="block w-full px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
                                         @click="markAsRead(notification.id)"
                                     >
                                         {{ notification.message }}
@@ -149,7 +146,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <pre>{{ user }}</pre> -->
             <DisclosurePanel class="md:hidden">
                 <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
                     <router-link
@@ -200,6 +196,16 @@
                                 class="absolute top-0 right-0 inline-block h-2 w-2 transform rounded-full bg-red-600 ring-2 ring-white"
                             />
                         </button>
+                    </div>
+                    <div v-if="showNotifications">
+                        <div
+                            v-for="notification in notifications"
+                            :key="notification.id"
+                            class="block max-w-sm justify-center mx-auto px-4 py-2 text-sm text-gray-700 cursor-pointer bg-gray-100"
+                            @click="markAsRead(notification.id)"
+                        >
+                            {{ notification.message }}
+                        </div>
                     </div>
                     <div class="mt-3 space-y-1 px-2">
                         <router-link
@@ -261,7 +267,7 @@ const toggleNotifications = () => {
 };
 
 const markAsRead = async (notificationId) => {
-    await store.dispatch("notifications/markAsRead", notificationId);
+    await store.dispatch("markAsRead", notificationId);
 };
 onMounted(async () => {
     await store.dispatch("fetchNotifications");
@@ -284,12 +290,12 @@ if (user.value.role === "admin") {
     navigation.value = [
         { name: "Dashboard", to: { name: "Dashboard" }, current: true },
         {
-            name: "Surveys Answer",
+            name: "Surveys List",
             to: { name: "RespondentSurveys" },
             current: true,
         },
         { name: "Surveys", to: { name: "Surveys" }, current: true },
-        { name: "Users Management", to: { name: "UserManagement" } },
+        { name: "My Responses", to: { name: "RespondentResponses" } },
     ];
 } else {
     console.log(error);

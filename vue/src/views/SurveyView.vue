@@ -535,23 +535,27 @@ const saveAsTemplate = () => {
 };
 
 const saveSurvey = () => {
-    const surveyData = JSON.parse(JSON.stringify(model.value)); // Deep copy to avoid mutating the original model
+    if (confirm(`Are you sure you want to proceed?`)) {
+        const surveyData = JSON.parse(JSON.stringify(model.value)); // Deep copy to avoid mutating the original model
 
-    surveyData.questions.forEach((question) => {
-        if (Array.isArray(question.data)) {
-            question.data = JSON.stringify(question.data);
-        }
-        if (question.question_type === "text") {
-            question.data = null;
-        }
-    });
-
-    store.dispatch("saveSurvey", surveyData).then(({ data }) => {
-        router.push({
-            name: "SurveyView",
-            params: { id: data.id },
+        surveyData.questions.forEach((question) => {
+            if (Array.isArray(question.data)) {
+                question.data = JSON.stringify(question.data);
+            }
+            if (question.question_type === "text") {
+                question.data = null;
+            }
         });
-    });
+
+        store.dispatch("saveSurvey", surveyData).then(({ data }) => {
+            router.push({
+                name: "SurveyView",
+                params: { id: data.id },
+            });
+        });
+    } else {
+        alert("cancelled");
+    }
 };
 
 const deleteSurvey = () => {

@@ -7,8 +7,10 @@ use App\Models\Survey;
 use App\Models\Question;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Mail\SurveyDistributed;
 use App\Models\RespondentGroup;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\SurveyResource;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Notifications\SurveyNotification;
@@ -248,7 +250,7 @@ class SurveyController extends Controller
     {
         $survey = Survey::findOrFail($surveyId);
         // Logic for distributing the survey
-        Log::info($survey->respondentGroups);
+        // Log::info($survey->respondentGroups);
         // Fetch all respondent groups related to the survey
         $respondentGroups = $survey->respondentGroups;
 
@@ -265,10 +267,14 @@ class SurveyController extends Controller
                     'message' => "A new survey titled '{$survey->title}' is available for you to take.",
                     'read' => false,
                 ]);
+                Mail::to($respondent->email)->send(new SurveyDistributed($survey, $respondent));
             }
         }
 
-        return response()->json(['message' => 'Survey distributed and respondents notified successfully']);
+        return response()->json([
+            'message' => 'Survey distributed and respondents notified successfully',
+            'respondents' => $respondents
+        ]);
     }
 
     public function notifyRespondents($surveyId)

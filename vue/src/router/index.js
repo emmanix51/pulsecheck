@@ -9,8 +9,10 @@ import SurveyView from "../views/SurveyView.vue";
 import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import RespondentSurveys from "../views/RespondentSurveys.vue";
+import RespondentResponses from "../views/RespondentResponses.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 import PublicSurveys from "../views/PublicSurveys.vue";
+import AdminResults from "../views/AdminResults.vue";
 import SurveyResults from "../views/SurveyResults.vue";
 import SurveyResponse from "../views/SurveyResponse.vue";
 import SurveyQuestion from "../views/SurveyQuestion.vue";
@@ -48,6 +50,12 @@ const routes = [
                 name: "UserManagement",
                 component: UserManagement,
             },
+            {
+                path: "admin/results",
+                name: "AdminResults",
+                component: AdminResults,
+            },
+
             {
                 path: "/survey/:id/results",
                 name: "SurveyResults",
@@ -92,6 +100,11 @@ const routes = [
                 path: "/my-survey",
                 name: "RespondentSurveys",
                 component: RespondentSurveys,
+            },
+            {
+                path: "/my-responses",
+                name: "RespondentResponses",
+                component: RespondentResponses,
             },
         ],
     },

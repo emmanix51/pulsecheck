@@ -20,21 +20,25 @@
                             <th scope="col" class="px-6 py-3">
                                 Date Responded
                             </th>
-                            <th scope="col" class="px-6 py-3">Response Link</th>
+                            <th scope="col" class="px-6 py-3">Response</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
                             class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
+                            v-for="response in responses"
+                            :key="response.id"
                         >
                             <th
                                 scope="row"
                                 class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                             >
-                                Apple MacBook Pro 17"
+                                {{ response.survey.title }}
                             </th>
-                            <td class="px-6 py-4">Silver</td>
-                            <td class="px-6 py-4">Laptop</td>
+                            <td class="px-6 py-4">{{ response.updated_at }}</td>
+                            <td class="px-6 py-4">
+                                {{ response.average_answer_scale }}
+                            </td>
                             <td class="px-6 py-4">
                                 <a
                                     href="#"
@@ -49,14 +53,27 @@
         </PageComponent>
     </div>
 </template>
-
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
+import axiosClient from "../axios";
 const route = useRoute();
 const router = useRouter();
-</script>
+const responses = ref([]);
+// store.dispatch("getSurveys");
+onMounted(async () => {
+    const user = computed(() => store.state.user.data);
 
-<style></style>
+    try {
+        const response = await axiosClient.get(
+            `/my-responses/${user.value.id}`
+        );
+        console.log(response.data);
+        responses.value = response.data; // Assuming you want to log the response data
+    } catch (error) {
+        console.error("Error fetching descriptive analysis:", error);
+    }
+});
+</script>

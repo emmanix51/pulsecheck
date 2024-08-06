@@ -136,6 +136,7 @@ function deleteSurvey(survey) {
 
         store.dispatch("deleteSurvey", survey.id).then(() => {
             router.push({ name: "Surveys" });
+            alert("Survey Deleted Successfully.");
             store.dispatch("getSurveys");
         });
     } else {

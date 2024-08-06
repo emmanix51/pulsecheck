@@ -6,6 +6,8 @@
 namespace App\Http\Controllers;
 
 
+use SciPhp\LinAlg;
+use SciPhp\NdArray;
 use App\Models\Answer;
 use App\Models\Survey;
 use App\Models\Question;
@@ -13,16 +15,15 @@ use App\Models\Response;
 use Illuminate\Http\Request;
 use Phpml\Math\Statistic\Mean;
 use Phpml\DimensionReduction\PCA;
+use Phpml\Math\LinearAlgebra\SVD;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Phpml\Preprocessing\Normalizer;
-use SciPhp\NdArray;
-use SciPhp\LinAlg;
 use Rap2hpoutre\FastExcel\FastExcel;
+use App\Http\Resources\SurveyResource;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Phpml\Math\LinearAlgebra\SVD;
 
 class SurveyResultsController extends Controller
 {
@@ -54,7 +55,15 @@ class SurveyResultsController extends Controller
     //         'overall_mean' => $overallMean,
     //     ]);
     // }
+    public function index()
+    {
+        // Get paginated results for surveys
+        $surveys = Survey::paginate(2); // 5 items per page
 
+        // Return a paginated response using a resource collection
+        response()->json(['surveys' => $surveys], 200);
+        // return SurveyResource::collection($surveys);
+    }
     public function show(Request $request, $id)
     {
         $survey = Survey::where('id', $id)
