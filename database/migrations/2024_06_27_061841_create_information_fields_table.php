@@ -15,7 +15,7 @@ class CreateInformationFieldsTable extends Migration
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');
             $table->string('label');
-            $table->enum('type', ['text', 'textarea', 'select']);
+            $table->enum('type', ['text', 'textarea', 'select','number']);
             $table->string('options')->nullable(); // Options for select type fields
             $table->timestamps();
         });

@@ -5,18 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Question extends Model
+class QuestionSection extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['survey_id','question_group_id', 'question_type','group','category', 'question', 'description', 'data'];
+    protected $fillable = ['survey_id', 'section_number', 'section_label','section_instruction'];
+
 
     public function survey()
     {
         return $this->belongsTo(Survey::class);
     }
-    public function question_group()
+
+    public function question_groups()
     {
-        return $this->belongsTo(QuestionGroup::class);
+        return $this->hasMany(QuestionGroup::class, 'question_section_id');
     }
 }

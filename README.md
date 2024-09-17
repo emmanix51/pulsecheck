@@ -38,3 +38,7 @@ survey visualization using chartjs with data filtration when visualing
 PCA to the survey result and visualizing it.
 
 so based on the progress we did does it fit on the upcoming things we will do
+
+DO PARTS: use research survey as basis
+DO Subquestions
+DO either buhat ug new table nga question_category or magbuhat na direction sa question

@@ -23,7 +23,7 @@ class AuthController extends Controller
                 'password' => [
                     'required',
                     'confirmed',
-                    Password::min(8)->mixedCase()->numbers()
+                    Password::min(8)->numbers()
                 ],
                 'role' => 'required|string|in:admin,surveymaker,respondent',
                 'respondent_type' => 'nullable|string|in:student,faculty,staff,stakeholder',

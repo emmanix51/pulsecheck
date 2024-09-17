@@ -2,9 +2,10 @@
     <PageComponent>
         <template v-slot:header>
             <div class="flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-gray-900">
+                <h1 v-if="res" class="text-3xl font-bold text-gray-900">
                     PCA for survey: {{ surveyTitle }}
                 </h1>
+                <h1 v-else class="text-3xl font-bold text-gray-900">Loading</h1>
             </div>
         </template>
         <div class="text-gray-700">
@@ -119,10 +120,12 @@ const explainedVariance = ref([]);
 const componentWeights = ref([]);
 const pairedComponentWeights = ref([]);
 const pcaData = ref([]);
+const res = ref(null);
 
 onMounted(async () => {
     const { id } = route.params;
     const response = await axiosClient.get(`/survey/${id}/pca`);
+    res.value = response;
     surveyTitle.value = response.data.surveyTitle;
     explainedVariance.value = response.data.explainedVariance.map((variance) =>
         (variance * 100).toFixed(2)
@@ -156,7 +159,7 @@ function renderChart() {
                     data: pcaData.value.map((item) => ({
                         x: addScatterEffect(item.PC1, 0.02),
                         y: addScatterEffect(item.PC2, 0.02),
-                        label: `ID: ${item.response_id}, Type: ${item.respondent_type}, Category: ${item.respondent_category}, Info Fields: ${item.information_fields}`,
+                        label: `ID: ${item.response_id}\nType: ${item.respondent_type}\nCategory: ${item.respondent_category}\nInfo Fields: ${item.information_fields}`,
                     })),
                     backgroundColor: "rgba(75, 192, 192, 0.6)",
                 },
@@ -171,6 +174,12 @@ function renderChart() {
             },
             plugins: {
                 tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.8)", // Tooltip background color
+                    titleColor: "#fff", // Title text color
+                    bodyColor: "#fff", // Body text color
+                    borderColor: "#fff", // Border color of the tooltip
+                    borderWidth: 1, // Border width
+                    padding: 10, // Padding inside the tooltip
                     callbacks: {
                         label: function (context) {
                             const data = context.raw;
@@ -187,3 +196,17 @@ function renderChart() {
     });
 }
 </script>
+
+<style scoped>
+/* Target Chart.js tooltips */
+.chartjs-tooltip {
+    background-color: rgba(0, 0, 0, 0.8) !important; /* Background color */
+    border-radius: 4px !important; /* Rounded corners */
+    padding: 10px !important; /* Padding inside the tooltip */
+    max-width: 300px !important; /* Max width of the tooltip */
+    font-size: 12px !important; /* Font size */
+    line-height: 1.5 !important; /* Line height for better spacing */
+    white-space: normal !important; /* Allow text to wrap */
+    word-break: break-word; /* Break long words */
+}
+</style>

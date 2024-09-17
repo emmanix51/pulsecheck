@@ -117,7 +117,7 @@ const routes = [
     {
         path: "/public/survey/:slug",
         name: "PublicSurveyAnswerView",
-        component: SurveyAnswerView, // You can use the same component or create a new one if needed
+        component: SurveyAnswerView,
     },
     {
         path: "/public-surveys",

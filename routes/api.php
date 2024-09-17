@@ -59,3 +59,6 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/public/survey/slug/{slug}', [SurveyController::class, 'showPublicBySlug'])->middleware(CheckPublicSurveyAccess::class);
 Route::get('/public-surveys', [DashboardController::class, 'getPublicSurveys']);
+Route::get('/test', function () {
+    return 'Scream the N wordddd';
+});

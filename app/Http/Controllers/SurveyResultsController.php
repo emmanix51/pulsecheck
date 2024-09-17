@@ -97,7 +97,7 @@ class SurveyResultsController extends Controller
 
     public function getSurveyDetails($id)
     {
-        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions'])->findOrFail($id);
+        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions','questionSections.question_groups.questions'])->findOrFail($id);
         $allResponses = $survey->responses;
         // \Illuminate\Support\Facades\Log::info($allResponses);
         return response()->json([
@@ -106,6 +106,7 @@ class SurveyResultsController extends Controller
             'respondentGroups' => $survey->respondentGroups,
             'informationFields' => $survey->informationFields,
             'questions' => $survey->questions,
+            'questionSections' => $survey->questionSections,
         ]);
     }
 
@@ -169,15 +170,11 @@ class SurveyResultsController extends Controller
     public function getResponse($id)
     {
         $response = Response::with(['answers', 'answers.question'])->findorFail($id);
-        // Iterate through each answer in $response->answers
         foreach ($response->answers as $answer) {
-            // Access the answer_scale property of each answer object
             $answerScale = $answer->answer_scale;
 
-            // Access the question associated with the answer
             $question = $answer->question;
 
-            // Build an array containing both answer scale and question details
             $answerDetails[] = [
                 'answer_scale' => $answerScale,
                 'question' => $question

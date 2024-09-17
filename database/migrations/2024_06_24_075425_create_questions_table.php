@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->enum('question_type', ['text', 'radio']);
             $table->string('question', 2000);
+            $table->string("category")->nullable();
+            $table->integer("group");
             $table->longText('description')->nullable();
             $table->longText('data')->nullable(); // JSON data for options or other structured data
             $table->foreignIdFor(\App\Models\Survey::class, 'survey_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(\App\Models\QuestionGroup::class, 'question_group_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

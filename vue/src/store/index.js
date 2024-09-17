@@ -463,6 +463,8 @@ const store = createStore({
         },
         saveSurvey({ commit }, survey) {
             let response;
+            console.log(survey);
+
             if (survey.id) {
                 response = axiosClient
                     .put(`/survey/${survey.id}`, survey)

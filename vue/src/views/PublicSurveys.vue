@@ -1,6 +1,6 @@
 <template>
     <div>
-        <pre>{{ publicSurveys }}</pre>
+        <!-- <pre>{{ publicSurveys }}</pre> -->
         <div
             class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray- py-6 sm:py-12"
         >

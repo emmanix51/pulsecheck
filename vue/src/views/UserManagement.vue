@@ -211,7 +211,7 @@
                 />
                 <button
                     type="submit"
-                    class="flex-none rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                    class="flex-none rounded-md bg-spccolor-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-spccolor-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                 >
                     Search
                 </button>
@@ -302,9 +302,9 @@
                     <a
                         href="#"
                         @click.prevent="fetchUsers(currentPage - 1)"
-                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-spccolor-600 border hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                         :class="{
-                            'opacity-50 cursor-not-allowed': currentPage === 1,
+                            ' cursor-not-allowed': currentPage === 1,
                         }"
                         :disabled="currentPage === '1'"
                     >
@@ -313,12 +313,12 @@
                     <div v-for="(link, i) of pageLinks" :key="i">
                         <a
                             :href="link.url"
-                            class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                            class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-spccolor-600 hover:border-violet-100 text-white font-semibold leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                             :class="{
-                                'opacity-50 cursor-not-allowed':
+                                ' cursor-not-allowed':
                                     !link.url ||
                                     parseInt(link.label) === currentPage,
-                                'bg-blue-500': link.active, // Optional: Apply active page styling
+                                'bg-blue-500': link.active,
                             }"
                             :disabled="
                                 !link.url ||
@@ -337,9 +337,9 @@
                     <a
                         href="#"
                         @click.prevent="fetchUsers(currentPage + 1)"
-                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-spccolor-600 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                         :class="{
-                            'opacity-50 cursor-not-allowed': !hasNextPage,
+                            ' cursor-not-allowed': !hasNextPage,
                         }"
                         :disabled="!hasNextPage"
                     >
@@ -378,9 +378,7 @@ onMounted(async () => {
         const links = response.users.links;
 
         if (links.length > 0) {
-            // Assuming the first link is "Previous" and the last is "Next"
-
-            pageLinks.value = links.slice(1, -1); // Exclude the first and last elements
+            pageLinks.value = links.slice(1, -1);
         }
         // pageLinks.value = response.users.links;
         currentPage.value = 1;
@@ -390,11 +388,10 @@ onMounted(async () => {
 
 async function fetchUsers(page) {
     try {
-        const response = await store.dispatch("getAllUsers", page); // Pass the page number
+        const response = await store.dispatch("getAllUsers", page);
         const links = response.users.links;
 
         if (links.length > 0) {
-            // Update pageLinks to exclude the first ("Previous") and last ("Next") links
             pageLinks.value = links.slice(1, -1);
         }
         currentPage.value = page;

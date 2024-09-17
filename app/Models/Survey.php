@@ -15,7 +15,7 @@ class Survey extends Model
 
     protected $fillable = [
         'user_id', 'image', 'title', 'is_public',
-        'is_restricted', 'slug', 'status', 'description', 'respondent_group_id', 'expire_date'
+        'is_restricted', 'slug', 'status','instruction', 'description', 'respondent_group_id', 'expire_date'
     ];
 
 
@@ -53,6 +53,14 @@ class Survey extends Model
         return $this->belongsToMany(RespondentGroup::class, 'survey_respondent_group');
     }
 
+     public function questionGroups()
+    {
+        return $this->hasMany(QuestionGroup::class);
+    }
+     public function questionSections()
+    {
+        return $this->hasMany(QuestionSection::class);
+    }
     public function questions()
     {
         return $this->hasMany(Question::class, 'survey_id');

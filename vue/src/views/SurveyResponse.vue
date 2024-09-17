@@ -7,16 +7,37 @@
                 </h1>
             </div>
         </template>
-        <pre>{{ testdata }}</pre>
+        <!-- <pre>{{ testdata }}</pre> -->
         <!-- <pre>{{ totalResponse }}</pre>
         <pre>{{ totalAnswerScale }}</pre>
         <pre>{{ averageAnswerScale }}</pre> -->
         <!-- <pre>{{ Object.keys(surveyData.responses).length }}</pre> -->
-        <div
+        <!-- <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700"
         >
             <div v-for="(answer, i) of answerDetails" :key="i">
-                {{ answer.question.question }}-{{ answer.answer_scale }}
+                <div v-if="answer.answer_scale">
+                    {{ answer.question.question }}-{{ answer.answer_scale }}
+                </div>
+                <div v-else>
+                    {{ answer.question.question }} - {{ answer.answer_text }}
+                </div>
+            </div>
+        </div> -->
+        <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700"
+        >
+            <div
+                v-for="(answer, answerIndex) of surveyResponses.answers"
+                :key="answerIndex"
+            >
+                <div v-if="answer.answer_scale">
+                    {{ answer.question.question }}-{{ answer.answer_scale }}
+                </div>
+                <div v-else>
+                    {{ answer.question.question }} -
+                    {{ answer.answer_text }}
+                </div>
             </div>
         </div>
     </PageComponent>
@@ -51,12 +72,14 @@ let averageAnswerScale = ref(0);
 
 const testdata = ref({});
 const answerDetails = ref({});
+const surveyResponses = ref({});
 
 if (route.params.id) {
     store.dispatch("fetchResponse", route.params.id).then((data) => {
         console.log(data);
         testdata.value = data;
-        answerDetails.value = data.answerDetails;
+        // answerDetails.value = data.answerDetails;
+        surveyResponses.value = data.response;
         // totalResponses.value = data.totalResponses;
         // totalAnswerScale.value = data.totalAnswerScale;
         // averageAnswerScale.value = data.averageAnswerScale;

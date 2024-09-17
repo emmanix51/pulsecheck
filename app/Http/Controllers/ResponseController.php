@@ -17,13 +17,13 @@ class ResponseController extends Controller
             'survey_id' => 'required|exists:surveys,id',
             'respondent_id' => [
                 Rule::requiredIf(function () use ($request) {
-                    // Retrieve the survey_id from the request
+                    
                     $surveyId = $request->input('survey_id');
 
-                    // Retrieve the is_public value from the surveys table
+                    
                     $isPublic = Survey::where('id', $surveyId)->value('is_public');
 
-                    // Return true if is_public is false (meaning respondent_id is required)
+                    
                     return !$isPublic;
                 }),
                 'exists:users,id',
@@ -49,26 +49,25 @@ class ResponseController extends Controller
         $response = Response::create($responseData);
 
         foreach ($validatedData['answers'] as $question_id => $answer) {
-            // Retrieve question type based on question_id (assuming you have a Question model)
+            
             $questionType = Question::where('id', $question_id)->value('question_type');
 
             if ($questionType === 'radio') {
-                // Save answer in answer_scale (assuming answer is numeric)
+                
                 Answer::create([
                     'response_id' => $response->id,
                     'question_id' => $question_id,
                     'answer_scale' => $answer,
                 ]);
             } elseif ($questionType === 'text') {
-                // Save answer in answer_text
+                
                 Answer::create([
                     'response_id' => $response->id,
                     'question_id' => $question_id,
                     'answer_text' => $answer,
                 ]);
             } else {
-                // Handle other question types if needed
-                // This example assumes 'radio' and 'text' are the main types
+                
             }
         }
 

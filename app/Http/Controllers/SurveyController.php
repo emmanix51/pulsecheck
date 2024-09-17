@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Survey;
 use App\Models\Question;
+use App\Models\QuestionGroup;
+use App\Models\QuestionSection;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Mail\SurveyDistributed;
@@ -15,6 +17,7 @@ use App\Http\Resources\SurveyResource;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Notifications\SurveyNotification;
 use App\Http\Requests\UpdateSurveyRequest;
+use Illuminate\Support\Facades\DB;
 
 class SurveyController extends Controller
 {
@@ -32,32 +35,25 @@ class SurveyController extends Controller
      */
     public function store(StoreSurveyRequest $request)
     {
-        //
-
         // Validate the incoming request using StoreSurveyRequest rules
         $validatedData = $request->validated();
-
-        // Handle file upload
-        if ($request->hasFile('image')) {
-            $fileName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images'), $fileName);
-            $validatedData['image'] = $fileName;
-        }
 
         $respondentGroupsData = $validatedData['respondent_groups'] ?? [];
         unset($validatedData['respondent_groups']);
 
-        $questionsData = $validatedData['questions'] ?? [];
-        unset($validatedData['questions']);
+        // $questionsData = $validatedData['questions'] ?? [];
+        // unset($validatedData['questions']);
 
-        // Extract information fields data
+        
         $informationFieldsData = $validatedData['information_fields'] ?? [];
-        unset($validatedData['information_fields']); // Remove from main data
+        unset($validatedData['information_fields']); 
 
+
+        Log::info('Validated Data:', $validatedData);
         $survey = new Survey($validatedData);
         $survey->save();
 
-        // Attach respondent groups
+        
         foreach ($respondentGroupsData as $groupData) {
             $respondentGroup = RespondentGroup::firstOrCreate([
                 'type' => $groupData['type'],
@@ -67,14 +63,40 @@ class SurveyController extends Controller
             $survey->respondentGroups()->attach($respondentGroup);
         }
 
-        foreach ($questionsData as $questionData) {
+
+        $questionSectionsData = $validatedData['question_sections'] ?? [];
+        // $questionGroupsData = $validatedData['question_groups'] ?? [];
+        foreach ($questionSectionsData as $sectionData) {
+            $questionSection = QuestionSection::create([
+            'survey_id' => $survey->id,
+            'section_number'=>$sectionData['section_number'],
+            'section_label'=>$sectionData['section_label'],
+            'section_instruction'=>$sectionData['section_instruction'],
+            ]);
+            foreach ($sectionData['question_groups'] as $groupData) {
+        $questionGroup = QuestionGroup::create([
+            'survey_id' => $survey->id,
+            'question_section_id'=>$questionSection->id,
+            'number' => $groupData['number'],
+            'label' => $groupData['label'],
+            'question_instruction' => $groupData['question_instruction'],
+            'category_label' => $groupData['category_label'] ?? "",
+            'question_categories' => json_encode($groupData['question_categories'] ?? []),
+        ]);
+
+        foreach ($groupData['questions'] ?? [] as $questionData) {
             if (is_array($questionData['data'])) {
-                $questionData['data'] = json_encode($questionData['data']); // Convert array to JSON string for storage
+                $questionData['data'] = json_encode($questionData['data']);
             }
+            $questionData['question_group_id'] = $questionGroup->id;
             $question = new Question($questionData);
             $survey->questions()->save($question);
+            $questionGroup->questions()->save($question);
+        }
+    }
         }
 
+        
         // foreach ($questionsData as $questionData) {
         //     $question = new Question([
         //         'question_type' => $questionData['question_type'],
@@ -93,8 +115,9 @@ class SurveyController extends Controller
         foreach ($informationFieldsData as $fieldData) {
             $survey->informationFields()->create($fieldData);
         }
+        
 
-        $survey->load(['respondentGroups', 'questions', 'informationFields']);  // Load relationships
+        $survey->load(['respondentGroups','questionSections.question_groups', 'questions', 'informationFields']);  // Load relationships
         return new SurveyResource($survey);
     }
 
@@ -109,7 +132,8 @@ class SurveyController extends Controller
             return abort(403, 'You do not own this survey.');
         }
 
-        $survey->load(['respondentGroups', 'questions', 'informationFields']);  // Load relationships
+        $survey->load(['respondentGroups','questionGroups', 'questionGroups.questions', 'informationFields']);  // Load relationships
+        Log::info($survey);
         return new SurveyResource($survey);
     }
 
@@ -118,36 +142,24 @@ class SurveyController extends Controller
      */
     public function update(UpdateSurveyRequest $request, Survey $survey)
     {
-        //
-        // Validate the incoming request using UpdateSurveyRequest rules
+        
         $validatedData = $request->validated();
 
-        // Handle file upload
-        if ($request->hasFile('image')) {
-            // Delete the old image if it exists
-            if ($survey->image) {
-                unlink(public_path('images') . '/' . $survey->image);
-            }
-
-            $fileName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images'), $fileName);
-            $validatedData['image'] = $fileName;
-        }
-
-
-        // Extract respondent groups data
         $respondentGroupsData = $validatedData['respondent_groups'] ?? [];
         unset($validatedData['respondent_groups']); // Remove from main data
 
-        // Extract questions data
-        $questionsData = $validatedData['questions'] ?? [];
-        unset($validatedData['questions']); // Remove from main data
+        // $questionGroupsData = $validatedData['question_groups'] ?? [];
+        // unset($validatedData['question_groups']); // Remove from main data
 
-        // Extract information fields data
+        
+        // $questionsData = $validatedData['questions'] ?? [];
+        // unset($validatedData['questions']); // Remove from main data
+
+        
         $informationFieldsData = $validatedData['information_fields'] ?? [];
         unset($validatedData['information_fields']); // Remove from main data
 
-        // Update the survey instance
+        
         $survey->update($validatedData);
 
         // Update respondent groups
@@ -164,30 +176,154 @@ class SurveyController extends Controller
                 ]);
                 $newGroupIds[] = $respondentGroup->id;
 
-                // If the group is not attached, attach it
+                
                 if (!in_array($respondentGroup->id, $currentGroupIds)) {
                     $survey->respondentGroups()->attach($respondentGroup);
                 }
             }
 
-            // Detach groups that are no longer in the new list
+           
             $groupsToDetach = array_diff($currentGroupIds, $newGroupIds);
             if (!empty($groupsToDetach)) {
                 $survey->respondentGroups()->detach($groupsToDetach);
             }
         }
 
+         // Question sections update logic
+    $questionSectionsData = $validatedData['question_sections'] ?? [];
+    if (!empty($questionSectionsData)) {
+        $currentSectionIds = $survey->questionSections()->pluck('id')->toArray();
+        $newSectionIds = [];
 
-        // Update questions
-        if (!empty($questionsData)) {
-            $survey->questions()->delete();
-            foreach ($questionsData as $questionData) {
-                $questionData['data'] = json_encode($questionData['data']);
-                $survey->questions()->create($questionData);
+        foreach ($questionSectionsData as $sectionData) {
+            // Update or create question sections
+            $questionSection = QuestionSection::updateOrCreate(
+                [
+                    'survey_id' => $survey->id,
+                    'section_number' => $sectionData['section_number'],
+                ],
+                [
+                    'section_label' => $sectionData['section_label'],
+                    'section_instruction' => $sectionData['section_instruction'],
+                ]
+            );
+            $newSectionIds[] = $questionSection->id;
+
+            // Handle question groups within each section
+            if (isset($sectionData['question_groups'])) {
+                $currentGroupIds = $questionSection->question_groups()->pluck('id')->toArray();
+                $newGroupIds = [];
+
+                foreach ($sectionData['question_groups'] as $groupData) {
+                    $questionGroup = QuestionGroup::updateOrCreate(
+                        [
+                            'survey_id' => $survey->id,
+                            'question_section_id' => $questionSection->id,
+                            'number' => $groupData['number'],
+                        ],
+                        [
+                            'label' => $groupData['label'],
+                            'category_label' => $groupData['category_label'],
+                            'question_instruction' => $groupData['question_instruction'],
+                            'question_categories' => json_encode($groupData['question_categories'] ?? []),
+                        ]
+                    );
+                    $newGroupIds[] = $questionGroup->id;
+
+                    // Handle questions within each group
+                    if (isset($groupData['questions'])) {
+                        $currentQuestionIds = $questionGroup->questions()->pluck('id')->toArray();
+                        $newQuestionIds = [];
+
+                        foreach ($groupData['questions'] as $questionData) {
+                            $questionData['data'] = is_array($questionData['data']) ? json_encode($questionData['data']) : $questionData['data'];
+                            $questionData['question_group_id'] = $questionGroup->id;
+
+                            $question = Question::updateOrCreate(
+                                [
+                                    'id' => $questionData['id'] ?? null,
+                                    'survey_id' => $survey->id,
+                                    'question_group_id' => $questionGroup->id,
+                                ],
+                                $questionData
+                            );
+                            $newQuestionIds[] = $question->id;
+                        }
+
+                        // Remove questions that no longer exist
+                        $questionsToDelete = array_diff($currentQuestionIds, $newQuestionIds);
+                        if (!empty($questionsToDelete)) {
+                            Question::whereIn('id', $questionsToDelete)->delete();
+                        }
+                    }
+                }
+
+                // Remove groups that are no longer in the request
+                $groupsToDelete = array_diff($currentGroupIds, $newGroupIds);
+                if (!empty($groupsToDelete)) {
+                    QuestionGroup::whereIn('id', $groupsToDelete)->delete();
+                }
             }
         }
 
-        // Update information fields
+        // Remove sections that are no longer in the request
+        $sectionsToDelete = array_diff($currentSectionIds, $newSectionIds);
+        if (!empty($sectionsToDelete)) {
+            QuestionSection::whereIn('id', $sectionsToDelete)->delete();
+        }
+    }
+
+    
+    // Update question groups and questions
+    // if (!empty($questionGroupsData)) {
+    //     $currentGroupIds = $survey->questionGroups()->pluck('id')->toArray();
+    //     $newGroupIds = [];
+
+    //     foreach ($questionGroupsData as $groupData) {
+    //         $questionGroup = QuestionGroup::updateOrCreate(
+    //             [
+    //                 'survey_id' => $survey->id,
+    //                 'number' => $groupData['number'],
+    //             ],
+    //             [
+    //                 'label' => $groupData['label'],
+    //                 'category_label' => $groupData['category_label'],
+    //                 'question_instruction' => $groupData['question_instruction'],
+    //                 'question_categories' => json_encode($groupData['question_categories'] ?? []),
+    //             ]
+    //         );
+    //         $newGroupIds[] = $questionGroup->id;
+
+    //         if (isset($groupData['questions'])) {
+    //              $currentQuestionIds = $survey->questions()->where('question_group_id', $questionGroup->id)->pluck('id')->toArray();
+    //             foreach ($groupData['questions'] as $questionData) {
+    //                 $questionData['data'] = is_array($questionData['data']) ? json_encode($questionData['data']) : $questionData['data'];
+    //                 $questionData['question_group_id'] = $questionGroup->id;
+
+    //                 Question::updateOrCreate(
+    //                     [
+    //                         'id' => $questionData['id'] ?? null,
+    //                         'survey_id' => $survey->id,
+    //                         'question_group_id' => $questionGroup->id,
+    //                     ],
+    //                     $questionData
+    //                 );
+    //                  // Remove questions that are no longer in the request
+    //             $newQuestionIds = $groupData['questions'] ? array_column($groupData['questions'], 'id') : [];
+    //             $questionsToDelete = array_diff($currentQuestionIds, $newQuestionIds);
+    //             if (!empty($questionsToDelete)) {
+    //                 Question::whereIn('id', $questionsToDelete)->delete();
+    //             }
+    //             }
+    //         }
+    //     }
+
+    //     // Detach question groups that are no longer associated
+    //     $groupsToDetach = array_diff($currentGroupIds, $newGroupIds);
+    //     if (!empty($groupsToDetach)) {
+    //         $survey->questionGroups()->whereIn('id', $groupsToDetach)->delete();
+    //     }
+    // }
         if (!empty($informationFieldsData)) {
             $survey->informationFields()->delete();
             foreach ($informationFieldsData as $fieldData) {
@@ -195,7 +331,6 @@ class SurveyController extends Controller
             }
         }
 
-        // Return a response indicating success
         return new SurveyResource($survey);
     }
 
@@ -215,7 +350,7 @@ class SurveyController extends Controller
         $survey->respondentGroups()->detach();
         $survey->informationFields()->delete();
 
-        // Delete the survey itself
+        // Delete the surveyy
         $survey->delete();
 
         return response()->json(['message' => 'Survey deleted successfully']);
@@ -223,7 +358,7 @@ class SurveyController extends Controller
 
     public function showBySlug($slug)
     {
-        $survey = Survey::where('slug', $slug)->with(['questions', 'respondentGroups', 'informationFields'])->first();
+        $survey = Survey::where('slug', $slug)->with(['questions','questionGroups', 'respondentGroups', 'informationFields'])->first();
 
         if (!$survey) {
             return response()->json(['error' => 'Survey not found'], 404);
@@ -233,7 +368,7 @@ class SurveyController extends Controller
     }
     public function showPublicBySlug($slug)
     {
-        $survey = Survey::where('slug', $slug)->with(['questions', 'respondentGroups', 'informationFields'])->first();
+        $survey = Survey::where('slug', $slug)->with(['questionSections.question_groups.questions', 'respondentGroups', 'informationFields'])->first();
 
         if (!$survey) {
             return response()->json(['error' => 'Survey not founsd'], 404);

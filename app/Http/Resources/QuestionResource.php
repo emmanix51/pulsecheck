@@ -18,6 +18,8 @@ class QuestionResource extends JsonResource
             'id' => $this->id,
             'question_type' => $this->question_type,
             'question' => $this->question,
+            'category' => $this->category,
+            'group' => $this->group,
             'description' => $this->description,
             'data' => $this->data,
             'survey_id' => $this->survey_id,

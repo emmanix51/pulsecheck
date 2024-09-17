@@ -46,6 +46,7 @@ class DashboardController extends Controller
         }
         return response()->json([
             'role' => $user->role,
+            'user_name' => $user->first_name,
             'data' => $data
         ]);
     }

@@ -1,13 +1,13 @@
 <template>
     <div class="min-h-full">
-        <Disclosure as="nav" class="bg-gray-800" v-slot="{ open }">
+        <Disclosure as="nav" class="bg-spccolor-600" v-slot="{ open }">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <img
-                                class="h-8 w-8"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                                class="h-8 w-8 rounded-full"
+                                src="/spc.png"
                                 alt="Your Company"
                             />
                         </div>
@@ -17,11 +17,11 @@
                                     v-for="item in navigation"
                                     :key="item.name"
                                     :to="item.to"
-                                    active-class="bg-gray-900 text-white"
+                                    active-class="bg-white text-spccolor-600"
                                     :class="[
                                         this.$route.name === item.to.name
                                             ? ''
-                                            : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                                            : 'text-gray-300 hover:bg-spccolor-500 border-transparent hover:border-white hover:text-white transition-all ease-in-out',
                                         'px-3 py-2 rounded-md text-sm font-medium',
                                     ]"
                                     >{{ item.name }}
@@ -33,7 +33,7 @@
                         <div class="ml-4 flex items-center md:ml-6">
                             <button
                                 type="button"
-                                class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                class="relative rounded-full bg-white p-1 text-spccolor-600 hover:bg-spccolor-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                                 @click="toggleNotifications"
                             >
                                 <span class="sr-only">View notifications</span>
@@ -78,17 +78,26 @@
                             <Menu as="div" class="relative ml-3">
                                 <div>
                                     <MenuButton
-                                        class="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                        class="relative flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none ring-2 ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                                     >
                                         <span class="absolute -inset-1.5" />
                                         <span class="sr-only"
                                             >Open user menu</span
                                         >
-                                        <img
-                                            class="h-8 w-8 rounded-full"
-                                            :src="user.imageUrl"
-                                            alt=""
-                                        />
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                            class="size-6"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                            />
+                                        </svg>
                                     </MenuButton>
                                 </div>
                                 <transition
