@@ -702,9 +702,9 @@
             <!-- Questions field -->
 
             <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                <!-- <button @click="saveAsTemplate" type="button">
+                <button @click="saveAsTemplate" type="button">
                     Save as template
-                </button> -->
+                </button>
                 <button
                     @click="showPreviewBtn"
                     type="button"
@@ -923,9 +923,9 @@ import PageComponent from "../components/PageComponent.vue";
 
 const route = useRoute();
 const router = useRouter();
+const user = computed(() => store.state.user.data);
 
 let model = ref({
-    image: "",
     title: "",
     slug: "",
     status: null,
@@ -1115,22 +1115,17 @@ const removeQuestion = (sectionIndex, groupIndex, index) => {
 
 const saveAsTemplate = () => {
     const formData = JSON.parse(JSON.stringify(model.value));
-    formData.questions.forEach((question) => {
-        if (Array.isArray(question.data)) {
-            question.data = JSON.stringify(question.data);
-        }
-        if (question.question_type === "text") {
-            question.data = null;
-        }
-    });
+    const templateName = formData.title + " template";
+    const userId = user.value.id;
+    console.log(userId);
 
     const templateData = {
-        title: formData.title,
-        description: formData.description,
-        data: JSON.stringify(formData),
+        user_id: userId,
+        name: templateName,
+        template: formData,
     };
 
-    store
+    template = store
         .dispatch("saveAsTemplate", templateData)
         .then(() => {
             alert("Template saved successfully");

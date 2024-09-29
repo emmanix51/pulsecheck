@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Template;
 use Illuminate\Http\Request;
-use App\Http\Requests\StoreSurveyRequest;
+use Illuminate\Support\Facades\Validator;
 
 class TemplateController extends Controller
 {
@@ -27,32 +27,25 @@ class TemplateController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSurveyRequest $request)
+    public function store(Request $request)
     {
-        // Validate the incoming request using StoreSurveyRequest rules
-        $validatedData = $request->validated();
 
-        // Handle file upload
-        if ($request->hasFile('image')) {
-            $fileName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images'), $fileName);
-            $validatedData['image'] = $fileName;
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'user_id' => 'required|exists:users,id',
+            'template' => 'required|json',
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
         }
 
-        $respondentGroupsData = $validatedData['respondent_groups'] ?? [];
-        unset($validatedData['respondent_groups']);
-
-        $questionsData = $validatedData['questions'] ?? [];
-        unset($validatedData['questions']);
-
-        $informationFieldsData = $validatedData['information_fields'] ?? [];
-        unset($validatedData['information_fields']); // Remove from main data
-
-        // Create a new template
         $template = new Template();
-        $template->title = $validatedData['title'];
-        $template->description = $validatedData['description'] ?? '';
-        $template->data = json_encode($validatedData);
+        $template->first_name = $request->first_name;
+        $template->user_id = $request->user_id;
+        $template->template = $request->template;
+
         $template->save();
 
         // Optionally, you can store additional data like respondent groups, questions, and information fields if needed

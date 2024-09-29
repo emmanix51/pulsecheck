@@ -204,7 +204,10 @@
                         </div>
                     </div>
 
-                    <div v-if="showQuestionCategoryFieldFilter" class="space-y-2">
+                    <div
+                        v-if="showQuestionCategoryFieldFilter"
+                        class="space-y-2"
+                    >
                         <h3 class="text-sm font-medium text-gray-700">
                             Question Category
                         </h3>
@@ -213,22 +216,28 @@
                                 v-for="section in questionSections"
                                 :key="section.id"
                             >
-                            
-                                <label
+                                <template
                                     v-for="question_group in section.question_groups"
                                     :key="question_group.id"
-                                    class="flex items-center"
                                 >
-                                    <input
-                                        type="checkbox"
-                                        :value="question_group.id"
-                                        v-model="filters.question_groups_ids"
-                                        class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                    />
-                                    <span class="ml-2 text-sm text-gray-600">{{
-                                        question_group.label
-                                    }}</span>
-                                </label>
+                                    <label
+                                        v-for="question_category in question_group.question_categories"
+                                        class="flex items-center"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :value="question_category"
+                                            v-model="
+                                                filters.question_categories
+                                            "
+                                            class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                        />
+                                        <span
+                                            class="ml-2 text-sm text-gray-600"
+                                            >{{ question_category }}</span
+                                        >
+                                    </label>
+                                </template>
                             </template>
                         </div>
                     </div>
@@ -804,6 +813,7 @@ const filterLabels = {
     showQuestionFieldFilter: "Questions",
     showQuestionSectionFieldFilter: "Questions Section",
     showQuestionGroupFieldFilter: "Questions Group",
+    showQuestionCategoryFieldFilter: "Questions Category",
 };
 
 const filters = ref({
@@ -848,6 +858,9 @@ const showQuestionSectionFieldFilter = computed(
 );
 const showQuestionGroupFieldFilter = computed(
     () => activeFilters.value.showQuestionGroupFieldFilter
+);
+const showQuestionCategoryFieldFilter = computed(
+    () => activeFilters.value.showQuestionCategoryFieldFilter
 );
 
 const totalResponses = ref(0);
@@ -902,7 +915,7 @@ const applyFilters = () => {
         .map((id) => `question_groups_ids[]=${encodeURIComponent(id)}`)
         .join("&");
     const questionCategoriesParams = params.question_categories
-        .map((id) => `question_categories_ids[]=${encodeURIComponent(id)}`)
+        .map((id) => `question_categories[]=${encodeURIComponent(id)}`)
         .join("&");
     const questionIdsParams = params.question_ids
         .map((id) => `question_ids[]=${encodeURIComponent(id)}`)

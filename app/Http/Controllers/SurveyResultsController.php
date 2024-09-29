@@ -97,7 +97,7 @@ class SurveyResultsController extends Controller
 
     public function getSurveyDetails($id)
     {
-        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions','questionSections.question_groups.questions'])->findOrFail($id);
+        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions', 'questionSections.question_groups.questions'])->findOrFail($id);
         $allResponses = $survey->responses;
         // \Illuminate\Support\Facades\Log::info($allResponses);
         return response()->json([
@@ -234,31 +234,35 @@ class SurveyResultsController extends Controller
             });
         }
 
-if ($request->has('question_sections_ids')) {
-    $questionSectionIds = $request->get('question_sections_ids');
-    $query->whereHas('answers.question.question_group.question_section', function ($q) use ($questionSectionIds) {
-        $q->whereIn('question_sections.id', $questionSectionIds);
-    });
-}
-
-
-if ($request->has('question_groups_ids')) {
-    $questionGroupIds = $request->get('question_groups_ids');
-    $query->whereHas('answers.question.question_group', function ($q) use ($questionGroupIds) {
-        $q->whereIn('question_groups.id', $questionGroupIds);
-    });
-}
-
-
-if ($request->has('question_categories_ids')) {
-    $questionCategories = $request->get('question_categories_ids');
-    $query->whereHas('answers.question', function ($q) use ($questionCategories) {
-        foreach ($questionCategories as $category) {
-            $q->orWhereJsonContains('question_categories', $category);
+        if ($request->has('question_sections_ids')) {
+            $questionSectionIds = $request->get('question_sections_ids');
+            $query->whereHas('answers.question.question_group.question_section', function ($q) use ($questionSectionIds) {
+                $q->whereIn('question_sections.id', $questionSectionIds);
+            });
         }
-    });
-}
 
+
+        if ($request->has('question_groups_ids')) {
+            $questionGroupIds = $request->get('question_groups_ids');
+            $query->whereHas('answers.question.question_group', function ($q) use ($questionGroupIds) {
+                $q->whereIn('question_groups.id', $questionGroupIds);
+            });
+        }
+
+
+        if ($request->has('question_categories')) {
+            $questionCategories = $request->get('question_categories');
+            // Ensure questionCategories is an array
+            if (!is_array($questionCategories)) {
+                $questionCategories = [$questionCategories];
+            }
+
+            $query->whereHas('answers', function ($q) use ($questionCategories) {
+                $q->whereHas('question', function ($subQuery) use ($questionCategories) {
+                    $subQuery->whereIn('category', $questionCategories);
+                });
+            });
+        }
 
 
         if ($request->has('question_ids')) {
@@ -285,63 +289,69 @@ if ($request->has('question_categories_ids')) {
         // \Illuminate\Support\Facades\Log::info($query->getBindings());
 
 
-   // Fetch the filtered responses with filtered answers
-    $filteredResponses = $query->with(['answers' => function ($q) use ($request) {
-        // Apply the same filters to the answers relationship
-        if ($request->has('question_sections_ids')) {
-            $questionSectionIds = $request->get('question_sections_ids');
-            $q->whereHas('question.question_group.question_section', function ($subQ) use ($questionSectionIds) {
-                $subQ->whereIn('question_sections.id', $questionSectionIds);
-            });
-        }
+        // Fetch the filtered responses with filtered answers
+        $filteredResponses = $query->with(['answers' => function ($q) use ($request) {
+            // Apply the same filters to the answers relationship
+            if ($request->has('question_sections_ids')) {
+                $questionSectionIds = $request->get('question_sections_ids');
+                $q->whereHas('question.question_group.question_section', function ($subQ) use ($questionSectionIds) {
+                    $subQ->whereIn('question_sections.id', $questionSectionIds);
+                });
+            }
 
-        if ($request->has('question_groups_ids')) {
-            $questionGroupIds = $request->get('question_groups_ids');
-            $q->whereHas('question.question_group', function ($subQ) use ($questionGroupIds) {
-                $subQ->whereIn('question_groups.id', $questionGroupIds);
-            });
-        }
+            if ($request->has('question_groups_ids')) {
+                $questionGroupIds = $request->get('question_groups_ids');
+                $q->whereHas('question.question_group', function ($subQ) use ($questionGroupIds) {
+                    $subQ->whereIn('question_groups.id', $questionGroupIds);
+                });
+            }
 
-        if ($request->has('question_categories_ids')) {
-            $questionCategories = $request->get('question_categories_ids');
-            foreach ($questionCategories as $category) {
-                $q->orWhereJsonContains('question_categories', $category);
+            if ($request->has('question_categories')) {
+                $questionCategories = $request->get('question_categories');
+                // Ensure questionCategories is an array
+                if (!is_array($questionCategories)) {
+                    $questionCategories = [$questionCategories];
+                }
+
+                // Filter answers based on the question categories
+                $q->whereHas('question', function ($subQuery) use ($questionCategories) {
+                    $subQuery->whereIn('category', $questionCategories);
+                });
+            }
+
+            if ($request->has('question_ids')) {
+                $questionIds = $request->get('question_ids');
+                $q->whereIn('question_id', $questionIds);
+            }
+        }])->get();
+
+        // Calculate the required statistics
+        $totalResponses = $filteredResponses->count();
+        $totalAnswers = 0;
+        $totalAnswerScale = 0;
+
+        foreach ($filteredResponses as $response) {
+            foreach ($response->answers as $answer) {
+                $totalAnswers++;
+                $totalAnswerScale += $answer->answer_scale;
             }
         }
 
-        if ($request->has('question_ids')) {
-            $questionIds = $request->get('question_ids');
-            $q->whereIn('question_id', $questionIds);
-        }
-    }])->get();
+        // Calculate average answer scale
+        $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
 
-    // Calculate the required statistics
-    $totalResponses = $filteredResponses->count();
-    $totalAnswers = 0;
-    $totalAnswerScale = 0;
+        // Get the total number of all responses (optional, based on your use case)
+        $allResponses = Response::where('survey_id', $id)->count();
 
-    foreach ($filteredResponses as $response) {
-        foreach ($response->answers as $answer) {
-            $totalAnswers++;
-            $totalAnswerScale += $answer->answer_scale;
-        }
+        // Return the statistics as JSON
+        return response()->json([
+            'allResponses' => $allResponses,
+            'filteredResponses' => $filteredResponses,
+            'totalResponses' => $totalResponses,
+            'totalAnswers' => $totalAnswers,
+            'averageAnswerScale' => $averageAnswerScale,
+        ]);
     }
-
-    // Calculate average answer scale
-    $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
-
-    // Get the total number of all responses (optional, based on your use case)
-    $allResponses = Response::where('survey_id', $id)->count();
-
-    // Return the statistics as JSON
-    return response()->json([
-        'allResponses' => $allResponses,
-        'filteredResponses' => $filteredResponses,
-        'totalResponses' => $totalResponses,
-        'totalAnswers' => $totalAnswers,
-        'averageAnswerScale' => $averageAnswerScale,
-    ]);
-}
 
     public function exportAllResponses($id)
     {
