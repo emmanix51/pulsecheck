@@ -234,6 +234,33 @@ class SurveyResultsController extends Controller
             });
         }
 
+if ($request->has('question_sections_ids')) {
+    $questionSectionIds = $request->get('question_sections_ids');
+    $query->whereHas('answers.question.question_group.question_section', function ($q) use ($questionSectionIds) {
+        $q->whereIn('question_sections.id', $questionSectionIds);
+    });
+}
+
+
+if ($request->has('question_groups_ids')) {
+    $questionGroupIds = $request->get('question_groups_ids');
+    $query->whereHas('answers.question.question_group', function ($q) use ($questionGroupIds) {
+        $q->whereIn('question_groups.id', $questionGroupIds);
+    });
+}
+
+
+if ($request->has('question_categories_ids')) {
+    $questionCategories = $request->get('question_categories_ids');
+    $query->whereHas('answers.question', function ($q) use ($questionCategories) {
+        foreach ($questionCategories as $category) {
+            $q->orWhereJsonContains('question_categories', $category);
+        }
+    });
+}
+
+
+
         if ($request->has('question_ids')) {
             $questionIds = $request->get('question_ids');
 
@@ -258,39 +285,63 @@ class SurveyResultsController extends Controller
         // \Illuminate\Support\Facades\Log::info($query->getBindings());
 
 
-        // Get the filtered responses
-        $filteredResponses = $query->with(['answers' => function ($q) use ($request) {
-            if ($request->has('question_ids')) {
-                $questionIds = $request->get('question_ids');
-                $q->whereIn('question_id', $questionIds);
-            }
-        }])->get();
+   // Fetch the filtered responses with filtered answers
+    $filteredResponses = $query->with(['answers' => function ($q) use ($request) {
+        // Apply the same filters to the answers relationship
+        if ($request->has('question_sections_ids')) {
+            $questionSectionIds = $request->get('question_sections_ids');
+            $q->whereHas('question.question_group.question_section', function ($subQ) use ($questionSectionIds) {
+                $subQ->whereIn('question_sections.id', $questionSectionIds);
+            });
+        }
 
-        // Calculate the required statistics
-        $totalResponses = $filteredResponses->count();
-        $totalAnswers = 0;
-        $totalAnswerScale = 0;
+        if ($request->has('question_groups_ids')) {
+            $questionGroupIds = $request->get('question_groups_ids');
+            $q->whereHas('question.question_group', function ($subQ) use ($questionGroupIds) {
+                $subQ->whereIn('question_groups.id', $questionGroupIds);
+            });
+        }
 
-        foreach ($filteredResponses as $response) {
-            foreach ($response->answers as $answer) {
-                $totalAnswers++;
-                $totalAnswerScale += $answer->answer_scale;
+        if ($request->has('question_categories_ids')) {
+            $questionCategories = $request->get('question_categories_ids');
+            foreach ($questionCategories as $category) {
+                $q->orWhereJsonContains('question_categories', $category);
             }
         }
 
-        $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
+        if ($request->has('question_ids')) {
+            $questionIds = $request->get('question_ids');
+            $q->whereIn('question_id', $questionIds);
+        }
+    }])->get();
 
-        $allResponses = Response::where('survey_id', $id);
+    // Calculate the required statistics
+    $totalResponses = $filteredResponses->count();
+    $totalAnswers = 0;
+    $totalAnswerScale = 0;
 
-
-        return response()->json([
-            'allResponses' => $allResponses,
-            'filteredResponses' => $filteredResponses,
-            'totalResponses' => $totalResponses,
-            'totalAnswers' => $totalAnswers,
-            'averageAnswerScale' => $averageAnswerScale,
-        ]);
+    foreach ($filteredResponses as $response) {
+        foreach ($response->answers as $answer) {
+            $totalAnswers++;
+            $totalAnswerScale += $answer->answer_scale;
+        }
     }
+
+    // Calculate average answer scale
+    $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
+
+    // Get the total number of all responses (optional, based on your use case)
+    $allResponses = Response::where('survey_id', $id)->count();
+
+    // Return the statistics as JSON
+    return response()->json([
+        'allResponses' => $allResponses,
+        'filteredResponses' => $filteredResponses,
+        'totalResponses' => $totalResponses,
+        'totalAnswers' => $totalAnswers,
+        'averageAnswerScale' => $averageAnswerScale,
+    ]);
+}
 
     public function exportAllResponses($id)
     {
