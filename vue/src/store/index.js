@@ -458,6 +458,11 @@ const store = createStore({
                 return res;
             });
         },
+        getTemplates({ commit }) {
+            return axiosClient.get(`/template`).then(({ data }) => {
+                return data;
+            });
+        },
         saveAsTemplate({}, formData) {
             return axiosClient.post("/template", formData);
         },

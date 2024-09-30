@@ -1114,7 +1114,7 @@ const removeQuestion = (sectionIndex, groupIndex, index) => {
 };
 
 const saveAsTemplate = () => {
-    const formData = JSON.parse(JSON.stringify(model.value));
+    const formData = JSON.stringify(model.value);
     const templateName = formData.title + " template";
     const userId = user.value.id;
     console.log(userId);

@@ -5,6 +5,7 @@ import Register from "../views/Register.vue";
 import Dashboard from "../views/Dashboard.vue";
 import ManageAccount from "../views/ManageAccount.vue";
 import Surveys from "../views/Surveys.vue";
+import Templates from "../views/Templates.vue";
 import SurveyView from "../views/SurveyView.vue";
 import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
@@ -34,6 +35,7 @@ const routes = [
         children: [
             { path: "/dashboard", name: "Dashboard", component: Dashboard },
             { path: "/surveys", name: "Surveys", component: Surveys },
+            { path: "/templates", name: "Templates", component: Templates },
             {
                 path: "/surveys/create",
                 name: "SurveyCreate",
