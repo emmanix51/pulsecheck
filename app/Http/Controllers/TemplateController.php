@@ -42,7 +42,7 @@ class TemplateController extends Controller
         }
 
         $template = new Template();
-        $template->first_name = $request->first_name;
+        $template->name = $request->name;
         $template->user_id = $request->user_id;
         $template->template = $request->template;
 

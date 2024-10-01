@@ -975,8 +975,8 @@ const showPreviewBtn = () => {
 // });
 
 if (route.params.id) {
-    store.dispatch("fetchSurvey", route.params.id).then((surveyData) => {
-        console.log(surveyData);
+    store.dispatch("fetchTemplate", route.params.id).then((templateData) => {
+        // console.log(surveyData);
 
         // JSON.parse(surveyData.question_categories);
         try {
@@ -1114,11 +1114,8 @@ const removeQuestion = (sectionIndex, groupIndex, index) => {
 };
 
 const saveAsTemplate = () => {
-    const formData = JSON.stringify(model.value);
-    let templateName = JSON.parse(JSON.stringify(model.value.title));
-    // console.log(templateName);
-    templateName = `${templateName} template`;
-    console.log(templateName);
+    const formData = JSON.parse(JSON.stringify(model.value));
+    const templateName = formData.title + " template";
     const userId = user.value.id;
     console.log(userId);
 

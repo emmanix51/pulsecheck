@@ -6,6 +6,7 @@ import Dashboard from "../views/Dashboard.vue";
 import ManageAccount from "../views/ManageAccount.vue";
 import Surveys from "../views/Surveys.vue";
 import SurveyView from "../views/SurveyView.vue";
+import TemplateView from "../views/TemplateView.vue";
 import UserManagement from "../views/UserManagement.vue";
 import SurveyAnswerView from "../views/SurveyAnswerView.vue";
 import RespondentSurveys from "../views/RespondentSurveys.vue";
@@ -40,6 +41,7 @@ const routes = [
                 component: SurveyView,
             },
             { path: "/surveys/:id", name: "SurveyView", component: SurveyView },
+            { path: "/template/:id", name: "TemplateView", component: TemplateView },
             {
                 path: "/manage-account",
                 name: "ManageAccount",
