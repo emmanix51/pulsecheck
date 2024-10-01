@@ -11,9 +11,10 @@ class TemplateController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = $request->user();
+        return Template::where('user_id', $user->id)->paginate(5);
     }
 
     /**
