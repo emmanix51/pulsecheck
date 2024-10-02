@@ -787,7 +787,7 @@
                     <p>Number of Responses: {{ totalResponses }}</p>
                     <p>Total Answers: {{ totalAnswers }}</p>
                     <p>
-                        Average Answer Scale:
+                    Filtered Answer Analysis:
                         {{ averageAnswerScale.toFixed(2) }}
                     </p>
                     <!-- Render filtered responses here -->

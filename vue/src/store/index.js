@@ -418,6 +418,13 @@ const store = createStore({
                     return response;
                 });
         },
+        deleteTemplate({ commit }, templateId) {
+            return axiosClient
+                .delete(`/template/${templateId}`)
+                .then((response) => {
+                    return response;
+                });
+        },
         async distributeSurvey({ dispatch }, surveyId) {
             try {
                 await axiosClient.post(`/survey/${surveyId}/distribute`);
@@ -485,6 +492,13 @@ const store = createStore({
                 });
             }
             return response;
+        },
+        fetchTemplate({ commit }, id) {
+            return axiosClient.get(`/template/${id}`).then(({ data }) => {
+                // commit("setSurvey", data.data);
+                console.log(data);
+                return data;
+            });
         },
         fetchSurvey({ commit }, id) {
             return axiosClient.get(`/survey/${id}`).then(({ data }) => {

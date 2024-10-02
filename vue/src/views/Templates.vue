@@ -9,7 +9,7 @@
                 </div>
             </template>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-                <pre>{{ templates }}</pre>
+                <!-- <pre>{{ templates }}</pre> -->
                 <!-- <pre>{{ surveys }}</pre> -->
                 <div
                     v-for="template in templates"
@@ -23,11 +23,7 @@
                         }"
                         class="mt-4 text-lg font-bold"
                         >{{ template.name }}</router-link
-                    > -->
-                    <div>
-                        {{ template.name }}
-                    </div>
-
+                    >
                     <div class="flex justify-between items-center mt-3">
                         <!-- <router-link
                             :to="{
@@ -51,7 +47,7 @@
                                 />
                             </svg>
                             Edit
-                        </router-link> -->
+                        </router-link>
                         <button
                             v-if="template.id"
                             type="button"
@@ -109,11 +105,12 @@ onMounted(async () => {
 function deleteTemplate(template) {
     if (confirm(`you sure you want to delete ${template.name} bruh?`)) {
         //delete survey
-        // store.dispatch("deleteSurvey", survey.id).then(() => {
-        //     router.push({ name: "Surveys" });
-        //     alert("Survey Deleted Successfully.");
-        //     store.dispatch("getSurveys");
-        // });
+
+        store.dispatch("deleteTemplate", template.id).then(() => {
+            router.push({ name: "Templates" });
+            alert("Template Deleted Successfully.");
+            store.dispatch("getTemplates");
+        });
     } else {
         alert("okii");
     }
