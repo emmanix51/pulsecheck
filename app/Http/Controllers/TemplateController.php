@@ -58,9 +58,15 @@ class TemplateController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request,string $id)
     {
-        //
+        $user = $request->user();
+        $template = Template::where('id',$id)->firstOrFail();
+        if ($user->id !== $template->user_id) {
+            return abort(403, 'You do not own this survey.');
+        }
+
+        return $template;
     }
 
     /**
@@ -82,8 +88,14 @@ class TemplateController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request,string $id)
     {
         //
+        $user = $request->user();
+        $template = Template::where('id',$id)->firstOrFail();
+        if ($user->id !== $template->user_id) {
+            return abort(403, 'dili imohang template');
+        }
+        $template->delete();
     }
 }

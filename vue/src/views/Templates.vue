@@ -9,30 +9,26 @@
                 </div>
             </template>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-                <pre>{{ templates }}</pre>
+                <!-- <pre>{{ templates }}</pre> -->
                 <!-- <pre>{{ surveys }}</pre> -->
                 <div
-                    v-for="survey in surveys"
-                    :key="survey.id"
+                    v-for="template in templates"
+                    :key="template.id"
                     class="flex flex-col py-4 px-6 shadow-md bg-white hover:bg-gray-50 h-[200px]"
                 >
                     <router-link
                         :to="{
-                            name: 'SurveyView',
-                            params: { id: survey.id },
+                            name: 'TemplateView',
+                            params: { id: template.id },
                         }"
                         class="mt-4 text-lg font-bold"
-                        >{{ survey.title }}</router-link
+                        >{{ template.name }}</router-link
                     >
-                    <div
-                        v-html="survey.description"
-                        class="overflow-hidden flex-1"
-                    ></div>
                     <div class="flex justify-between items-center mt-3">
                         <router-link
                             :to="{
-                                name: 'SurveyView',
-                                params: { id: survey.id },
+                                name: 'TemplateView',
+                                params: { id: template.id },
                             }"
                             class="flex py-2 px-4 border border-transparent text-sm rounded-md text-white bg-spccolor-600 hover:bg-spccolor-500 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
@@ -52,34 +48,10 @@
                             </svg>
                             Edit
                         </router-link>
-                        <router-link
-                            :to="{
-                                name: 'SurveyResults',
-                                params: { id: survey.id },
-                            }"
-                            class="flex py-2 px-4 border border-transparent text-sm rounded-md text-white bg-spccolor-600 hover:bg-spccolor-500 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="size-6"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z"
-                                />
-                            </svg>
-
-                            Results
-                        </router-link>
                         <button
-                            v-if="survey.id"
+                            v-if="template.id"
                             type="button"
-                            @click="deleteSurvey(survey)"
+                            @click="deleteTemplate(template)"
                             class="h-8 w-8 flex items-center justify-center rounded-full border border-transparent text-sm text-red-500 focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         >
                             <svg
@@ -94,13 +66,6 @@
                                     clip-rule="evenodd"
                                 />
                             </svg>
-                        </button>
-                        <button
-                            type="button"
-                            @click="distributeSurvey(survey)"
-                            class="h-8 w-8 flex items-center justify-center rounded-full border border-transparent text-sm text-emerald-500 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                        >
-                            Distribute
                         </button>
                     </div>
                 </div>
@@ -137,14 +102,14 @@ onMounted(async () => {
     // store.dispatch("getTemplates");
 });
 
-function deleteSurvey(survey) {
-    if (confirm(`you sure you want to delete ${survey.title} survey bruh?`)) {
+function deleteTemplate(template) {
+    if (confirm(`you sure you want to delete ${template.name} bruh?`)) {
         //delete survey
 
-        store.dispatch("deleteSurvey", survey.id).then(() => {
-            router.push({ name: "Surveys" });
-            alert("Survey Deleted Successfully.");
-            store.dispatch("getSurveys");
+        store.dispatch("deleteTemplate", template.id).then(() => {
+            router.push({ name: "Templates" });
+            alert("Template Deleted Successfully.");
+            store.dispatch("getTemplates");
         });
     } else {
         alert("okii");

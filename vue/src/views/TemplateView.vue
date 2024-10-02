@@ -976,27 +976,29 @@ const showPreviewBtn = () => {
 
 if (route.params.id) {
     store.dispatch("fetchTemplate", route.params.id).then((templateData) => {
-        // console.log(surveyData);
-
+        console.log(templateData);
+        let surveyData = JSON.parse(templateData.template);
+        console.log(surveyData);
         // JSON.parse(surveyData.question_categories);
-        try {
-            // surveyData.question_categories = JSON.parse(
-            //     surveyData.question_categories
-            // );
-            surveyData.question_sections.forEach((question_section) => {
-                question_section.forEach((question_group) => {
-                    question_group.question_categories.forEach(
-                        (question_category) => {
-                            question_category = JSON.parse(question_category);
-                        }
-                    );
-                });
-            });
-        } catch (e) {
-            console.error("Error parsing question_categories:", e);
-            // Handle parsing error (e.g., fall back to empty array or other logic)
-            // surveyData.question_categories = [];
-        }
+        // try {
+        //     // surveyData.question_categories = JSON.parse(
+        //     //     surveyData.question_categories
+        //     // );
+        //     surveyData.question_sections.forEach((question_section) => {
+        //         question_section.forEach((question_group) => {
+        //             question_group.question_categories.forEach(
+        //                 (question_category) => {
+        //                     question_category = JSON.parse(question_category);
+        //                 }
+        //             );
+        //         });
+        //     });
+        // } catch (e) {
+        //     console.error("Error parsing question_categories:", e);
+        //     // Handle parsing error (e.g., fall back to empty array or other logic)
+        //     // surveyData.question_categories = [];
+        // }
+            model.value = surveyData;
         surveyData.question_sections.forEach((question_section) => {
             question_section.question_groups.forEach((question_group) => {
                 question_group.questions.forEach((question) => {
@@ -1005,7 +1007,6 @@ if (route.params.id) {
             });
         });
 
-        model.value = surveyData;
     });
 }
 
