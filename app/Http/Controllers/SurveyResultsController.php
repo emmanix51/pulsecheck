@@ -97,16 +97,39 @@ class SurveyResultsController extends Controller
 
     public function getSurveyDetails($id)
     {
-        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions', 'questionSections.question_groups.questions'])->findOrFail($id);
-        $allResponses = $survey->responses;
+        $survey = Survey::with(['respondentGroups', 'informationFields', 'questions', 'questionSections.question_groups.questions', 'responses.answers'])->findOrFail($id);
+
+        $questionScores = [];
+
+        foreach ($survey->responses as $response) {
+            foreach ($response->answers as $answer) {
+                if (!isset($questionScores[$answer->question_id])) {
+                    $questionScores[$answer->question_id] = [
+                        'total' => 0,
+                        'count' => 0,
+                    ];
+                }
+                $questionScores[$answer->question_id]['total'] += $answer->answer_scale;
+                $questionScores[$answer->question_id]['count'] += 1;
+            }
+        }
+
+        // Calculate averages
+        $averages = [];
+        foreach ($questionScores as $questionId => $data) {
+            $averages[$questionId] = $data['count'] > 0 ? $data['total'] / $data['count'] : 0;
+        }
+
         // \Illuminate\Support\Facades\Log::info($allResponses);
         return response()->json([
-            'allResponses' => $allResponses,
+            'allResponses' => $survey->responses,
+            // 'allAnswers' => $allResponses->answers,
             'survey' => $survey,
             'respondentGroups' => $survey->respondentGroups,
             'informationFields' => $survey->informationFields,
             'questions' => $survey->questions,
             'questionSections' => $survey->questionSections,
+            'averageScores' => $averages,
         ]);
     }
 
@@ -309,6 +332,7 @@ class SurveyResultsController extends Controller
             if ($request->has('question_categories')) {
                 $questionCategories = $request->get('question_categories');
                 // Ensure questionCategories is an array
+                Log::info('initial test:', $questionCategories);
                 if (!is_array($questionCategories)) {
                     $questionCategories = [$questionCategories];
                 }

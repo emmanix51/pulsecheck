@@ -16,7 +16,7 @@
                     :key="template.id"
                     class="flex flex-col py-4 px-6 shadow-md bg-white hover:bg-gray-50 h-[200px]"
                 >
-                    <!-- <router-link
+                    <router-link
                         :to="{
                             name: 'TemplateView',
                             params: { id: template.id },
@@ -25,7 +25,7 @@
                         >{{ template.name }}</router-link
                     >
                     <div class="flex justify-between items-center mt-3">
-                        <!-- <router-link
+                        <router-link
                             :to="{
                                 name: 'TemplateView',
                                 params: { id: template.id },
@@ -107,9 +107,14 @@ function deleteTemplate(template) {
         //delete survey
 
         store.dispatch("deleteTemplate", template.id).then(() => {
-            router.push({ name: "Templates" });
             alert("Template Deleted Successfully.");
-            store.dispatch("getTemplates");
+            // Directly remove the template from the local state
+            const index = templates.value.findIndex(
+                (t) => t.id === template.id
+            );
+            if (index !== -1) {
+                templates.value.splice(index, 1);
+            }
         });
     } else {
         alert("okii");
