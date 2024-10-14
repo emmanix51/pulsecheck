@@ -15,6 +15,7 @@ import RespondentResponses from "../views/RespondentResponses.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 import PublicSurveys from "../views/PublicSurveys.vue";
 import AdminResults from "../views/AdminResults.vue";
+import SurveyReport from "../views/SurveyReport.vue";
 import SurveyResults from "../views/SurveyResults.vue";
 import SurveyResponse from "../views/SurveyResponse.vue";
 import SurveyQuestion from "../views/SurveyQuestion.vue";
@@ -43,7 +44,11 @@ const routes = [
                 component: SurveyView,
             },
             { path: "/surveys/:id", name: "SurveyView", component: SurveyView },
-            { path: "/template/:id", name: "TemplateView", component: TemplateView },
+            {
+                path: "/template/:id",
+                name: "TemplateView",
+                component: TemplateView,
+            },
             {
                 path: "/manage-account",
                 name: "ManageAccount",
@@ -59,7 +64,11 @@ const routes = [
                 name: "AdminResults",
                 component: AdminResults,
             },
-
+            {
+                path: "/survey/report/:surveyId",
+                name: "SurveyReport",
+                component: SurveyReport,
+            },
             {
                 path: "/survey/:id/results",
                 name: "SurveyResults",
