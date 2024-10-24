@@ -358,7 +358,9 @@ class SurveyController extends Controller
 
     public function showBySlug($slug)
     {
-        $survey = Survey::where('slug', $slug)->with(['questions','questionGroups', 'respondentGroups', 'informationFields'])->first();
+        // $survey = Survey::where('slug', $slug)->with(['questions','questionGroups', 'respondentGroups', 'informationFields'])->first();
+        $survey = Survey::where('slug', $slug)->with(['questionSections.question_groups.questions', 'respondentGroups', 'informationFields'])->first();
+
 
         if (!$survey) {
             return response()->json(['error' => 'Survey not found'], 404);

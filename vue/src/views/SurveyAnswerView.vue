@@ -34,9 +34,11 @@
                     Select Your Respondent Group Type
                 </label>
                 <select
+                    v-if="isPublicSurvey"
                     v-model="selectedGroupType"
                     @change="updateCategories"
                     class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
+                    :disabled="!isPublicSurvey"
                     required
                 >
                     <option
@@ -47,6 +49,9 @@
                         {{ group.type }}
                     </option>
                 </select>
+                <div v-else>
+                    {{selectedGroupType}}
+                </div>  
             </div>
 
             <!-- Respondent Category Selection -->
@@ -55,8 +60,10 @@
                     Select Your Category
                 </label>
                 <select
+                    v-if="isPublicSurvey"
                     v-model="selectedCategory"
                     class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
+                    :disabled="!isPublicSurvey"
                     required
                 >
                     <option
@@ -67,6 +74,9 @@
                         {{ cat.trim() }}
                     </option>
                 </select>
+                <div v-else>
+                    <h2>{{selectedCategory}}</h2>
+                </div>
             </div>
 
             <!-- Information Fields -->
@@ -591,6 +601,7 @@ const selectedGroupType = ref(null);
 const selectedCategory = ref(null);
 
 const user = computed(() => store.state.user.data);
+const isPublicSurvey = computed(() => route.path.includes("/public/"));
 
 onMounted(async () => {
     const slug = route.params.slug;
@@ -606,6 +617,18 @@ onMounted(async () => {
     if (response.status === 200) {
         survey.value = response.data.data;
         question_sections.value = survey.value.question_sections;
+        const loggedInUser = user.value;
+        if (loggedInUser) {
+            selectedGroupType.value = loggedInUser.respondent_type; // Set directly from user
+            if (!isPublicSurvey.value) {
+                selectedCategory.value = loggedInUser.category; // Directly assign category for non-public surveys
+            } else {
+                // For public surveys, you might want to set the category based on respondent group
+                const group = survey.value.respondent_groups.find(g => g.type === loggedInUser.respondent_type);
+                selectedCategory.value = group ? group.category.split(",")[0].trim() : null; // Default to the first category
+            }
+        }
+
         // processQuestions(survey.value.questions);
     } else if (response.status === 401) {
         router.push({ name: "Login" });
