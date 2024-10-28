@@ -305,6 +305,7 @@ if (user.value.role === "admin") {
         },
         { name: "Surveys", to: { name: "Surveys" }, current: true },
         { name: "My Responses", to: { name: "RespondentResponses" } },
+        { name: "Templates", to: { name: "Templates" } },
     ];
 } else {
     console.log(error);

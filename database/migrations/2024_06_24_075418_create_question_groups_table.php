@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');
             $table->foreignId('question_section_id')->constrained()->onDelete('cascade');
+            $table->string('format');
             $table->text('label');
             $table->integer('number');
             $table->string('category_label')->nullable();

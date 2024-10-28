@@ -67,6 +67,7 @@ class UpdateSurveyRequest extends FormRequest
         // Question groups within sections validation
         'question_sections.*.question_groups' => 'sometimes|array',
         'question_sections.*.question_groups.*.section_number' => 'sometimes|required|integer',
+        'question_sections.*.question_groups.*.format' => 'required|string',
         'question_sections.*.question_groups.*.number' => 'sometimes|required|integer',
         'question_sections.*.question_groups.*.label' => 'sometimes|required|string|max:255',
         'question_sections.*.question_groups.*.question_instruction' => 'sometimes|nullable|string|max:99999',

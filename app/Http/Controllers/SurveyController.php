@@ -77,6 +77,7 @@ class SurveyController extends Controller
         $questionGroup = QuestionGroup::create([
             'survey_id' => $survey->id,
             'question_section_id'=>$questionSection->id,
+            'format' => $groupData['format'],
             'number' => $groupData['number'],
             'label' => $groupData['label'],
             'question_instruction' => $groupData['question_instruction'],
@@ -222,6 +223,7 @@ class SurveyController extends Controller
                             'number' => $groupData['number'],
                         ],
                         [
+                            'format' => $groupData['format'],
                             'label' => $groupData['label'],
                             'category_label' => $groupData['category_label'],
                             'question_instruction' => $groupData['question_instruction'],

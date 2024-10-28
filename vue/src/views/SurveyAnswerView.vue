@@ -151,10 +151,27 @@
                     :key="groupIndex"
                     class="mb-6"
                 >
+                <div v-if="question_group.format=='commentSection'">
+                    
+                    <div v-for="(question,questionIndex) in question_group.questions" :key="questionIndex">
+                        <div v-if="question.question_type=='text'">
+                            <h2 class="mb-2 font-semibold text-xl">
+                        {{ question_group.number }}. {{ question.question }}
+                    </h2>
+                     <input
+                                                type="text"
+                                                v-model="answers[question.id]"
+                                                class="block w-full px-3 py-2 border-b-2 rounded-md shadow-sm"
+                                                required
+                                            />
+                        </div>
+                    </div>
+                </div>
+                <div v-else>
                     <h2 class="mb-2 font-semibold text-xl">
                         {{ question_group.number }}. {{ question_group.label }}
                     </h2>
-
+ 
                     <table class="table-auto w-full border-collapse border">
                         <thead>
                             <tr>
@@ -164,7 +181,7 @@
                                 >
                                     {{ question_group.category_label }}
                                 </th>
-                                <th class="p-2 border">Question</th>
+                                <th class="p-2 border">{{question_group.label}}</th>
                                 <th class="p-2 border">Answer</th>
                                 <th
                                     v-if="hasRadioQuestion(question_group)"
@@ -355,6 +372,8 @@
                             </template>
                         </tbody>
                     </table>
+                </div>
+                    
                 </div>
             </div>
             <!-- /Question Sections -->

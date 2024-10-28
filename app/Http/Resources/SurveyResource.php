@@ -35,6 +35,7 @@ class SurveyResource extends JsonResource
                 'question_groups' => $section->question_groups ? $section->question_groups->map(function ($group) {
                     return [
                         'number' => $group->number,
+                        'format' => $group->format,
                         'label' => $group->label,
                         'category_label' => $group->category_label,
                         'question_categories' => $group->question_categories ? json_decode($group->question_categories, true) : null,

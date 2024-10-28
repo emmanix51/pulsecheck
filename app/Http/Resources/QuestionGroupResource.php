@@ -17,6 +17,7 @@ class QuestionGroupResource extends JsonResource
         return [
             'section_number'=>$this->section_number,
             'number' => $this->number,
+            'format' => $this->format,
             'label' => $this->label,
             'question_categories' => $this->question_categories,
             'question_instruction' => $this->question_instruction,
