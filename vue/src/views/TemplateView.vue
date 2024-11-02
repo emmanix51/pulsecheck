@@ -7,7 +7,7 @@
                 </h1>
             </div>
             <div class="flex">
-                <!-- <pre>{{ model }}</pre> -->
+                <pre>{{ model }}</pre>
                
                 <button
                     v-if="route.params.id"
@@ -814,7 +814,7 @@
                                     Add Question
                                 </button>
 
-                                <div
+                                <!-- <div
                                     v-for="(
                                         question, questionIndex
                                     ) in question_group.questions"
@@ -912,8 +912,7 @@
                                     class="mt-2 text-blue-500 hover:text-blue-700"
                                 >
                                     Add Question
-                                </button>
-                                <!-- Remove Question Group -->
+                                </button> -->
                                 <button
                                     type="button"
                                     class="mt-4 py-2 px-3 text-white bg-red-600 rounded-md hover:bg-red-500"
@@ -1295,11 +1294,15 @@ const showPreviewBtn = () => {
 
 const useTemplate = () =>{
 
-    const templateData = model.value
-    console.log(templateData);
+    const templateData = model.value;
+
+    // Create a new object without the templateId
+    const { id,image, ...newSurveyData } = templateData;
+
+    console.log(newSurveyData);
     
-     // Save to local storage
-    localStorage.setItem('surveyTemplate', JSON.stringify(templateData));
+    // Save the new survey data to local storage
+    localStorage.setItem('surveyTemplate', JSON.stringify(newSurveyData));
 
     // Navigate to the create survey page
     router.push('/surveys/create');

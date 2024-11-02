@@ -93,7 +93,7 @@ class StoreSurveyRequest extends FormRequest
 
         // Question groups within sections validation
         'question_sections.*.question_groups' => 'required|array',
-        'question_sections.*.question_groups.*.section_number' => 'required|integer',
+        // 'question_sections.*.question_groups.*.section_number' => 'required|integer',
         'question_sections.*.question_groups.*.format' => 'required|string',
         'question_sections.*.question_groups.*.number' => 'required|integer',
         'question_sections.*.question_groups.*.label' => 'required|string|max:255',

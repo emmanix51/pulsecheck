@@ -210,13 +210,14 @@
                             </tbody>
                         </table>
                     </div>
-                    <h3 class="text-lg font-semibold mb-4">
+                    <div v-if="question_group.format == 'commentSection'">
+                        <h3 class="text-lg font-semibold mb-4">
                         Preview for Group {{ question_group.number }}
                     </h3>
                     <h1 class="text-md font-semibold mb-4">
                         {{ question_group.number }}. {{ question_group.label }}
                     </h1>
-                    <table
+                     <table
                         class="table-auto border-collapse border w-full text-left"
                     >
                         <thead>
@@ -383,6 +384,10 @@
                             </template>
                         </tbody>
                     </table>
+                    </div>
+                    
+                    
+                   
                 </div>
             </div>
         </div>

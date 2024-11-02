@@ -879,7 +879,7 @@
                                     Add Question
                                 </button>
 
-                                <div
+                                <!-- <div
                                     v-for="(
                                         question, questionIndex
                                     ) in question_group.questions"
@@ -977,8 +977,7 @@
                                     class="mt-2 text-blue-500 hover:text-blue-700"
                                 >
                                     Add Question
-                                </button>
-                                <!-- Remove Question Group -->
+                                </button> -->
                                 <button
                                     type="button"
                                     class="mt-4 py-2 px-3 text-white bg-red-600 rounded-md hover:bg-red-500"
@@ -1206,6 +1205,8 @@ const previewPopupClose = () => {
 
 onMounted(() => {
     const savedTemplate = localStorage.getItem("surveyTemplate");
+    console.log(savedTemplate);
+    
     if (savedTemplate) {
         Object.assign(model.value, JSON.parse(savedTemplate));
         // Optional: Remove from local storage after retrieving
