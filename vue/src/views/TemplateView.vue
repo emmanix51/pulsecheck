@@ -8,34 +8,11 @@
             </div>
             <div class="flex">
                 <!-- <pre>{{ model }}</pre> -->
-                <div v-if="model.is_public">
-                    <a
-                        :href="`/public/survey/${model.slug}`"
-                        target="_blank"
-                        v-if="model.slug"
-                        class="flex py-2 px-4 border border-transparent text-sm rounded-full text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-2"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                        </svg>
-                        View Public link
-                    </a>
-                </div>
+               
                 <button
                     v-if="route.params.id"
                     type="button"
-                    @click="deleteSurvey()"
+                    @click="deleteTemplate(route.params.id)"
                     class="py-2 px-3 text-red-500 rounded-md hover:underline"
                 >
                     <svg
@@ -50,16 +27,8 @@
                             clip-rule="evenodd"
                         />
                     </svg>
-                    Delete Survey
+                    Delete Template
                 </button>
-                <div v-if="route.params.id">
-                    <router-link
-                        class="flex py-2 px-4 border border-transparent text-sm rounded-md text-spccolor-500 hover:bg-spccolor-600 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-2"
-                        :to="{ name: 'SurveyResults' }"
-                    >
-                        Survey Result
-                    </router-link>
-                </div>
             </div>
         </template>
         <!-- <pre>{{ model }}</pre> -->
@@ -68,221 +37,230 @@
         <pre>{{ model.questions }}</pre> -->
         <form @submit.prevent="saveSurvey">
             <div class="shadow sm:rounded-md sm:overflow-hidden">
-                <!-- Survey Fields -->
-                <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
-                    <!-- Title -->
-                    <div>
-                        <label
-                            for="title"
-                            class="block text-sm font-medium text-gray-700"
-                            >Title</label
-                        >
-                        <input
-                            type="text"
-                            name="title"
-                            id="title"
-                            v-model="model.title"
-                            autocomplete="survey_title"
-                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
-                    </div>
-                    <!--/ Title -->
-
-                    <!-- Description -->
-                    <div>
-                        <label
-                            for="about"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Description
-                        </label>
-                        <div class="mt-1">
-                            <textarea
-                                id="description"
-                                name="description"
-                                rows="3"
-                                v-model="model.description"
-                                autocomplete="survey_description"
-                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
-                                placeholder="Describe your survey"
-                            />
-                        </div>
-                    </div>
-                    <!-- Description -->
-                    <!-- Instruction -->
-                    <div>
-                        <label
-                            for="about"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Instruction
-                        </label>
-                        <div class="mt-1">
-                            <textarea
-                                id="instruction"
-                                name="instruction"
-                                rows="3"
-                                v-model="model.instruction"
-                                autocomplete="survey_description"
-                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
-                                placeholder="Instruction for your survey"
-                            />
-                        </div>
-                    </div>
-                    <!-- Instruction -->
-
-                    <!-- Expire Date -->
-                    <div>
-                        <label
-                            for="expire_date"
-                            class="block text-sm font-medium text-gray-700"
-                            >Expire Date</label
-                        >
-                        <input
-                            type="date"
-                            name="expire_date"
-                            id="expire_date"
-                            v-model="model.expire_date"
-                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
-                    </div>
-                    <!--/ Expire Date -->
-
-                    <!-- Status -->
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input
-                                id="status"
-                                name="status"
-                                type="checkbox"
-                                :checked="model.status === 1"
-                                v-model="model.status"
-                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                            />
-                        </div>
-                        <div class="ml-3 text-sm">
+                <div class="flex justify-between">
+                    <!-- Survey Fields -->
+                    <div class="px-4 py-5 bg-white space-y-6 sm:p-6 w-full">
+                        <!-- Expire Date -->
+                        <div class="flex items-center gap-2">
                             <label
-                                for="status"
-                                class="font-medium text-gray-700"
-                                >Active</label
+                                for="expire_date"
+                                class="block text-sm font-medium text-gray-700"
+                                >Expiration Date</label
                             >
-                        </div>
-                    </div>
-                    <!--/ Status -->
-                    <!-- Public access -->
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
                             <input
-                                id="status"
-                                name="status"
-                                type="checkbox"
-                                :checked="model.is_public === 1"
-                                v-model="model.is_public"
-                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                type="date"
+                                name="expire_date"
+                                id="expire_date"
+                                v-model="model.expire_date"
+                                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block shadow-sm sm:text-sm border-gray-300 rounded-md"
                             />
                         </div>
-                        <div class="ml-3 text-sm">
-                            <label
-                                for="status"
-                                class="font-medium text-gray-700"
-                                >Public survey</label
-                            >
-                        </div>
-                    </div>
-                    <!-- /Public access -->
-                </div>
-                <!-- /Survey Fields -->
-
-                <!-- Respondents -->
-                <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
-                    <h3
-                        class="text-2xl font-semibold flex items-center justify-between"
-                    >
-                        Respondents
-
-                        <!-- Add Respondent groups -->
-                        <button
-                            type="button"
-                            @click="addRespondentGroup()"
-                            class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                    clip-rule="evenodd"
+                        <!--/ Expire Date -->
+                        <div class="flex items-center gap-2">
+                            <!-- Status -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input
+                                    id="status"
+                                    name="status"
+                                    type="checkbox"
+                                    :checked="model.status === 1"
+                                    v-model="model.status"
+                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
                                 />
-                            </svg>
-                            Add Respondent Group
-                        </button>
-                        <!--/ Add Respondent groups -->
-                    </h3>
-                    <div
-                        v-if="!model.respondent_groups.length"
-                        class="text-center text-gray-600"
-                    >
-                        You don't have any respondent group selected
-                    </div>
-                    <div
-                        v-for="(group, index) in model.respondent_groups"
-                        :key="index"
-                    >
-                        <label class="block text-sm font-medium text-gray-700">
-                            Respondent Group {{ index + 1 }}
-                        </label>
-                        <select
-                            v-model="group.type"
-                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        >
-                            <option value="student">Student</option>
-                            <option value="faculty">Faculty</option>
-                            <option value="staff">Staff</option>
-                            <option value="stakeholder">Stakeholder</option>
-                        </select>
-                        <div class="mt-2">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label
+                                    for="status"
+                                    class="font-medium text-gray-700"
+                                    >Active</label
+                                >
+                            </div>
+                        </div>
+                        <!--/ Status -->
+                        <!-- Public access -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input
+                                    id="status"
+                                    name="status"
+                                    type="checkbox"
+                                    :checked="model.is_public === 1"
+                                    v-model="model.is_public"
+                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                />
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label
+                                    for="status"
+                                    class="font-medium text-gray-700"
+                                    >Public survey</label
+                                >
+                            </div>
+                        </div>
+                        <!-- /Public access -->
+                        </div>
+                        
+                        <!-- Title -->
+                        <div>
                             <label
-                                v-if="group.type === student"
+                                for="title"
                                 class="block text-sm font-medium text-gray-700"
+                                >Title</label
                             >
-                                Course/Grade Level (comma-separated)
-                            </label>
-                            <label
-                                v-else-if="
-                                    group.type === faculty ||
-                                    group.type === staff
-                                "
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Position (comma-separated)
-                            </label>
-                            <label
-                                v-else:
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Classification (comma-separated)
-                            </label>
                             <input
                                 type="text"
-                                v-model="group.category"
-                                placeholder="Enter categories separated by commas"
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                name="title"
+                                id="title"
+                                v-model="model.title"
+                                autocomplete="survey_title"
+                                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             />
                         </div>
-                        <button
-                            type="button"
-                            @click="removeRespondentGroup(index)"
-                            class="mt-2 text-red-500 hover:text-red-700"
-                        >
-                            Remove
-                        </button>
+                        <!--/ Title -->
+
+                        <!-- Description -->
+                        <div>
+                            <label
+                                for="about"
+                                class="block text-sm font-medium text-gray-700"
+                            >
+                                Description
+                            </label>
+                            <div class="mt-1">
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    rows="3"
+                                    v-model="model.description"
+                                    autocomplete="survey_description"
+                                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
+                                    placeholder="Describe your survey"
+                                />
+                            </div>
+                        </div>
+                        <!-- Description -->
+                        <!-- Instruction -->
+                        <div>
+                            <label
+                                for="about"
+                                class="block text-sm font-medium text-gray-700"
+                            >
+                                Instruction
+                            </label>
+                            <div class="mt-1">
+                                <textarea
+                                    id="instruction"
+                                    name="instruction"
+                                    rows="3"
+                                    v-model="model.instruction"
+                                    autocomplete="survey_description"
+                                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
+                                    placeholder="Instruction for your survey"
+                                />
+                            </div>
+                        </div>
+                        <!-- Instruction -->
                     </div>
+                    <!-- /Survey Fields -->
+                    <!-- Respondents -->
+                    <div class="px-4 py-5 bg-white space-y-6 sm:p-6 w-full">
+                        <h3
+                            class="text-2xl font-semibold flex items-center justify-between"
+                        >
+                            Respondents
+
+                            <!-- Add Respondent groups -->
+                            <button
+                                type="button"
+                                @click="addRespondentGroup()"
+                                class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                                Add Respondent Group
+                            </button>
+                            <!--/ Add Respondent groups -->
+                        </h3>
+                        <div
+                            v-if="!model.respondent_groups.length"
+                            class="text-center text-gray-600"
+                        >
+                            You don't have any respondent group selected
+                        </div>
+                        <div
+                            v-for="(group, index) in model.respondent_groups"
+                            :key="index"
+                        >
+                            <div class="flex items-center gap-2">
+                                <label
+                                    class="block text-sm font-medium text-gray-700"
+                                >
+                                    Respondent Group {{ index + 1 }}
+                                </label>
+                                <select
+                                    v-model="group.type"
+                                    class="mt-1 block shadow-lg sm:text-sm border-gray-300 rounded-md"
+                                >
+                                    <option value="student">Student</option>
+                                    <option value="faculty">Faculty</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="stakeholder">
+                                        Stakeholder
+                                    </option>
+                                </select>
+                                <button
+                                    type="button"
+                                    @click="removeRespondentGroup(index)"
+                                    class="mt-2 text-red-500 hover:text-red-700"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+
+                            <div class="mt-2">
+                                <label
+                                    v-if="group.type === student"
+                                    class="block text-sm font-medium text-gray-700"
+                                >
+                                    Course/Grade Level (comma-separated)
+                                </label>
+                                <label
+                                    v-else-if="
+                                        group.type === faculty ||
+                                        group.type === staff
+                                    "
+                                    class="block text-sm font-medium text-gray-700"
+                                >
+                                    Position (comma-separated)
+                                </label>
+                                <label
+                                    v-else:
+                                    class="block text-sm font-medium text-gray-700"
+                                >
+                                    Classification (comma-separated)
+                                </label>
+                                <input
+                                    type="text"
+                                    v-model="group.category"
+                                    placeholder="Enter categories separated by commas"
+                                    class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Respondents -->
                 </div>
-                <!-- /Respondents -->
 
                 <!-- Respondent Information -->
                 <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
@@ -453,194 +431,532 @@
                         class="py-5 bg-white space-y-6 mt-5 sm:p-6"
                         :key="groupIndex"
                     >
-                        <div>
-                            <h3
-                                class="text-2xl font-semibold flex items-center justify-between mb-2"
+                        <!-- WITHOUT CATEGORY -->
+                        <div v-if="question_group.format == 'withoutCategory'">
+                            <table
+                                class="table-auto border-collapse border w-full text-left"
                             >
-                                Section{{ section.section_number }} Question
-                                Group {{ question_group.number }}
-                            </h3>
-
-                            <div class="flex gap-2">
-                                <input
-                                    v-model="question_group.label"
-                                    class="text-lg font-semibold flex items-center justify-between w-full"
-                                    placeholder="Label..."
-                                />
+                                <thead>
+                                    <tr>
+                                        <th class="border px-4 py-2">
+                                            <input
+                                                class="w-full"
+                                                type="text"
+                                                placeholder="Question Label"
+                                                v-model="question_group.label"
+                                            />
+                                        </th>
+                                        <th class="border px-4 py-2">
+                                            Answer Scale
+                                        </th>
+                                        <th class="border px-4 py-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Display questions without a category -->
+                                    <template
+                                        v-for="(
+                                            question, questionIndex
+                                        ) in question_group.questions"
+                                        :key="questionIndex"
+                                    >
+                                        <tr>
+                                            <td class="border px-4 py-2">
+                                                <input
+                                                    class="w-full"
+                                                    type="text"
+                                                    v-model="question.question"
+                                                />
+                                            </td>
+                                            <td class="border px-4 py-2">
+                                                <!-- Likert Scale (1-5) preview -->
+                                                <div
+                                                    v-if="
+                                                        question.question_type ===
+                                                        'radio'
+                                                    "
+                                                    class="mt-1"
+                                                >
+                                                    <div class="mt-1 w-full">
+                                                        <span
+                                                            v-for="option in [
+                                                                1, 2, 3, 4, 5,
+                                                            ]"
+                                                            :key="option"
+                                                            class="mr-2"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                :value="option"
+                                                                v-model="
+                                                                    question.data
+                                                                "
+                                                                checked
+                                                            />
+                                                            {{ option }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="border px-4 py-2">
+                                                <button
+                                                    type="button"
+                                                    @click="
+                                                        removeQuestion(
+                                                            sectionIndex,
+                                                            groupIndex,
+                                                            questionIndex
+                                                        )
+                                                    "
+                                                    class="text-red-500 hover:text-red-700"
+                                                >
+                                                    Remove Question
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div
+                                v-if="!question_group.questions.length"
+                                class="text-center text-gray-600"
+                            >
+                                No questions added for this group.
                             </div>
-
-                            <!--  Instruction -->
-                            <label
-                                class="block text-sm font-medium my-2 text-gray-700"
-                            >
-                                Instruction
-                            </label>
-                            <textarea
-                                v-model="question_group.question_instruction"
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            />
-                        </div>
-                        <!-- /Instruction -->
-
-                        <!--  Category Label-->
-                        <label class="block text-sm font-medium text-gray-700">
-                            Category Label
-                        </label>
-                        <input
-                            type="text"
-                            v-model="question_group.category_label"
-                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
-                        <!-- /Category Label-->
-
-                        <!-- Group Question Categories -->
-                        <label class="block text-sm font-medium text-gray-700"
-                            >Question Categories</label
-                        >
-                        <div
-                            v-if="!question_group.question_categories.length"
-                            class="text-center text-gray-600"
-                        >
-                            No categories added for this group.
-                        </div>
-                        <div
-                            v-for="(
-                                category, categoryIndex
-                            ) in question_group.question_categories"
-                            :key="categoryIndex"
-                        >
-                            <input
-                                type="text"
-                                v-model="
-                                    question_group.question_categories[
-                                        categoryIndex
-                                    ]
-                                "
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            />
                             <button
                                 type="button"
+                                @click="addQuestion(sectionIndex, groupIndex)"
+                                class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                                Add Question
+                            </button>
+                            <!-- Remove Question Group -->
+                            <button
+                                type="button"
+                                class="mt-4 py-2 px-3 text-white bg-red-600 rounded-md hover:bg-red-500"
                                 @click="
-                                    removeQuestionCategory(
+                                    removeQuestionGroup(
                                         sectionIndex,
-                                        groupIndex,
-                                        categoryIndex
+                                        groupIndex
                                     )
                                 "
-                                class="text-red-500 hover:text-red-700"
                             >
-                                Remove Category
+                                Remove Question Group
                             </button>
                         </div>
-                        <button
-                            type="button"
-                            @click="
-                                addQuestionCategory(sectionIndex, groupIndex)
-                            "
-                            class="mt-2 text-blue-500 hover:text-blue-700"
-                        >
-                            Add Question Category
-                        </button>
+                        <!-- WITH CATEGORY -->
+                        <div v-if="question_group.format == 'withCategory'">
+                            <div>
+                                <div class="flex justify-between gap-4">
+                                    <div class="w-full">
+                                        <h3
+                                            class="text-2xl font-semibold flex items-center justify-between mb-2"
+                                        >
+                                            Section{{ section.section_number }}
+                                            Question Group
+                                            {{ question_group.number }}
+                                        </h3>
 
-                        <!-- Questions -->
-                        <div
-                            v-if="!question_group.questions.length"
-                            class="text-center text-gray-600"
-                        >
-                            No questions added for this group.
-                        </div>
-                        <button
-                            type="button"
-                            @click="addQuestion(sectionIndex, groupIndex)"
-                            class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
-                            Add Question
-                        </button>
+                                        <div class="flex gap-2">
+                                            <input
+                                                v-model="question_group.label"
+                                                class="text-lg font-semibold flex items-center justify-between w-full"
+                                                placeholder="Label..."
+                                            />
+                                        </div>
 
-                        <div
-                            v-for="(
-                                question, questionIndex
-                            ) in question_group.questions"
-                            :key="questionIndex"
-                        >
-                            <label for="question-category"
-                                >Question Category</label
-                            >
-                            <select
-                                id="question-category"
-                                v-model="question.category"
-                            >
-                                <option value="">none</option>
-                                <option
-                                    v-for="category in question_group.question_categories"
-                                    :value="category"
-                                    :key="category"
+                                        <!--  Instruction -->
+                                        <label
+                                            class="block text-sm font-medium my-2 text-gray-700"
+                                        >
+                                            Instruction
+                                        </label>
+                                        <textarea
+                                            v-model="
+                                                question_group.question_instruction
+                                            "
+                                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                        />
+                                        <!--  Category Label-->
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Category Label
+                                        </label>
+                                        <input
+                                            type="text"
+                                            v-model="
+                                                question_group.category_label
+                                            "
+                                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                        />
+                                        <!-- /Category Label-->
+                                    </div>
+                                    <div
+                                        class="w-full border shadow-lg rounded p-4"
+                                    >
+                                        <!-- Group Question Categories -->
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                            >Question Categories</label
+                                        >
+                                        <div
+                                            v-if="
+                                                !question_group
+                                                    .question_categories.length
+                                            "
+                                            class="text-center text-gray-600"
+                                        >
+                                            No categories added for this group.
+                                        </div>
+                                        <div
+                                            v-for="(
+                                                category, categoryIndex
+                                            ) in question_group.question_categories"
+                                            :key="categoryIndex"
+                                        >
+                                            <input
+                                                type="text"
+                                                v-model="
+                                                    question_group
+                                                        .question_categories[
+                                                        categoryIndex
+                                                    ]
+                                                "
+                                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                            />
+                                            <button
+                                                type="button"
+                                                @click="
+                                                    removeQuestionCategory(
+                                                        sectionIndex,
+                                                        groupIndex,
+                                                        categoryIndex
+                                                    )
+                                                "
+                                                class="text-red-500 hover:text-red-700"
+                                            >
+                                                Remove Category
+                                            </button>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            @click="
+                                                addQuestionCategory(
+                                                    sectionIndex,
+                                                    groupIndex
+                                                )
+                                            "
+                                            class="mt-2 text-blue-500 hover:text-blue-700"
+                                        >
+                                            Add Question Category
+                                        </button>
+                                    </div>
+                                </div>
+                                <table
+                                    class="mt-4 table-auto border-collapse border w-full text-left"
                                 >
-                                    {{ category }}
-                                </option>
-                            </select>
-                            <label
-                                class="block text-sm font-medium text-gray-700"
-                                >Question {{ questionIndex + 1 }}</label
-                            >
-                            <select
-                                v-model="question.question_type"
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            >
-                                <option value="text">Text</option>
-                                <option value="radio">
-                                    Likert Scale (1-5)
-                                </option>
-                            </select>
+                                    <thead>
+                                        <tr>
+                                            <th class="border px-4 py-2">
+                                                {{
+                                                    question_group.category_label
+                                                }}
+                                            </th>
+                                            <th class="border px-4 py-2">
+                                                <input
+                                                    class="w-full"
+                                                    type="text"
+                                                    placeholder="Question Label"
+                                                    v-model="
+                                                        question_group.label
+                                                    "
+                                                />
+                                            </th>
+                                            <th class="border px-4 py-2">
+                                                Answer Scale
+                                            </th>
+                                            <th class="border px-4 py-2">
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Display questions without a category -->
+                                        <template
+                                            v-for="(
+                                                question, questionIndex
+                                            ) in question_group.questions"
+                                            :key="questionIndex"
+                                        >
+                                            <tr>
+                                                <td class="border px-4 py-2">
+                                                    <select
+                                                        id="question-category"
+                                                        v-model="
+                                                            question.category
+                                                        "
+                                                    >
+                                                        <option value="">
+                                                            none
+                                                        </option>
+                                                        <option
+                                                            v-for="category in question_group.question_categories"
+                                                            :value="category"
+                                                            :key="category"
+                                                        >
+                                                            {{ category }}
+                                                        </option>
+                                                    </select>
+                                                </td>
+                                                <td class="border px-4 py-2">
+                                                    <input
+                                                        class="w-full"
+                                                        type="text"
+                                                        v-model="
+                                                            question.question
+                                                        "
+                                                    />
+                                                </td>
+                                                <td class="border px-4 py-2">
+                                                    <!-- Likert Scale (1-5) preview -->
+                                                    <div
+                                                        v-if="
+                                                            question.question_type ===
+                                                            'radio'
+                                                        "
+                                                        class="mt-1"
+                                                    >
+                                                        <div
+                                                            class="mt-1 w-full"
+                                                        >
+                                                            <span
+                                                                v-for="option in [
+                                                                    1, 2, 3, 4,
+                                                                    5,
+                                                                ]"
+                                                                :key="option"
+                                                                class="mr-2"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    :value="
+                                                                        option
+                                                                    "
+                                                                    v-model="
+                                                                        question.data
+                                                                    "
+                                                                    checked
+                                                                />
+                                                                {{ option }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="border px-4 py-2">
+                                                    <button
+                                                        type="button"
+                                                        @click="
+                                                            removeQuestion(
+                                                                sectionIndex,
+                                                                groupIndex,
+                                                                questionIndex
+                                                            )
+                                                        "
+                                                        class="text-red-500 hover:text-red-700"
+                                                    >
+                                                        Remove Question
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+
+                                <!-- Questions -->
+                                <div
+                                    v-if="!question_group.questions.length"
+                                    class="text-center text-gray-600"
+                                >
+                                    No questions added for this group.
+                                </div>
+                                <button
+                                    type="button"
+                                    @click="
+                                        addQuestion(sectionIndex, groupIndex)
+                                    "
+                                    class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                    Add Question
+                                </button>
+
+                                <div
+                                    v-for="(
+                                        question, questionIndex
+                                    ) in question_group.questions"
+                                    :key="questionIndex"
+                                >
+                                    <label for="question-category"
+                                        >Question Category</label
+                                    >
+                                    <select
+                                        id="question-category"
+                                        v-model="question.category"
+                                    >
+                                        <option value="">none</option>
+                                        <option
+                                            v-for="category in question_group.question_categories"
+                                            :value="category"
+                                            :key="category"
+                                        >
+                                            {{ category }}
+                                        </option>
+                                    </select>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Question {{ questionIndex + 1 }}</label
+                                    >
+                                    <select
+                                        v-model="question.question_type"
+                                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    >
+                                        <option value="text">Text</option>
+                                        <option value="radio">
+                                            Likert Scale (1-5)
+                                        </option>
+                                    </select>
+                                    <input
+                                        type="text"
+                                        v-model="question.question"
+                                        placeholder="Question..."
+                                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                    <textarea
+                                        v-model="question.description"
+                                        placeholder="Description"
+                                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                    <div
+                                        v-if="
+                                            question.question_type === 'radio'
+                                        "
+                                        class="mt-2"
+                                    >
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Likert Scale Options (1-5)
+                                        </label>
+                                        <div class="mt-1">
+                                            <span
+                                                v-for="option in [
+                                                    1, 2, 3, 4, 5,
+                                                ]"
+                                                :key="option"
+                                                class="mr-2"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    :value="option"
+                                                    v-model="question.data"
+                                                    checked
+                                                />
+                                                {{ option }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        @click="
+                                            removeQuestion(
+                                                sectionIndex,
+                                                groupIndex,
+                                                questionIndex
+                                            )
+                                        "
+                                        class="text-red-500 hover:text-red-700"
+                                    >
+                                        Remove Question
+                                    </button>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="
+                                        addQuestion(sectionIndex, groupIndex)
+                                    "
+                                    class="mt-2 text-blue-500 hover:text-blue-700"
+                                >
+                                    Add Question
+                                </button>
+                                <!-- Remove Question Group -->
+                                <button
+                                    type="button"
+                                    class="mt-4 py-2 px-3 text-white bg-red-600 rounded-md hover:bg-red-500"
+                                    @click="
+                                        removeQuestionGroup(
+                                            sectionIndex,
+                                            groupIndex
+                                        )
+                                    "
+                                >
+                                    Remove Question Group
+                                </button>
+                            </div>
+                        </div>
+                        <div v-if="question_group.format == 'commentSection'">
                             <input
                                 type="text"
-                                v-model="question.question"
-                                placeholder="Question..."
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                v-model="question_group.label"
+                                placeholder="Type Group Label here..."
                             />
-                            <textarea
-                                v-model="question.description"
-                                placeholder="Description"
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            />
-                            <div
-                                v-if="question.question_type === 'radio'"
-                                class="mt-2"
+                            <template
+                                v-for="(
+                                    question, questionIndex
+                                ) in question_group.questions"
+                                :key="questionIndex"
                             >
-                                <label
-                                    class="block text-sm font-medium text-gray-700"
-                                >
-                                    Likert Scale Options (1-5)
-                                </label>
-                                <div class="mt-1">
-                                    <span
-                                        v-for="option in [1, 2, 3, 4, 5]"
-                                        :key="option"
-                                        class="mr-2"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :value="option"
-                                            v-model="question.data"
-                                            checked
-                                        />
-                                        {{ option }}
-                                    </span>
-                                </div>
+                                <textarea
+                                    name=""
+                                    id=""
+                                    cols="30"
+                                    class="w-full mt-4"
+                                    v-model="question.question"
+                                    placeholder="Type Question here"
+                                ></textarea>
+                            </template>
+                            <div
+                                v-if="!question_group.questions.length"
+                                class="text-center text-gray-600"
+                            >
+                                No questions added for this group.
                             </div>
                             <button
+                                v-if="question_group.questions.length"
                                 type="button"
                                 @click="
                                     removeQuestion(
@@ -653,26 +969,41 @@
                             >
                                 Remove Question
                             </button>
+                            <button
+                                type="button"
+                                @click="addQuestion(sectionIndex, groupIndex)"
+                                class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                                Add Question
+                            </button>
+                            <!-- Remove Question Group -->
+                            <button
+                                type="button"
+                                class="mt-4 py-2 px-3 text-white bg-red-600 rounded-md hover:bg-red-500"
+                                @click="
+                                    removeQuestionGroup(
+                                        sectionIndex,
+                                        groupIndex
+                                    )
+                                "
+                            >
+                                Remove Question Group
+                            </button>
                         </div>
-
-                        <button
-                            type="button"
-                            @click="addQuestion(sectionIndex, groupIndex)"
-                            class="mt-2 text-blue-500 hover:text-blue-700"
-                        >
-                            Add Question
-                        </button>
-                        <!-- Remove Question Group -->
-                        <button
-                            type="button"
-                            class="mt-4 py-2 px-3 text-white bg-red-600 rounded-md hover:bg-red-500"
-                            @click="
-                                removeQuestionGroup(sectionIndex, groupIndex)
-                            "
-                        >
-                            Remove Question Group
-                        </button>
                     </div>
+
                     <!-- Add New Question Group -->
                     <div
                         class="px-4 py-5 bg-white space-y-6 sm:p-6 flex justify-center"
@@ -680,11 +1011,15 @@
                         <button
                             type="button"
                             class="py-3 px-4 text-blue-600 bg-white border border-blue-500 rounded-md hover:bg-blue-500 hover:text-white"
-                            @click="addQuestionGroup(sectionIndex)"
+                            @click="openPopup(sectionIndex)"
                         >
                             Add Question Group
                         </button>
                     </div>
+                    <QuestionGroupPopup
+                        :isVisible="isPopupVisible"
+                        @onClose="handlePopupClose"
+                    />
                 </div>
                 <!-- Add New Question Section -->
                 <div
@@ -702,9 +1037,7 @@
             <!-- Questions field -->
 
             <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                <button @click="saveAsTemplate" type="button">
-                    Save as template
-                </button>
+                
                 <button
                     @click="showPreviewBtn"
                     type="button"
@@ -713,10 +1046,10 @@
                     Show Preview
                 </button>
                 <button
-                    type="submit"
+                    @click="useTemplate"
                     class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                    Save
+                    Use Template
                 </button>
             </div>
         </form>
@@ -920,6 +1253,8 @@ import { ref, onMounted, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
+import QuestionGroupPopup from "../components/QuestionGroupPopup.vue";
+
 
 const route = useRoute();
 const router = useRouter();
@@ -940,15 +1275,15 @@ let model = ref({
             section_label: "",
             section_instruction: "",
             question_groups: [
-                {
-                    section_number: 1,
-                    number: 1,
-                    label: "",
-                    question_instruction: "",
-                    category_label: "",
-                    question_categories: [],
-                    questions: [],
-                },
+                // {
+                //     section_number: 1,
+                //     number: 1,
+                //     label: "",
+                //     question_instruction: "",
+                //     category_label: "",
+                //     question_categories: [],
+                //     questions: [],
+                // },
             ],
         },
     ],
@@ -957,6 +1292,31 @@ let showPreview = ref(false);
 const showPreviewBtn = () => {
     showPreview.value = !showPreview.value;
 };
+
+const useTemplate = () =>{
+
+    const templateData = model.value
+    console.log(templateData);
+    
+     // Save to local storage
+    localStorage.setItem('surveyTemplate', JSON.stringify(templateData));
+
+    // Navigate to the create survey page
+    router.push('/surveys/create');
+};
+
+function deleteTemplate(templateId) {
+    if (confirm(`you sure you want to delete this survey template?`)) {
+        //delete survey
+
+        store.dispatch("deleteTemplate", templateId).then(() => {
+            alert("Template Deleted Successfully.");
+            router.push({ name: "Templates" });
+        });
+    } else {
+        alert("okii");
+    }
+}
 
 // let model = ref({
 //     image: "",
@@ -1073,11 +1433,27 @@ const removeQuestionSection = (index) => {
     }
 };
 
-const addQuestionGroup = (sectionIndex) => {
+const isPopupVisible = ref(false);
+const currentSectionIndex = ref(null);
+
+const openPopup = (sectionIndex) => {
+    currentSectionIndex.value = sectionIndex; // Store the selected section index
+    isPopupVisible.value = true;
+};
+
+const handlePopupClose = (format) => {
+    isPopupVisible.value = false;
+    if (format) {
+        addQuestionGroup(currentSectionIndex.value, format); // Pass section index and format
+    }
+};
+const addQuestionGroup = (sectionIndex, format) => {
     const groupsNum =
         model.value.question_sections[sectionIndex].question_groups.length + 1;
     model.value.question_sections[sectionIndex].question_groups.push({
         section_number: sectionIndex + 1,
+        category_label: null,
+        format: format,
         number: groupsNum,
         label: "",
         question_instruction: "",
@@ -1096,16 +1472,49 @@ const removeQuestionGroup = (sectionIndex, groupIndex) => {
 };
 
 const addQuestion = (sectionIndex, groupIndex) => {
-    model.value.question_sections[sectionIndex].question_groups[
-        groupIndex
-    ].questions.push({
-        group: groupIndex + 1,
-        category: "", // can be nullable
-        question_type: "",
-        question: "",
-        description: "",
-        data: [1, 2, 3, 4, 5], // Default options for Likert scale questions
-    });
+    if (
+        model.value.question_sections[sectionIndex].question_groups[groupIndex]
+            .format == "withoutCategory"
+    ) {
+        model.value.question_sections[sectionIndex].question_groups[
+            groupIndex
+        ].questions.push({
+            group: groupIndex + 1,
+            category: null, // can be nullable
+            question_type: "radio",
+            question: "",
+            description: "",
+            data: [1, 2, 3, 4, 5], // Default options for Likert scale questions
+        });
+    } else if (
+        model.value.question_sections[sectionIndex].question_groups[groupIndex]
+            .format == "withCategory"
+    ) {
+        model.value.question_sections[sectionIndex].question_groups[
+            groupIndex
+        ].questions.push({
+            group: groupIndex + 1,
+            category: null, // can be nullable
+            question_type: "radio",
+            question: "",
+            description: "",
+            data: [1, 2, 3, 4, 5], // Default options for Likert scale questions
+        });
+    } else if (
+        model.value.question_sections[sectionIndex].question_groups[groupIndex]
+            .format == "commentSection"
+    ) {
+        model.value.question_sections[sectionIndex].question_groups[
+            groupIndex
+        ].questions.push({
+            group: groupIndex + 1,
+            category: null, // can be nullable
+            question_type: "text",
+            question: "",
+            description: "",
+            data: null, // Default options for Likert scale questions
+        });
+    }
 };
 
 const removeQuestion = (sectionIndex, groupIndex, index) => {
@@ -1114,76 +1523,76 @@ const removeQuestion = (sectionIndex, groupIndex, index) => {
     ].questions.splice(index, 1);
 };
 
-const saveAsTemplate = () => {
-    const formData = JSON.parse(JSON.stringify(model.value));
-    const templateName = formData.title + " template";
-    const userId = user.value.id;
-    console.log(userId);
+// const saveAsTemplate = () => {
+//     const formData = JSON.parse(JSON.stringify(model.value));
+//     const templateName = formData.title + " template";
+//     const userId = user.value.id;
+//     console.log(userId);
 
-    const templateData = {
-        user_id: userId,
-        name: templateName,
-        template: formData,
-    };
+//     const templateData = {
+//         user_id: userId,
+//         name: templateName,
+//         template: formData,
+//     };
 
-    template = store
-        .dispatch("saveAsTemplate", templateData)
-        .then(() => {
-            alert("Template saved successfully");
-        })
-        .catch((error) => {
-            console.error(error);
-            alert("Error saving template");
-        });
-};
+//     template = store
+//         .dispatch("saveAsTemplate", templateData)
+//         .then(() => {
+//             alert("Template saved successfully");
+//         })
+//         .catch((error) => {
+//             console.error(error);
+//             alert("Error saving template");
+//         });
+// };
 
-const saveSurvey = () => {
-    if (confirm(`Are you sure you want to proceed?`)) {
-        const surveyData = JSON.parse(JSON.stringify(model.value)); // Deep copy to avoid mutating the original model
+// const saveSurvey = () => {
+//     if (confirm(`Are you sure you want to proceed?`)) {
+//         const surveyData = JSON.parse(JSON.stringify(model.value)); // Deep copy to avoid mutating the original model
 
-        surveyData.question_sections.forEach((section) => {
-            section.question_groups.forEach((group) => {
-                group.questions.forEach((question) => {
-                    // If question data is a stringified array, parse it into an array
+//         surveyData.question_sections.forEach((section) => {
+//             section.question_groups.forEach((group) => {
+//                 group.questions.forEach((question) => {
+//                     // If question data is a stringified array, parse it into an array
 
-                    // if (
-                    //     typeof question.data === "string" &&
-                    //     question.data.startsWith("[")
-                    // ) {
-                    //     question.data = JSON.parse(question.data);
-                    // }
+//                     // if (
+//                     //     typeof question.data === "string" &&
+//                     //     question.data.startsWith("[")
+//                     // ) {
+//                     //     question.data = JSON.parse(question.data);
+//                     // }
 
-                    // If question data is an array, stringify it before sending to backend
-                    // if (Array.isArray(question.data)) {
-                    //     question.data = JSON.stringify(question.data);
-                    // }
-                    if (question.question_type === "text") {
-                        question.data = null;
-                    }
-                    console.log(question.data);
-                });
-            });
-        });
-        console.log(surveyData);
+//                     // If question data is an array, stringify it before sending to backend
+//                     // if (Array.isArray(question.data)) {
+//                     //     question.data = JSON.stringify(question.data);
+//                     // }
+//                     if (question.question_type === "text") {
+//                         question.data = null;
+//                     }
+//                     console.log(question.data);
+//                 });
+//             });
+//         });
+//         console.log(surveyData);
 
-        store.dispatch("saveSurvey", surveyData).then(({ data }) => {
-            // console.log(data);
+//         store.dispatch("saveSurvey", surveyData).then(({ data }) => {
+//             // console.log(data);
 
-            router.push({
-                name: "SurveyView",
-                params: { id: data.id },
-            });
-        });
-    } else {
-        alert("cancelled");
-    }
-};
+//             router.push({
+//                 name: "SurveyView",
+//                 params: { id: data.id },
+//             });
+//         });
+//     } else {
+//         alert("cancelled");
+//     }
+// };
 
-const deleteSurvey = () => {
-    if (confirm("are you sure you wish to proceed?")) {
-        store.dispatch("deleteSurvey", model.value.id).then(() => {
-            router.push({ name: "Surveys" });
-        });
-    }
-};
+// const deleteSurvey = () => {
+//     if (confirm("are you sure you wish to proceed?")) {
+//         store.dispatch("deleteSurvey", model.value.id).then(() => {
+//             router.push({ name: "Surveys" });
+//         });
+//     }
+// };
 </script>

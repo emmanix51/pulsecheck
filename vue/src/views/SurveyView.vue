@@ -1,5 +1,29 @@
 <template>
     <PageComponent>
+        <div class="relative">
+            <button
+                @click="showPreviewBtn"
+                class="z-20 text-white flex flex-col justify-around fixed bottom-2 right-2 rounded"
+            >
+                <div
+                    class="p-3 rounded-full border-4 border-white bg-spccolor-600"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="size-6"
+                    >
+                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                        <path
+                            fill-rule="evenodd"
+                            d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 0 1 0-1.113ZM17.25 12a5.25 5.25 0 1 1-10.5 0 5.25 5.25 0 0 1 10.5 0Z"
+                            clip-rule="evenodd"
+                        />
+                    </svg>
+                </div>
+            </button>
+        </div>
         <template v-slot:header>
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-900">
@@ -7,7 +31,7 @@
                 </h1>
             </div>
             <div class="flex">
-                <pre>{{ model }}</pre>
+                <!-- <pre>{{ model }}</pre> -->
                 <div v-if="model.is_public">
                     <a
                         :href="`/public/survey/${model.slug}`"
@@ -89,49 +113,49 @@
                         <!--/ Expire Date -->
                         <div class="flex items-center gap-2">
                             <!-- Status -->
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input
-                                    id="status"
-                                    name="status"
-                                    type="checkbox"
-                                    :checked="model.status === 1"
-                                    v-model="model.status"
-                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                />
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input
+                                        id="status"
+                                        name="status"
+                                        type="checkbox"
+                                        :checked="model.status === 1"
+                                        v-model="model.status"
+                                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                    />
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label
+                                        for="status"
+                                        class="font-medium text-gray-700"
+                                        >Active</label
+                                    >
+                                </div>
                             </div>
-                            <div class="ml-3 text-sm">
-                                <label
-                                    for="status"
-                                    class="font-medium text-gray-700"
-                                    >Active</label
-                                >
+                            <!--/ Status -->
+                            <!-- Public access -->
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input
+                                        id="status"
+                                        name="status"
+                                        type="checkbox"
+                                        :checked="model.is_public === 1"
+                                        v-model="model.is_public"
+                                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                    />
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label
+                                        for="status"
+                                        class="font-medium text-gray-700"
+                                        >Public survey</label
+                                    >
+                                </div>
                             </div>
+                            <!-- /Public access -->
                         </div>
-                        <!--/ Status -->
-                        <!-- Public access -->
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input
-                                    id="status"
-                                    name="status"
-                                    type="checkbox"
-                                    :checked="model.is_public === 1"
-                                    v-model="model.is_public"
-                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                />
-                            </div>
-                            <div class="ml-3 text-sm">
-                                <label
-                                    for="status"
-                                    class="font-medium text-gray-700"
-                                    >Public survey</label
-                                >
-                            </div>
-                        </div>
-                        <!-- /Public access -->
-                        </div>
-                        
+
                         <!-- Title -->
                         <div>
                             <label
@@ -205,7 +229,7 @@
                             <button
                                 type="button"
                                 @click="addRespondentGroup()"
-                                class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
+                                class="flex items-center text-sm py-2 px-4 rounded-xl border-transparent border-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -304,7 +328,7 @@
                         <button
                             type="button"
                             @click="addInformationField()"
-                            class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
+                            class="flex items-center text-sm py-1 px-4 rounded-xl border-transparent border-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -435,11 +459,21 @@
                 <div
                     v-for="(section, sectionIndex) in model.question_sections"
                     :key="sectionIndex"
-                    class="px-4 py-5 bg-white space-y-6 mt-5 sm:p-6 border-t-2 border-gray-400"
+                    class="px-4 py-5 bg-gray-200 space-y-6 mt-5 sm:p-6 border-gray-400  "
                 >
-                    <h1 class="text-xl font-bold">
-                        SECTION {{ section.section_number }}
-                    </h1>
+                    <div class="flex justify-between">
+                        <h1 class="text-xl font-bold">
+                            SECTION {{ section.section_number }}
+                        </h1>
+                        <button
+                            type="button"
+                            @click="removeQuestionSection(sectionIndex)"
+                            class="mt-2 text-red-500 hover:text-red-700"
+                        >
+                            Remove
+                        </button>
+                    </div>
+
                     <div class="flex gap-2">
                         <input
                             v-model="section.section_label"
@@ -1086,389 +1120,13 @@
                 </button>
             </div>
         </form>
+
         <!-- PREVIEW -->
-        <div v-if="showPreview">
-            <div>
-                <h1 class="text-xl font-semibold">Survey Preview</h1>
-            </div>
-            <div
-                v-for="(section, sectionIndex) of model.question_sections"
-                :key="sectionIndex"
-                class="mt-4"
-            >
-                <div
-                    v-for="(
-                        question_group, groupIndex
-                    ) of section.question_groups"
-                    :key="groupIndex"
-                    class="mt-4"
-                >
-                    <div v-if="question_group.format == 'withoutCategory'">
-                        <h3 class="text-lg font-semibold mb-4">
-                            Preview for Group {{ question_group.number }}
-                        </h3>
-                        <table
-                            class="table-auto border-collapse border w-full text-left"
-                        >
-                            <thead>
-                                <tr>
-                                    <th
-                                        v-if="question_group.category_label"
-                                        class="border px-4 py-2"
-                                    >
-                                        {{ question_group.category_label }}
-                                    </th>
-                                    <th class="border px-4 py-2">
-                                        {{ question_group.label }}
-                                    </th>
-                                    <th class="border px-4 py-2">Answer</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template
-                                    v-for="(
-                                        question, questionIndex
-                                    ) in question_group.questions.filter(
-                                        (q) => !q.category
-                                    )"
-                                    :key="questionIndex"
-                                >
-                                    <tr>
-                                        <td
-                                            v-if="
-                                                questionIndex === 0 &&
-                                                question_group.category_label
-                                            "
-                                            class="border px-4 py-2"
-                                        ></td>
-                                        <td>{{ question.question }}</td>
-
-                                        <td>
-                                            <!-- Likert Scale (1-5) preview -->
-                                            <div
-                                                v-if="
-                                                    question.question_type ===
-                                                    'radio'
-                                                "
-                                                class="mt-1 flex flex-row"
-                                            >
-                                                <div
-                                                    v-for="option in question.data"
-                                                    :key="option"
-                                                    class="flex items-center border-x border-gray-200 py-1 px-2 w-full"
-                                                >
-                                                    <input
-                                                        class="mr-2"
-                                                        type="radio"
-                                                        :name="
-                                                            'question-' +
-                                                            questionIndex
-                                                        "
-                                                        :value="option"
-                                                        disabled
-                                                    />
-                                                    {{ option }}
-                                                </div>
-                                            </div>
-                                            <!-- Text question preview -->
-                                            <div
-                                                v-else-if="
-                                                    question.question_type ===
-                                                    'text'
-                                                "
-                                                class="mt-1"
-                                            >
-                                                <input
-                                                    type="text"
-                                                    class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                                                    disabled
-                                                />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div v-if="question_group.format == 'withCategory'">
-                        <h3 class="text-lg font-semibold mb-4">
-                            Preview for Group {{ question_group.number }}
-                        </h3>
-                        <table
-                            class="table-auto border-collapse border w-full text-left"
-                        >
-                            <thead>
-                                <tr>
-                                    <th
-                                        v-if="question_group.category_label"
-                                        class="border px-4 py-2"
-                                    >
-                                        {{ question_group.category_label }}
-                                    </th>
-                                    <th class="border px-4 py-2">
-                                        {{ question_group.label }}
-                                    </th>
-                                    <th class="border px-4 py-2">
-                                        Answer Scale
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Display questions with categories -->
-                                <template
-                                    v-for="(
-                                        category, categoryIndex
-                                    ) in question_group.question_categories"
-                                    :key="categoryIndex"
-                                >
-                                    <tr
-                                        v-for="(
-                                            question, questionIndex
-                                        ) in question_group.questions.filter(
-                                            (q) => q.category === category
-                                        )"
-                                        :key="questionIndex"
-                                    >
-                                        <!-- Display the category once for each group of questions -->
-                                        <td
-                                            v-if="questionIndex === 0"
-                                            :rowspan="
-                                                question_group.questions.filter(
-                                                    (q) =>
-                                                        q.category === category
-                                                ).length
-                                            "
-                                            class="border px-4 py-2"
-                                        >
-                                            {{ category }}
-                                        </td>
-                                        <td class="border px-4 py-2">
-                                            {{ question.question }}
-                                        </td>
-                                        <td class="border px-4 py-2">
-                                            <!-- Preview answer fields based on question type -->
-                                            <!-- Likert Scale (1-5) preview -->
-                                            <div
-                                                v-if="
-                                                    question.question_type ===
-                                                    'radio'
-                                                "
-                                                class="flex space-x-2"
-                                            >
-                                                <div
-                                                    v-for="option in question.data"
-                                                    :key="option"
-                                                    class="flex items-center border-r border-gray-300 px-2"
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        :value="option"
-                                                        :name="
-                                                            'preview-question-' +
-                                                            questionIndex
-                                                        "
-                                                        disabled
-                                                        class="mr-2"
-                                                    />
-                                                    {{ option }}
-                                                </div>
-                                            </div>
-                                            <!-- Text question preview -->
-                                            <div
-                                                v-else-if="
-                                                    question.question_type ===
-                                                    'text'
-                                                "
-                                            >
-                                                <input
-                                                    type="text"
-                                                    class="block w-full border px-3 py-2 rounded-md shadow-sm"
-                                                    placeholder="Answer"
-                                                    disabled
-                                                />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-4">
-                        Preview for Group {{ question_group.number }}
-                    </h3>
-                    <h1 class="text-md font-semibold mb-4">
-                        {{ question_group.number }}. {{ question_group.label }}
-                    </h1>
-                    <table
-                        class="table-auto border-collapse border w-full text-left"
-                    >
-                        <thead>
-                            <tr>
-                                <th
-                                    v-if="question_group.category_label"
-                                    class="border px-4 py-2"
-                                >
-                                    {{ question_group.category_label }}
-                                </th>
-                                <th class="border px-4 py-2">
-                                    {{ question_group.label }}
-                                </th>
-                                <th class="border px-4 py-2">
-                                    Question Description
-                                </th>
-                                <th class="border px-4 py-2">Answer</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Display questions with categories -->
-                            <template
-                                v-for="(
-                                    category, categoryIndex
-                                ) in question_group.question_categories"
-                                :key="categoryIndex"
-                            >
-                                <tr
-                                    v-for="(
-                                        question, questionIndex
-                                    ) in question_group.questions.filter(
-                                        (q) => q.category === category
-                                    )"
-                                    :key="questionIndex"
-                                >
-                                    <!-- Display the category once for each group of questions -->
-                                    <td
-                                        v-if="questionIndex === 0"
-                                        :rowspan="
-                                            question_group.questions.filter(
-                                                (q) => q.category === category
-                                            ).length
-                                        "
-                                        class="border px-4 py-2"
-                                    >
-                                        {{ category }}
-                                    </td>
-                                    <td class="border px-4 py-2">
-                                        {{ question.question }}
-                                    </td>
-                                    <td class="border px-4 py-2">
-                                        {{ question.description }}
-                                    </td>
-                                    <td class="border px-4 py-2">
-                                        <!-- Preview answer fields based on question type -->
-                                        <!-- Likert Scale (1-5) preview -->
-                                        <div
-                                            v-if="
-                                                question.question_type ===
-                                                'radio'
-                                            "
-                                            class="flex space-x-2"
-                                        >
-                                            <div
-                                                v-for="option in question.data"
-                                                :key="option"
-                                                class="flex items-center border-r border-gray-300 px-2"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    :value="option"
-                                                    :name="
-                                                        'preview-question-' +
-                                                        questionIndex
-                                                    "
-                                                    disabled
-                                                    class="mr-2"
-                                                />
-                                                {{ option }}
-                                            </div>
-                                        </div>
-                                        <!-- Text question preview -->
-                                        <div
-                                            v-else-if="
-                                                question.question_type ===
-                                                'text'
-                                            "
-                                        >
-                                            <input
-                                                type="text"
-                                                class="block w-full border px-3 py-2 rounded-md shadow-sm"
-                                                placeholder="Answer"
-                                                disabled
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <!-- Display questions without a category -->
-                            <template
-                                v-for="(
-                                    question, questionIndex
-                                ) in question_group.questions.filter(
-                                    (q) => !q.category
-                                )"
-                                :key="questionIndex"
-                            >
-                                <tr>
-                                    <td
-                                        v-if="
-                                            questionIndex === 0 &&
-                                            question_group.category_label
-                                        "
-                                        class="border px-4 py-2"
-                                    ></td>
-                                    <td>{{ question.question }}</td>
-                                    <td class="border px-4 py-2">
-                                        {{ question.description }}
-                                    </td>
-                                    <td>
-                                        <!-- Likert Scale (1-5) preview -->
-                                        <div
-                                            v-if="
-                                                question.question_type ===
-                                                'radio'
-                                            "
-                                            class="mt-1 flex flex-row"
-                                        >
-                                            <div
-                                                v-for="option in question.data"
-                                                :key="option"
-                                                class="flex items-center border-x border-gray-200 py-1 px-2 w-full"
-                                            >
-                                                <input
-                                                    class="mr-2"
-                                                    type="radio"
-                                                    :name="
-                                                        'question-' +
-                                                        questionIndex
-                                                    "
-                                                    :value="option"
-                                                    disabled
-                                                />
-                                                {{ option }}
-                                            </div>
-                                        </div>
-                                        <!-- Text question preview -->
-                                        <div
-                                            v-else-if="
-                                                question.question_type ===
-                                                'text'
-                                            "
-                                            class="mt-1"
-                                        >
-                                            <input
-                                                type="text"
-                                                class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                                                disabled
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <SurveyPreviewPopup
+            :showPreview="showPreviewVisible"
+            :model="model"
+            @onClose="previewPopupClose"
+        />
         <!-- /PREVIEW -->
     </PageComponent>
 </template>
@@ -1479,6 +1137,7 @@ import { useRoute, useRouter } from "vue-router";
 import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
 import QuestionGroupPopup from "../components/QuestionGroupPopup.vue";
+import SurveyPreviewPopup from "../components/SurveyPreviewPopup.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -1512,10 +1171,22 @@ let model = ref({
         },
     ],
 });
-let showPreview = ref(false);
+let showPreviewVisible = ref(false);
 const showPreviewBtn = () => {
-    showPreview.value = !showPreview.value;
+    if (showPreviewVisible.value !== true) {
+        showPreviewVisible.value = true;
+    } else {
+        previewPopupClose();
+    }
 };
+
+const previewPopupClose = () => {
+    showPreviewVisible.value = false;
+};
+// const openPopup = (sectionIndex) => {
+//     currentSectionIndex.value = sectionIndex; // Store the selected section index
+//     isPopupVisible.value = true;
+// };
 
 // let model = ref({
 //     image: "",
@@ -1533,6 +1204,15 @@ const showPreviewBtn = () => {
 //     questions: [],
 // });
 
+onMounted(() => {
+    const savedTemplate = localStorage.getItem("surveyTemplate");
+    if (savedTemplate) {
+        Object.assign(model.value, JSON.parse(savedTemplate));
+        // Optional: Remove from local storage after retrieving
+        localStorage.removeItem("surveyTemplate");
+    }
+});
+
 if (route.params.id) {
     store.dispatch("fetchSurvey", route.params.id).then((surveyData) => {
         console.log(surveyData);
@@ -1542,6 +1222,7 @@ if (route.params.id) {
             // surveyData.question_categories = JSON.parse(
             //     surveyData.question_categories
             // );
+            // If the expire_date exists, format it for the date input
             surveyData.question_sections.forEach((question_section) => {
                 question_section.forEach((question_group) => {
                     question_group.question_categories.forEach(
