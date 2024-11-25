@@ -1,5 +1,5 @@
 <template>
-    <PageComponent>
+    <PCAPageComponent>
         <template v-slot:header>
             <h1 v-if="res" class="text-3xl font-bold text-gray-900">
                 PCA for Survey: {{ surveyTitle }}
@@ -109,13 +109,15 @@
                 </table>
             </div>
         </div>
-    </PageComponent>
+    </PCAPageComponent>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axiosClient from "../axios";
+import PCAPageComponent from "../components/PCAPageComponent.vue";
+
 import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
@@ -130,21 +132,34 @@ const res = ref(null);
 
 onMounted(async () => {
     const { id } = route.params;
-    const response = await axiosClient.get(`/survey/${id}/pca`);
-    res.value = response;
-    surveyTitle.value = response.data.surveyTitle;
-    explainedVariance.value = response.data.explainedVariance.map((variance) =>
-        (variance * 100).toFixed(2)
-    );
-    topContributors.value = response.data.topContributors;
-    console.log(response.data);
+    try {
+        const response = await axiosClient.get(`/survey/${id}/pca`);
+        // Check for specific errors in the response data
+        if (response.data.error) {
+            throw new Error(response.data.error);
+        }
 
-    explainedVarianceInterpretation.value =
-        explainedVariance.value[0] > 50
-            ? "PC1 explains most of the variation, indicating it reflects the primary drivers of satisfaction."
-            : "PC1 and PC2 together provide a balanced explanation of the survey patterns.";
-    pcaData.value = response.data.pcaData;
-    renderChart();
+
+        // If no error, update the component state
+        res.value = response;
+        surveyTitle.value = response.data.surveyTitle;
+        explainedVariance.value = response.data.explainedVariance.map((variance) =>
+            (variance * 100).toFixed(2)
+        );
+        topContributors.value = response.data.topContributors;
+        explainedVarianceInterpretation.value =
+            explainedVariance.value[0] > 50
+                ? "PC1 explains most of the variation, indicating it reflects the primary drivers of satisfaction."
+                : "PC1 and PC2 together provide a balanced explanation of the survey patterns.";
+        pcaData.value =  response.data.pcaData;
+        renderChart();
+    } catch (error) {
+         // Handle the error: display the error message and stop loading
+        console.error("Error fetching PCA data:", error);
+        error.value = error.response.data.error || "An error occurred while fetching the data.";
+        alert("Error: "+error.response.data.error)
+    }
+    
 });
 
 function renderChart() {

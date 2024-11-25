@@ -49,19 +49,17 @@
 
                             <td class="px-6 py-4">
                                 <div v-if="survey.status">
-                                    <a
+                                    <router-link
                                         v-if="!survey.is_public"
-                                        target="_blank"
-                                        :href="`localhost:3000/survey/${survey.slug}`"
+                                        :to="`/survey/${survey.slug}`"
                                         class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                        >Answer Survey</a
+                                        >Answer Survey</router-link
                                     >
-                                    <a
+                                    <router-link
                                         v-else
-                                        target="_blank"
-                                        :href="`localhost:3000/public/survey/${survey.slug}`"
+                                        :to="`/public/survey/${survey.slug}`"
                                         class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                        >Answer Survey</a
+                                        >Answer Survey</router-link
                                     >
                                 </div>
                                 <div v-else>Not active</div>

@@ -32,7 +32,7 @@
                 class="flex flex-col rounded-md py-4 px-6 shadow-md bg-spccolor-600"
             >
                 <h1 class="text-lg font-semibold text-white">
-                    Survey Responses
+                    My Survey Responses
                 </h1>
                 <ul>
                     <li
