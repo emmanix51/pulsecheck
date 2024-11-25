@@ -1,85 +1,101 @@
 <template>
     <div>
-        <PageComponent title="Manage Account">
-            <div class="bg-white p-6 rounded-lg shadow-lg max-w-md">
-                <h2 class="text-xl font-bold mb-4">Manage Your Account</h2>
-                <form @submit.prevent="updateUser">
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Idnum</label>
-                        <input
-                            v-model="userForm.idnum"
-                            type="number"
-                            class="w-full px-3 py-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">First Name</label>
-                        <input
-                            v-model="userForm.first_name"
-                            type="text"
-                            class="w-full px-3 py-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Last Name</label>
-                        <input
-                            v-model="userForm.last_name"
-                            type="text"
-                            class="w-full px-3 py-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Email</label>
-                        <input
-                            v-model="userForm.email"
-                            type="email"
-                            class="w-full px-3 py-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Role</label>
-                        <input
-                            v-model="userForm.role"
-                            type="text"
-                            class="w-full px-3 py-2 border rounded"
-                            disabled
-                        />
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700"
-                            >Respondent Type</label
-                        >
-                        <input
-                            v-model="userForm.respondent_type"
-                            type="text"
-                            class="w-full px-3 py-2 border rounded"
-                            disabled
-                        />
-                    </div>
-                    <!-- Additional fields based on respondent_type if needed -->
+        <div class="flex min-h-screen">
+            <!-- left -->
+            <div class="flex-1 flex flex-col w-1/2">
+                <div class="bg-white p-6 w-full">
+                    <h2 class="text-xl font-bold mb-4">Manage Your Account</h2>
+                    <form @submit.prevent="updateUser">
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Idnum</label>
+                            <input
+                                v-model="userForm.idnum"
+                                type="number"
+                                class="w-full px-3 py-2 border rounded"
+                                required
+                            />
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="mb-4 w-1/2">
+                                <label class="block text-gray-700"
+                                    >First Name</label
+                                >
+                                <input
+                                    v-model="userForm.first_name"
+                                    type="text"
+                                    class="w-full px-3 py-2 border rounded"
+                                    required
+                                />
+                            </div>
+                            <div class="mb-4 w-1/2">
+                                <label class="block text-gray-700"
+                                    >Last Name</label
+                                >
+                                <input
+                                    v-model="userForm.last_name"
+                                    type="text"
+                                    class="w-full px-3 py-2 border rounded"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Email</label>
+                            <input
+                                v-model="userForm.email"
+                                type="email"
+                                class="w-full px-3 py-2 border rounded"
+                                required
+                            />
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="mb-4">
+                                <label class="block text-gray-700">Role</label>
+                                <h2 class="w-full py-2">
+                                    {{ userForm.role }}
+                                </h2>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700"
+                                    >Respondent Type</label
+                                >
+                                <input
+                                    v-model="userForm.respondent_type"
+                                    type="text"
+                                    class="w-full px-3 py-2 border rounded"
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                        <!-- Additional fields based on respondent_type if needed -->
 
-                    <div class="flex justify-end">
-                        <button
-                            type="button"
-                            @click="resetForm"
-                            class="py-2 px-4 bg-gray-500 text-white rounded mr-2"
-                        >
-                            Reset
-                        </button>
-                        <button
-                            type="submit"
-                            class="py-2 px-4 bg-emerald-500 text-white rounded"
-                        >
-                            Update Account
-                        </button>
-                    </div>
-                </form>
+                        <div class="flex justify-end">
+                            <button
+                                type="button"
+                                @click="resetForm"
+                                class="py-2 px-4 bg-gray-500 text-white rounded mr-2"
+                            >
+                                Reset
+                            </button>
+                            <button
+                                type="submit"
+                                class="py-2 px-4 bg-emerald-500 text-white rounded"
+                            >
+                                Update Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </PageComponent>
+            <!-- right -->
+            <div class="hidden lg:block flex-1 bg-gradient-to-br pr-8 w-full h-full overflow-hidden">
+                <img
+                    src="/spcbg.png"
+                    alt="St. Peter's College Seal"
+                    class="object-cover w-full h-full opacity-30"
+                />
+            </div>
+        </div>
     </div>
 </template>
 

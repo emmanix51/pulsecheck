@@ -1,49 +1,25 @@
 <template>
     <div>
         <PageComponent title="Dashboard">
+            <template v-slot:header>
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-3xl font-bold text-spccolor-600">
+                        Welcome Back {{ user.first_name }}!
+                    </h1>
+                </div>
+            </template>
             <div v-if="user.role == 'admin'">
                 <!-- <pre>{{ dashboardData }}</pre> -->
-                <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
-                    <div class="h-32 rounded-lg bg-gray-200 p-4">
-                        <div class="flex flex-col items-center">
-                            <h1 class="font-bold text-lg">Latest Users</h1>
-                            <ul>
-                                <li>w</li>
-                                <li>w</li>
-                                <li>w</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="h-32 rounded-lg bg-gray-200 p-4">
-                        <div class="flex flex-col items-center">
-                            <h1 class="font-bold text-lg">Latest Surveys</h1>
-                            <ul>
-                                <li>w</li>
-                                <li>w</li>
-                                <li>w</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="h-32 rounded-lg bg-gray-200 p-4">
-                        <div class="flex flex-col items-center">
-                            <h1 class="font-bold text-lg">Survey Results</h1>
-                            <ul>
-                                <li>w</li>
-                                <li>w</li>
-                                <li>w</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <AdminDashboard />
             </div>
             <div v-if="user.role == 'surveymaker'">
-                <pre>{{ dashboardData }}</pre>
+                <SurveymakerDashboard />
             </div>
 
-            <template v-if="user.role == 'respondent'" v-slot:header>
+            <div v-if="user.role == 'respondent'">
                 <RespondentDashboard />
                 <!-- <pre>{{ dashboardData }}</pre> -->
-            </template>
+            </div>
         </PageComponent>
     </div>
 </template>
@@ -51,7 +27,9 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import PageComponent from "../components/PageComponent.vue";
+import AdminDashboard from "../components/AdminDashboard.vue";
 import RespondentDashboard from "../components/RespondentDashboard.vue";
+import SurveymakerDashboard from "../components/SurveymakerDashboard.vue";
 import store from "../store";
 // Declare user as a reactive computed property
 const user = computed(() => store.state.user.data);

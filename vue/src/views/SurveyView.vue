@@ -56,6 +56,30 @@
                         View Public link
                     </a>
                 </div>
+                <div v-if="!model.is_public">
+                    <a
+                        :href="`/survey/${model.slug}`"
+                        target="_blank"
+                        v-if="model.slug"
+                        class="flex py-2 px-4 border border-transparent text-sm rounded-full text-indigo-500 hover:bg-indigo-700 hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-2"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                            />
+                        </svg>
+                        View Survey link
+                    </a>
+                </div>
                 <button
                     v-if="route.params.id"
                     type="button"
@@ -224,7 +248,14 @@
                             class="text-2xl font-semibold flex items-center justify-between"
                         >
                             Respondents
-
+                        </h3>
+                        <div
+                            v-if="!model.respondent_groups.length"
+                            class="text-center text-gray-600"
+                        >
+                            <div>
+                                You don't have any respondent group selected
+                            </div>
                             <!-- Add Respondent groups -->
                             <button
                                 type="button"
@@ -246,12 +277,6 @@
                                 Add Respondent Group
                             </button>
                             <!--/ Add Respondent groups -->
-                        </h3>
-                        <div
-                            v-if="!model.respondent_groups.length"
-                            class="text-center text-gray-600"
-                        >
-                            You don't have any respondent group selected
                         </div>
                         <div
                             v-for="(group, index) in model.respondent_groups"
@@ -313,22 +338,11 @@
                                 />
                             </div>
                         </div>
-                    </div>
-                    <!-- /Respondents -->
-                </div>
-
-                <!-- Respondent Information -->
-                <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
-                    <h3
-                        class="text-2xl font-semibold flex items-center justify-between"
-                    >
-                        Respondent Information
-
-                        <!-- Add new information field -->
+                        <!-- Add Respondent groups -->
                         <button
                             type="button"
-                            @click="addInformationField()"
-                            class="flex items-center text-sm py-1 px-4 rounded-xl border-transparent border-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
+                            @click="addRespondentGroup()"
+                            class="flex items-center text-sm py-2 px-4 rounded-xl border-transparent border-2 mt-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -342,9 +356,19 @@
                                     clip-rule="evenodd"
                                 />
                             </svg>
-                            Add Information Field
+                            Add Respondent Group
                         </button>
-                        <!--/ Add new information field -->
+                        <!--/ Add Respondent groups -->
+                    </div>
+                    <!-- /Respondents -->
+                </div>
+
+                <!-- Respondent Information -->
+                <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+                    <h3
+                        class="text-2xl font-semibold flex items-center justify-between"
+                    >
+                        Respondent Information
                     </h3>
                     <div
                         v-if="!model.information_fields.length"
@@ -395,6 +419,27 @@
                             Remove
                         </button>
                     </div>
+                    <!-- Add new information field -->
+                    <button
+                        type="button"
+                        @click="addInformationField()"
+                        class="flex items-center text-sm py-1 px-4 rounded-xl border-transparent border-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                        Add Information Field
+                    </button>
+                    <!--/ Add new information field -->
                 </div>
                 <!-- Respondent Information -->
 
@@ -459,7 +504,7 @@
                 <div
                     v-for="(section, sectionIndex) in model.question_sections"
                     :key="sectionIndex"
-                    class="px-4 py-5 bg-gray-200 space-y-6 mt-5 sm:p-6 border-gray-400  "
+                    class="px-4 py-5 bg-gray-200 space-y-6 mt-5 sm:p-6 border-gray-400"
                 >
                     <div class="flex justify-between">
                         <h1 class="text-xl font-bold">
@@ -498,6 +543,17 @@
                     >
                         <!-- WITHOUT CATEGORY -->
                         <div v-if="question_group.format == 'withoutCategory'">
+                            <input
+                                class="w-full"
+                                type="text"
+                                placeholder="Group Question"
+                                v-model="question_group.group_question"
+                            />
+                            <textarea
+                                v-model="question_group.question_instruction"
+                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                placeholder="Type instruction here"
+                            />
                             <table
                                 class="table-auto border-collapse border w-full text-left"
                             >
@@ -636,9 +692,11 @@
 
                                         <div class="flex gap-2">
                                             <input
-                                                v-model="question_group.label"
+                                                v-model="
+                                                    question_group.group_question
+                                                "
                                                 class="text-lg font-semibold flex items-center justify-between w-full"
-                                                placeholder="Label..."
+                                                placeholder="Group Question"
                                             />
                                         </div>
 
@@ -995,8 +1053,9 @@
                         <div v-if="question_group.format == 'commentSection'">
                             <input
                                 type="text"
-                                v-model="question_group.label"
-                                placeholder="Type Group Label here..."
+                                class="w-full"
+                                v-model="question_group.group_question"
+                                placeholder="Type Group Question here..."
                             />
                             <template
                                 v-for="(
@@ -1206,7 +1265,7 @@ const previewPopupClose = () => {
 onMounted(() => {
     const savedTemplate = localStorage.getItem("surveyTemplate");
     console.log(savedTemplate);
-    
+
     if (savedTemplate) {
         Object.assign(model.value, JSON.parse(savedTemplate));
         // Optional: Remove from local storage after retrieving
@@ -1336,6 +1395,7 @@ const addQuestionGroup = (sectionIndex, format) => {
         format: format,
         number: groupsNum,
         label: "",
+        group_question: "",
         question_instruction: "",
         question_categories: [],
         questions: [],
@@ -1390,7 +1450,10 @@ const addQuestion = (sectionIndex, groupIndex) => {
             group: groupIndex + 1,
             category: null, // can be nullable
             question_type: "text",
-            question: "",
+            question:
+                model.value.question_sections[sectionIndex].question_groups[
+                    groupIndex
+                ].group_question,
             description: "",
             data: null, // Default options for Likert scale questions
         });
@@ -1458,14 +1521,48 @@ const saveSurvey = () => {
         });
         console.log(surveyData);
 
-        store.dispatch("saveSurvey", surveyData).then(({ data }) => {
-            // console.log(data);
+        store
+            .dispatch("saveSurvey", surveyData)
+            .then(({ data }) => {
+                // console.log(data);
 
-            router.push({
-                name: "SurveyView",
-                params: { id: data.id },
+                router.push({
+                    name: "SurveyView",
+                    params: { id: data.id },
+                });
+            })
+            .catch((error) => {
+                // Handle error responses from the backend
+                if (error.response && error.response.data) {
+                    const { message, errors } = error.response.data;
+
+                    // Show a general error message
+                    alert(
+                        message || "An error occurred while saving the survey."
+                    );
+
+                    // Optionally, you could display validation errors for each field
+                    if (errors) {
+                        let errorMessage =
+                            "Please fix the following issues:\n\n";
+
+                        // Loop through the errors and build a message
+                        Object.keys(errors).forEach((field) => {
+                            errorMessage += `${field}: ${errors[field].join(
+                                ", "
+                            )}\n`;
+                        });
+
+                        // Show the detailed error messages to the user
+                        alert(errorMessage);
+                    }
+                } else {
+                    // Handle cases where error.response is not available (e.g., network errors)
+                    alert(
+                        "An unexpected error occurred. Please try again later."
+                    );
+                }
             });
-        });
     } else {
         alert("cancelled");
     }

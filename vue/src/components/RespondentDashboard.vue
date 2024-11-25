@@ -1,10 +1,5 @@
 <template>
     <div>
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-3xl font-bold text-spccolor-600">
-                Welcome Back {{ user.first_name }}!
-            </h1>
-        </div>
         <div
             class="w-full grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2"
         >

@@ -19,10 +19,17 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::prefix('admin')->group(function () {
+        Route::get('/getsurveys', [SurveyController::class, 'getSurveys']);
+        Route::get('/getresponses', [ResponseController::class, 'getAllResponses']);
         Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
         Route::post('/users', [UserController::class, 'store']);
         Route::put('/users/{id}', [UserController::class, 'update']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    });
+    Route::prefix('surveymaker')->group(function () {
+        Route::get('/getownsurveys', [SurveyController::class, 'getOwnSurveys']);
+        Route::get('/getresponsesownsurveys', [ResponseController::class, 'getAllResponsesToMySurveys']);
     });
     Route::get('/results', [SurveyResultsController::class, 'index']);
 
@@ -57,6 +64,7 @@ Route::post('/submit-response', [ResponseController::class, 'store']);
 // Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::get('/public/survey/slug/{slug}', [SurveyController::class, 'showPublicBySlug'])->middleware(CheckPublicSurveyAccess::class);
 Route::get('/public-surveys', [DashboardController::class, 'getPublicSurveys']);
 Route::get('/test', function () {

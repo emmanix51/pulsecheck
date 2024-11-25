@@ -3,26 +3,6 @@
         <template v-slot:header>
             <div class="flex justify-between items-center">
                 <h1 class="text-3xl font-bold text-gray-900">Survey Results</h1>
-                <button
-                    @click="showAddUserForm = true"
-                    class="py-2 px-3 text-white bg-emerald-500 rounded-md hover:bg-emerald-600"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 -mt-1 inline-block"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 4v16m8-8H4"
-                        />
-                    </svg>
-                    Add User
-                </button>
             </div>
         </template>
 
@@ -45,6 +25,7 @@
                     Search
                 </button>
             </div>
+
             <div class="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
                 <div class="w-full overflow-x-auto">
                     <table class="w-full">
@@ -52,10 +33,10 @@
                             <tr
                                 class="text-md font-semibold tracking-wide text-left text-gray-900 bg-gray-100 uppercase border-b border-gray-600"
                             >
-                                <th class="px-4 py-3">Name</th>
-                                <th class="px-4 py-3">IdNum</th>
-                                <th class="px-4 py-3">Role</th>
-                                <th class="px-4 py-3">Action</th>
+                                <th class="px-4 py-3">Title</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">IsPublic</th>
+                                <th class="px-4 py-3">View Results</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
@@ -68,22 +49,41 @@
                                     <div class="flex items-center text-sm">
                                         <div>
                                             <p class="font-semibold text-black">
-                                                test
-                                            </p>
-                                            <p class="text-xs text-gray-600">
-                                                test
+                                                {{ survey.title }}
                                             </p>
                                         </div>
                                     </div>
                                 </td>
                                 <td
                                     class="px-4 py-3 text-ms font-semibold border"
+                                    v-if="survey.status != 1"
                                 >
-                                    test
+                                    Inactive
                                 </td>
-                                <td class="px-4 py-3 text-xs border">test</td>
+                                <td
+                                    class="px-4 py-3 text-ms font-semibold border"
+                                    v-else
+                                >
+                                    Active
+                                </td>
+                                <td
+                                    class="px-4 py-3 text-xs border"
+                                    v-if="survey.is_public != 1"
+                                >
+                                    Not Public
+                                </td>
+                                <td class="px-4 py-3 text-xs border" v-else>
+                                    Public
+                                </td>
                                 <td class="px-4 py-3 text-sm border">
-                                    <router-link> </router-link>
+                                    <router-link
+                                        :to="{
+                                            name: 'SurveyResults',
+                                            params: { id: survey.id },
+                                        }"
+                                    >
+                                        View Results
+                                    </router-link>
                                 </td>
                             </tr>
                         </tbody>
@@ -91,55 +91,51 @@
                 </div>
             </div>
         </section>
+
         <!-- Pagination -->
         <div
             class="max-w-full md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl mx-auto bg-white p-6 rounded-lg shadow-sm"
         >
             <div class="flex justify-center">
                 <nav class="flex space-x-2" aria-label="Pagination">
+                    <!-- Previous Button -->
                     <a
                         href="#"
                         @click.prevent="fetchSurveys(currentPage - 1)"
                         class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                         :class="{
-                            'opacity-50 cursor-not-allowed': currentPage === 1,
+                            'opacity-50 cursor-not-allowed': !prevPageUrl,
                         }"
-                        :disabled="currentPage === '1'"
+                        :disabled="!prevPageUrl"
                     >
                         Previous
                     </a>
-                    <div v-for="(link, i) of pageLinks" :key="i">
+
+                    <!-- Page Links -->
+                    <div v-for="(link, i) in pageLinks" :key="i">
                         <a
                             :href="link.url"
                             class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                             :class="{
-                                'opacity-50 cursor-not-allowed':
-                                    !link.url ||
-                                    parseInt(link.label) === currentPage,
-                                'bg-blue-500': link.active, // Optional: Apply active page styling
+                                'opacity-50 cursor-not-allowed': !link.url || link.active,
+                                'bg-blue-500': link.active,
                             }"
-                            :disabled="
-                                !link.url ||
-                                parseInt(link.label) === currentPage
-                            "
-                            @click.prevent="
-                                !(
-                                    !link.url ||
-                                    parseInt(link.label) === currentPage
-                                ) && fetchUsers(parseInt(link.label))
-                            "
+                            :disabled="!link.url || link.active"
+                            @click.prevent="fetchSurveys(link.label)"
                         >
                             {{ link.label }}
                         </a>
                     </div>
+
+                    <!-- Next Button -->
                     <a
                         href="#"
-                        @click.prevent="fetchUsers(currentPage + 1)"
+                        @click.prevent="fetchSurveys(currentPage + 1)"
                         class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                         :class="{
-                            'opacity-50 cursor-not-allowed': !hasNextPage,
+                            'opacity-50 cursor-not-allowed': !nextPageUrl,
                         }"
-                        :disabled="!hasNextPage"
+                        :disabled="!nextPageUrl"
                     >
                         Next
                     </a>
@@ -148,6 +144,7 @@
         </div>
     </PageComponent>
 </template>
+
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import PageComponent from "../components/PageComponent.vue";
@@ -156,20 +153,24 @@ import store from "../store";
 const currentPage = ref(1);
 const pageLinks = ref([]);
 const surveys = ref([]);
+const prevPageUrl = ref(null);
+const nextPageUrl = ref(null);
 
-onMounted(async () => {
+const fetchSurveys = async (page = 1) => {
     try {
-        const response = await store.dispatch("getAllResults");
-        // const links = response.users.links;
+        const response = await store.dispatch("getAllResults", page);
+        surveys.value = response.surveys.data;
+        pageLinks.value = response.surveys.links;
+        currentPage.value = page;
 
-        // if (links.length > 0) {
-        //     // Assuming the first link is "Previous" and the last is "Next"
+        prevPageUrl.value = response.surveys.prev_page_url;
+        nextPageUrl.value = response.surveys.next_page_url;
+    } catch (error) {
+        console.error("Error fetching surveys:", error);
+    }
+};
 
-        //     pageLinks.value = links.slice(1, -1); // Exclude the first and last elements
-        // }
-        // // pageLinks.value = response.users.links;
-        // currentPage.value = 1;
-        console.log(response);
-    } catch (error) {}
+onMounted(() => {
+    fetchSurveys(currentPage.value);
 });
 </script>

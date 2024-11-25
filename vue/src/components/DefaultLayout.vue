@@ -6,10 +6,11 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <img
-                                class="h-8 w-8 rounded-full"
-                                src="/spc.png"
+                                class="h-8 w-8 rounded-full border-white border"
+                                src="/wlogo.png"
                                 alt="Your Company"
                             />
+                            <!-- <h2 class="text-white">Pulse Check</h2> -->
                         </div>
                         <div class="hidden md:block">
                             <div class="ml-10 flex items-baseline space-x-4">
@@ -286,14 +287,13 @@ if (user.value.role === "admin") {
     navigation.value = [
         { name: "Dashboard", to: { name: "Dashboard" }, current: true },
         { name: "Users Management", to: { name: "UserManagement" } },
-        { name: "Survey Results", to: { name: "Surveys" } },
+        { name: "Survey Results", to: { name: "AdminResults" } },
     ];
 } else if (user.value.role === "surveymaker") {
     navigation.value = [
         { name: "Dashboard", to: { name: "Dashboard" }, current: true },
         { name: "Surveys", to: { name: "Surveys" } },
-        { name: "Survey Templates", to: { name: "ManageAccount" } },
-        { name: "Users Management", to: { name: "UserManagement" } },
+        { name: "Survey Templates", to: { name: "Templates" } },
     ];
 } else if (user.value.role === "respondent") {
     navigation.value = [

@@ -262,7 +262,7 @@
                                     </span>
                                     <span
                                         v-else-if="user.role === 'surveymaker'"
-                                        class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-sm"
+                                        class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-sm"
                                     >
                                         Survey Maker
                                     </span>

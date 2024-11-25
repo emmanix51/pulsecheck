@@ -1,9 +1,11 @@
 <template>
-    <PageComponent>
+    <AnswerPageComponent>
         <template v-slot:header>
             <div v-if="survey" class="flex justify-center">
                 <div class="flex justify-center flex-col">
-                    <h1 class="text-3xl font-bold text-gray-900">
+                    <img class="h-12 w-12 rounded-full mx-auto" src="/spcbg.png" alt="Pulse Check" />
+
+                    <h1 class="text-3xl font-bold text-white text-center">
                         {{ survey.title }}
                     </h1>
                     <h3 class="text-lg text-center font-bold text-gray-800">
@@ -11,9 +13,7 @@
                     </h3>
                 </div>
             </div>
-            <div v-else class="text-3xl font-bold text-gray-900">
-                Loading...
-            </div>
+            <div v-else class="text-3xl font-bold text-white">Loading...</div>
         </template>
         <div class="mb-4" v-if="survey">
             <p v-if="survey.instruction">
@@ -27,103 +27,110 @@
         <!-- <pre>{{ selectedCategory }}</pre> -->
         <!-- <pre>{{ answers }}</pre> -->
 
-        <form v-if="survey" @submit.prevent="submitAnswers">
-            <!-- Respondent Group Selection -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700">
-                    Select Your Respondent Group Type
-                </label>
-                <select
-                    v-if="isPublicSurvey"
-                    v-model="selectedGroupType"
-                    @change="updateCategories"
-                    class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
-                    :disabled="!isPublicSurvey"
-                    required
-                >
-                    <option
-                        v-for="group in survey.respondent_groups"
-                        :key="group.id"
-                        :value="group.type"
+        <form v-if="survey" @submit.prevent="submitAnswers" class="relative">
+            <h1 class="text-2xl mb-2 font-bold">Respondent Type</h1>
+            <div class="flex justify-between gap-2">
+                <!-- Respondent Group Selection -->
+                <div class="mb-6 w-1/2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Select Your Respondent Group Type
+                    </label>
+                    <select
+                        v-if="isPublicSurvey"
+                        v-model="selectedGroupType"
+                        @change="updateCategories"
+                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
+                        :disabled="!isPublicSurvey"
+                        required
                     >
-                        {{ group.type }}
-                    </option>
-                </select>
-                <div v-else>
-                    {{selectedGroupType}}
-                </div>  
-            </div>
+                        <option
+                            v-for="group in survey.respondent_groups"
+                            :key="group.id"
+                            :value="group.type"
+                        >
+                            {{ group.type }}
+                        </option>
+                    </select>
+                    <div v-else>
+                        {{ selectedGroupType }}
+                    </div>
+                </div>
 
-            <!-- Respondent Category Selection -->
-            <div class="mb-6" v-if="selectedGroupType">
-                <label class="block text-sm font-medium text-gray-700">
-                    Select Your Category
-                </label>
-                <select
-                    v-if="isPublicSurvey"
-                    v-model="selectedCategory"
-                    class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
-                    :disabled="!isPublicSurvey"
-                    required
-                >
-                    <option
-                        v-for="cat in selectedCategories"
-                        :key="cat"
-                        :value="cat.trim()"
+                <!-- Respondent Category Selection -->
+                <div class="mb-6 w-1/2" v-if="selectedGroupType">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Select Your Category
+                    </label>
+                    <select
+                        v-if="isPublicSurvey"
+                        v-model="selectedCategory"
+                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
+                        :disabled="!isPublicSurvey"
+                        required
                     >
-                        {{ cat.trim() }}
-                    </option>
-                </select>
-                <div v-else>
-                    <h2>{{selectedCategory}}</h2>
+                        <option
+                            v-for="cat in selectedCategories"
+                            :key="cat"
+                            :value="cat.trim()"
+                        >
+                            {{ cat.trim() }}
+                        </option>
+                    </select>
+                    <div v-else>
+                        <h2>{{ selectedCategory }}</h2>
+                    </div>
                 </div>
             </div>
-
+            <h1 class="text-2xl mb-2 font-bold">
+                Respondent Information Fields
+            </h1>
             <!-- Information Fields -->
             <div
                 v-for="field in survey.information_fields"
                 :key="field.id"
-                class="mb-6"
+                class="grid grid-cols-2 sm:grid-cols-2 gap-6 mb-6"
             >
-                <label
-                    :for="'field-' + field.id"
-                    class="block text-sm font-medium text-gray-700"
-                >
-                    {{ field.label }}
-                </label>
-                <div v-if="field.type === 'text'" class="mt-1">
-                    <input
-                        type="text"
-                        :id="'field-' + field.id"
-                        v-model="infoFields[field.id]"
-                        class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                        required
-                    />
-                </div>
-                <div v-else-if="field.type === 'number'" class="mt-1">
-                    <input
-                        type="number"
-                        :id="'field-' + field.id"
-                        v-model="infoFields[field.id]"
-                        class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                        required
-                    />
-                </div>
-                <div v-else-if="field.type === 'select'" class="mt-1">
-                    <select
-                        :id="'field-' + field.id"
-                        v-model="infoFields[field.id]"
-                        class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                        required
+                <div>
+                    <label
+                        :for="'field-' + field.id"
+                        class="block text-sm font-medium text-gray-700"
                     >
-                        <option
-                            v-for="option in field.options.split(',')"
-                            :key="option"
-                            :value="option"
+                        {{ field.label }}
+                    </label>
+                    <div v-if="field.type === 'text'" class="mt-1">
+                        <input
+                            type="text"
+                            :id="'field-' + field.id"
+                            v-model="infoFields[field.id]"
+                            class="block w-full px-3 py-2 border rounded-md shadow-sm"
+                            required
+                        />
+                    </div>
+                    <div v-else-if="field.type === 'number'" class="mt-1">
+                        <input
+                            type="number"
+                            :id="'field-' + field.id"
+                            v-model="infoFields[field.id]"
+                            class="block w-full px-3 py-2 border rounded-md shadow-sm"
+                            required
+                        />
+                    </div>
+                    <div v-else-if="field.type === 'select'" class="mt-1">
+                        <select
+                            :id="'field-' + field.id"
+                            v-model="infoFields[field.id]"
+                            class="block w-full px-3 py-2 border rounded-md shadow-sm"
+                            required
                         >
-                            {{ option }}
-                        </option>
-                    </select>
+                            <option
+                                v-for="option in field.options.split(',')"
+                                :key="option"
+                                :value="option"
+                            >
+                                {{ option }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -151,229 +158,248 @@
                     :key="groupIndex"
                     class="mb-6"
                 >
-                <div v-if="question_group.format=='commentSection'">
-                    
-                    <div v-for="(question,questionIndex) in question_group.questions" :key="questionIndex">
-                        <div v-if="question.question_type=='text'">
-                            <h2 class="mb-2 font-semibold text-xl">
-                        {{ question_group.number }}. {{ question.question }}
-                    </h2>
-                     <input
-                                                type="text"
-                                                v-model="answers[question.id]"
-                                                class="block w-full px-3 py-2 border-b-2 rounded-md shadow-sm"
-                                                required
-                                            />
+                    <div v-if="question_group.format == 'commentSection'">
+                        <div
+                            v-for="(
+                                question, questionIndex
+                            ) in question_group.questions"
+                            :key="questionIndex"
+                        >
+                            <div v-if="question.question_type == 'text'">
+                                <h2 class="mb-2 font-semibold text-xl">
+                                    {{ question_group.number }}.
+                                    {{ question.question }}
+                                </h2>
+                                <input
+                                    type="text"
+                                    v-model="answers[question.id]"
+                                    class="block w-full px-3 py-2 border-b-2 rounded-md shadow-sm"
+                                    required
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div v-else>
-                    <h2 class="mb-2 font-semibold text-xl">
-                        {{ question_group.number }}. {{ question_group.label }}
-                    </h2>
- 
-                    <table class="table-auto w-full border-collapse border">
-                        <thead>
-                            <tr>
-                                <th
-                                    v-if="question_group.category_label"
-                                    class="p-2 border"
-                                >
-                                    {{ question_group.category_label }}
-                                </th>
-                                <th class="p-2 border">{{question_group.label}}</th>
-                                <th class="p-2 border">Answer</th>
-                                <th
-                                    v-if="hasRadioQuestion(question_group)"
-                                    class="p-2 border"
-                                >
-                                    Comment/Complaint
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Iterate over Questions in the Group -->
-                            <!-- Display questions with categories -->
-                            <template
-                                v-for="(
-                                    category, categoryIndex
-                                ) in question_group.question_categories"
-                                :key="categoryIndex"
+                    <div v-else>
+                        <h2 class="mb-2 font-semibold text-xl">
+                            {{ question_group.group_question }}.
+                            <h3
+                                class="text-lg text-gray-600 mb-4 whitespace-pre-wrap"
                             >
-                                <tr
+                                {{ question_group.question_instruction }}
+                            </h3>
+                            <!-- {{ question_group.label }} -->
+                        </h2>
+
+                        <table class="table-auto w-full border-collapse border">
+                            <thead>
+                                <tr>
+                                    <th
+                                        v-if="question_group.category_label"
+                                        class="p-2 border"
+                                    >
+                                        {{ question_group.category_label }}
+                                    </th>
+                                    <th class="p-2 border">
+                                        {{ question_group.label }}
+                                    </th>
+                                    <th class="p-2 border">Answer</th>
+                                    <th
+                                        v-if="hasRadioQuestion(question_group)"
+                                        class="p-2 border"
+                                    >
+                                        Comment/Complaint
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Iterate over Questions in the Group -->
+                                <!-- Display questions with categories -->
+                                <template
+                                    v-for="(
+                                        category, categoryIndex
+                                    ) in question_group.question_categories"
+                                    :key="categoryIndex"
+                                >
+                                    <tr
+                                        v-for="(
+                                            question, questionIndex
+                                        ) in question_group.questions.filter(
+                                            (q) => q.category === category
+                                        )"
+                                        :key="questionIndex"
+                                    >
+                                        <!-- Display the category once for each group of questions -->
+                                        <td
+                                            v-if="questionIndex === 0"
+                                            :rowspan="
+                                                question_group.questions.filter(
+                                                    (q) =>
+                                                        q.category === category
+                                                ).length
+                                            "
+                                            class="border px-4 py-2"
+                                        >
+                                            {{ category }}
+                                        </td>
+
+                                        <!-- Display the question text -->
+                                        <td class="border px-4 py-2">
+                                            {{ question.question }}
+                                        </td>
+
+                                        <!-- Display the answer input field based on question type -->
+                                        <td class="border px-4 py-2">
+                                            <!-- Radio Question -->
+                                            <div
+                                                v-if="
+                                                    question.question_type ===
+                                                    'radio'
+                                                "
+                                                class="flex space-x-2"
+                                            >
+                                                <div
+                                                    v-for="option in question.data"
+                                                    :key="option"
+                                                    class="flex items-center border-r border-gray-300 px-2"
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        :value="option"
+                                                        :name="
+                                                            'question-' +
+                                                            question.id
+                                                        "
+                                                        v-model="
+                                                            answers[question.id]
+                                                        "
+                                                        class="mr-2"
+                                                        required
+                                                    />
+                                                    {{ option }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Text Question -->
+                                            <div
+                                                v-else-if="
+                                                    question.question_type ===
+                                                    'text'
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    v-model="
+                                                        answers[question.id]
+                                                    "
+                                                    class="block w-full px-3 py-2 border rounded-md shadow-sm"
+                                                    required
+                                                />
+                                            </div>
+                                        </td>
+                                        <td
+                                            class="border px-4 py-2"
+                                            v-if="
+                                                question.question_type ===
+                                                'radio'
+                                            "
+                                        >
+                                            <input
+                                                type="text"
+                                                class="block w-full px-3 py-2 border rounded-md shadow-sm"
+                                            />
+                                        </td>
+                                    </tr>
+                                </template>
+
+                                <!-- Display questions without a category -->
+                                <template
                                     v-for="(
                                         question, questionIndex
                                     ) in question_group.questions.filter(
-                                        (q) => q.category === category
+                                        (q) => !q.category
                                     )"
                                     :key="questionIndex"
                                 >
-                                    <!-- Display the category once for each group of questions -->
-                                    <td
-                                        v-if="questionIndex === 0"
-                                        :rowspan="
-                                            question_group.questions.filter(
-                                                (q) => q.category === category
-                                            ).length
-                                        "
-                                        class="border px-4 py-2"
-                                    >
-                                        {{ category }}
-                                    </td>
+                                    <tr>
+                                        <td
+                                            v-if="
+                                                questionIndex === 0 &&
+                                                question_group.category_label
+                                            "
+                                            class="border px-4 py-2"
+                                        ></td>
 
-                                    <!-- Display the question text -->
-                                    <td class="border px-4 py-2">
-                                        {{ question.question }}
-                                    </td>
+                                        <!-- Display the question text -->
+                                        <td class="border px-4 py-2">
+                                            {{ question.question }}
+                                        </td>
 
-                                    <!-- Display the answer input field based on question type -->
-                                    <td class="border px-4 py-2">
-                                        <!-- Radio Question -->
-                                        <div
+                                        <!-- Display the answer input field based on question type -->
+                                        <td class="border px-4 py-2">
+                                            <!-- Radio Question -->
+                                            <div
+                                                v-if="
+                                                    question.question_type ===
+                                                    'radio'
+                                                "
+                                                class="flex space-x-2"
+                                            >
+                                                <div
+                                                    v-for="option in question.data"
+                                                    :key="option"
+                                                    class="flex items-center border-r border-gray-300 px-2"
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        :value="option"
+                                                        :name="
+                                                            'question-' +
+                                                            question.id
+                                                        "
+                                                        v-model="
+                                                            answers[question.id]
+                                                        "
+                                                        class="mr-2"
+                                                        required
+                                                    />
+                                                    {{ option }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Text Question -->
+                                            <div
+                                                v-else-if="
+                                                    question.question_type ===
+                                                    'text'
+                                                "
+                                            >
+                                                <input
+                                                    type="text"
+                                                    v-model="
+                                                        answers[question.id]
+                                                    "
+                                                    class="block w-full px-3 py-2 border rounded-md shadow-sm"
+                                                    required
+                                                />
+                                            </div>
+                                        </td>
+                                        <td
+                                            class="border px-4 py-2"
                                             v-if="
                                                 question.question_type ===
                                                 'radio'
                                             "
-                                            class="flex space-x-2"
-                                        >
-                                            <div
-                                                v-for="option in question.data"
-                                                :key="option"
-                                                class="flex items-center border-r border-gray-300 px-2"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    :value="option"
-                                                    :name="
-                                                        'question-' +
-                                                        question.id
-                                                    "
-                                                    v-model="
-                                                        answers[question.id]
-                                                    "
-                                                    class="mr-2"
-                                                    required
-                                                />
-                                                {{ option }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Text Question -->
-                                        <div
-                                            v-else-if="
-                                                question.question_type ===
-                                                'text'
-                                            "
                                         >
                                             <input
                                                 type="text"
-                                                v-model="answers[question.id]"
                                                 class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                                                required
                                             />
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="border px-4 py-2"
-                                        v-if="
-                                            question.question_type === 'radio'
-                                        "
-                                    >
-                                        <input
-                                            type="text"
-                                            class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                                        />
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <!-- Display questions without a category -->
-                            <template
-                                v-for="(
-                                    question, questionIndex
-                                ) in question_group.questions.filter(
-                                    (q) => !q.category
-                                )"
-                                :key="questionIndex"
-                            >
-                                <tr>
-                                    <td
-                                        v-if="
-                                            questionIndex === 0 &&
-                                            question_group.category_label
-                                        "
-                                        class="border px-4 py-2"
-                                    ></td>
-
-                                    <!-- Display the question text -->
-                                    <td class="border px-4 py-2">
-                                        {{ question.question }}
-                                    </td>
-
-                                    <!-- Display the answer input field based on question type -->
-                                    <td class="border px-4 py-2">
-                                        <!-- Radio Question -->
-                                        <div
-                                            v-if="
-                                                question.question_type ===
-                                                'radio'
-                                            "
-                                            class="flex space-x-2"
-                                        >
-                                            <div
-                                                v-for="option in question.data"
-                                                :key="option"
-                                                class="flex items-center border-r border-gray-300 px-2"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    :value="option"
-                                                    :name="
-                                                        'question-' +
-                                                        question.id
-                                                    "
-                                                    v-model="
-                                                        answers[question.id]
-                                                    "
-                                                    class="mr-2"
-                                                    required
-                                                />
-                                                {{ option }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Text Question -->
-                                        <div
-                                            v-else-if="
-                                                question.question_type ===
-                                                'text'
-                                            "
-                                        >
-                                            <input
-                                                type="text"
-                                                v-model="answers[question.id]"
-                                                class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                                                required
-                                            />
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="border px-4 py-2"
-                                        v-if="
-                                            question.question_type === 'radio'
-                                        "
-                                    >
-                                        <input
-                                            type="text"
-                                            class="block w-full px-3 py-2 border rounded-md shadow-sm"
-                                        />
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-                    
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <!-- /Question Sections -->
@@ -575,20 +601,20 @@
 
             <button
                 type="submit"
-                class="mt-4 py-2 px-4 bg-spccolor-600 text-white rounded-md hover:bg-spccolor-500"
+                class="mt-4 absolute end-0 py-2 px-4 bg-spccolor-600 text-white rounded-md hover:bg-spccolor-500"
             >
                 Submit
             </button>
         </form>
         <div v-else>Loading survey...</div>
-    </PageComponent>
+    </AnswerPageComponent>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import store from "../store";
-import PageComponent from "../components/PageComponent.vue";
+import AnswerPageComponent from "../components/AnswerPageComponent.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -643,8 +669,12 @@ onMounted(async () => {
                 selectedCategory.value = loggedInUser.category; // Directly assign category for non-public surveys
             } else {
                 // For public surveys, you might want to set the category based on respondent group
-                const group = survey.value.respondent_groups.find(g => g.type === loggedInUser.respondent_type);
-                selectedCategory.value = group ? group.category.split(",")[0].trim() : null; // Default to the first category
+                const group = survey.value.respondent_groups.find(
+                    (g) => g.type === loggedInUser.respondent_type
+                );
+                selectedCategory.value = group
+                    ? group.category.split(",")[0].trim()
+                    : null; // Default to the first category
             }
         }
 

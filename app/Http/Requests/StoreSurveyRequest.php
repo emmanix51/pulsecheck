@@ -97,6 +97,7 @@ class StoreSurveyRequest extends FormRequest
         'question_sections.*.question_groups.*.format' => 'required|string',
         'question_sections.*.question_groups.*.number' => 'required|integer',
         'question_sections.*.question_groups.*.label' => 'required|string|max:255',
+        'question_sections.*.question_groups.*.group_question' => 'required|string|max:255',
         'question_sections.*.question_groups.*.question_instruction' => 'nullable|string|max:99999',
         'question_sections.*.question_groups.*.category_label' => 'nullable|string|max:255',
         

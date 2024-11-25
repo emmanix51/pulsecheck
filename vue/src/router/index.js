@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import store from "../store";
 import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
+import ForgotPassword from "../views/ForgotPassword.vue";
 import Dashboard from "../views/Dashboard.vue";
 import ManageAccount from "../views/ManageAccount.vue";
 import Surveys from "../views/Surveys.vue";
@@ -36,8 +37,8 @@ const routes = [
         meta: { requiresAuth: true },
         children: [
             { path: "/dashboard", name: "Dashboard", component: Dashboard },
-            { path: "/surveys", name: "Surveys", component: Surveys },
-            { path: "/templates", name: "Templates", component: Templates },
+            { path: "/surveys", name: "Surveys", component: Surveys ,meta: { requiresRole: ['surveymaker'] } },
+            { path: "/templates", name: "Templates", component: Templates, meta: { requiresRole: ['surveymaker'] }  },
             {
                 path: "/surveys/create",
                 name: "SurveyCreate",
@@ -48,6 +49,7 @@ const routes = [
                 path: "/template/:id",
                 name: "TemplateView",
                 component: TemplateView,
+                meta: { requiresRole: ['surveymaker'] } 
             },
             {
                 path: "/manage-account",
@@ -55,59 +57,70 @@ const routes = [
                 component: ManageAccount,
             },
             {
-                path: "/user-management",
+                path: "admin/user-management",
                 name: "UserManagement",
                 component: UserManagement,
+                meta: { requiresRole: ['admin'] } 
             },
             {
                 path: "admin/results",
                 name: "AdminResults",
                 component: AdminResults,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/report/:surveyId",
                 name: "SurveyReport",
                 component: SurveyReport,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/:id/results",
                 name: "SurveyResults",
                 component: SurveyResults,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/:id/results/tally",
                 name: "ResultsTally",
                 component: ResultsTally,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/:id/results/PCA",
                 name: "ResultsPCA",
                 component: ResultsPCA,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/:id/results/descriptive",
                 name: "ResultsDescriptive",
                 component: ResultsDescriptive,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/:id/results/visualization",
                 name: "ResultsVisual",
                 component: ResultsVisual,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/:id/results/visualization/questions",
                 name: "ResultsVisualQuestions",
                 component: ResultsVisualQuestions,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/question/:id",
                 name: "SurveyQuestion",
                 component: SurveyQuestion,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/survey/responses/:id",
                 name: "SurveyResponse",
                 component: SurveyResponse,
+                meta: { requiresRole: ['admin','surveymaker'] } 
             },
             {
                 path: "/my-survey",
@@ -152,6 +165,7 @@ const routes = [
         children: [
             { path: "/login", name: "Login", component: Login },
             { path: "/register", name: "Register", component: Register },
+            { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
         ],
     },
 ];
@@ -162,6 +176,26 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+    const role = store.state.user.data.role;
+    console.log(role);
+    
+    // Check if the route has role-based access control
+    // Check if the route requires role-based access control
+    if (to.meta.requiresRole) {
+        const requiredRoles = to.meta.requiresRole;
+
+        // If `requiredRoles` is an array, check if the user's role is included
+        if (Array.isArray(requiredRoles)) {
+            if (!requiredRoles.includes(role)) {
+                return next({ name: "ErrorPage" });  // Redirect to error page if role is not in allowed roles
+            }
+        } else {
+            // Fallback for single role (not an array)
+            if (role !== requiredRoles) {
+                return next({ name: "ErrorPage" });  // Redirect if the role does not match
+            }
+        }
+    }
     if (to.meta.requiresAuth && !store.state.user.token) {
         next({ name: "Login" });
     } else if (store.state.user.token && to.meta.isGuest) {

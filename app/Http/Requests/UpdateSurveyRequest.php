@@ -70,6 +70,7 @@ class UpdateSurveyRequest extends FormRequest
         'question_sections.*.question_groups.*.format' => 'required|string',
         'question_sections.*.question_groups.*.number' => 'sometimes|required|integer',
         'question_sections.*.question_groups.*.label' => 'sometimes|required|string|max:255',
+        'question_sections.*.question_groups.*.group_question' => 'sometimes|required|string|max:255',
         'question_sections.*.question_groups.*.question_instruction' => 'sometimes|nullable|string|max:99999',
         'question_sections.*.question_groups.*.category_label' => 'sometimes|nullable|string|max:255',
         

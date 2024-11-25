@@ -19,6 +19,7 @@ class QuestionGroupResource extends JsonResource
             'number' => $this->number,
             'format' => $this->format,
             'label' => $this->label,
+            'group_question' => $this->group_question,
             'question_categories' => $this->question_categories,
             'question_instruction' => $this->question_instruction,
             // Add other fields if needed

@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Log;
+// use Log;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Validation\Rules\Password;
+
+use App\Mail\ForgotPassword;
+
 
 class AuthController extends Controller
 {
@@ -90,6 +96,20 @@ class AuthController extends Controller
 
         return response([
             'success' => true
+        ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+    
+        // Send the reset link
+        PasswordFacade::sendResetLink($request->only('email'));
+    
+        return response()->json([
+            'message' => 'Password reset link has been sent to your email.',
         ]);
     }
 }

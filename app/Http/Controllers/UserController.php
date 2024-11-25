@@ -10,7 +10,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::paginate(1);
+        $users = User::paginate(10);
 
         return response()->json(['users' => $users], 200);
     }
@@ -46,6 +46,13 @@ class UserController extends Controller
         return response()->json(['user' => $user], 201);
     }
 
+    public function show(User $user, Request $request)
+    {
+        //
+        $user = $request->user();
+        return $user;
+    }
+
     public function update(Request $request, $id)
     {
         $user = User::find($id);
@@ -55,6 +62,7 @@ class UserController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
+            'idnum' => 'required|integer|unique:users,idnum',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
@@ -67,6 +75,7 @@ class UserController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
+        $user->idnum= $request->idnum;
         $user->first_name = $request->first_name;
         $user->last_name = $request->last_name;
         $user->email = $request->email;

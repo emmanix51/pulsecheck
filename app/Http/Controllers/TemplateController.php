@@ -14,7 +14,7 @@ class TemplateController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        return Template::where('user_id', $user->id)->paginate(6);
+        return Template::where('user_id', $user->id)->paginate(9);
     }
 
     /**

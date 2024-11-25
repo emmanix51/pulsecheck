@@ -37,6 +37,7 @@ class SurveyResource extends JsonResource
                         'number' => $group->number,
                         'format' => $group->format,
                         'label' => $group->label,
+                        'group_question' => $group->group_question,
                         'category_label' => $group->category_label,
                         'question_categories' => $group->question_categories ? json_decode($group->question_categories, true) : null,
                         'question_instruction' => $group->question_instruction,

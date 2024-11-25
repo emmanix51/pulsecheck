@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('question_section_id')->constrained()->onDelete('cascade');
             $table->string('format');
             $table->text('label');
+            $table->text('group_question');
             $table->integer('number');
             $table->string('category_label')->nullable();
             $table->json('question_categories')->nullable();

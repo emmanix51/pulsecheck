@@ -27,7 +27,18 @@ class SurveyController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        return SurveyResource::collection(Survey::where('user_id', $user->id)->paginate(7));
+        return SurveyResource::collection(Survey::where('user_id', $user->id)->paginate(9));
+    }
+    public function getSurveys(Request $request)
+    {
+        // $user = $request->user();
+        return SurveyResource::collection(Survey::orderBy('created_at', 'desc')->paginate(6));
+    }
+
+    public function getOwnSurveys(Request $request)
+    {
+        $user = $request->user();
+        return SurveyResource::collection(Survey::where('user_id', $user->id)->paginate(6));
     }
 
     /**
@@ -80,6 +91,7 @@ class SurveyController extends Controller
             'format' => $groupData['format'],
             'number' => $groupData['number'],
             'label' => $groupData['label'],
+            'group_question' => $groupData['group_question'],
             'question_instruction' => $groupData['question_instruction'],
             'category_label' => $groupData['category_label'] ?? "",
             'question_categories' => json_encode($groupData['question_categories'] ?? []),
@@ -225,6 +237,7 @@ class SurveyController extends Controller
                         [
                             'format' => $groupData['format'],
                             'label' => $groupData['label'],
+                            'group_question' => $groupData['group_question'],
                             'category_label' => $groupData['category_label'],
                             'question_instruction' => $groupData['question_instruction'],
                             'question_categories' => json_encode($groupData['question_categories'] ?? []),

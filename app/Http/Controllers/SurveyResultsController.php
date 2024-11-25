@@ -61,7 +61,7 @@ class SurveyResultsController extends Controller
         $surveys = Survey::paginate(2); // 5 items per page
 
         // Return a paginated response using a resource collection
-        response()->json(['surveys' => $surveys], 200);
+        return response()->json(['surveys' => $surveys], 200);
         // return SurveyResource::collection($surveys);
     }
     public function show(Request $request, $id)
@@ -499,80 +499,180 @@ class SurveyResultsController extends Controller
     }
 
 
-
     public function runPCA($id)
-    {
-        $csvExportResponse = $this->exportSurveyResponsesToCSV($id);
+{
+    $csvExportResponse = $this->exportSurveyResponsesToCSV($id);
 
-        if ($csvExportResponse->status() !== 200) {
-            return $csvExportResponse;
+    if ($csvExportResponse->status() !== 200) {
+        return $csvExportResponse;
+    }
+
+    // Define paths
+    $csvFilePath = storage_path('app/survey_responses.csv');
+    $pcaResultPath = storage_path('app/pca_results.csv');
+    $pcaMetadataPath = storage_path('app/pca_metadata.json');
+
+    // Execute the Python script
+    $command = "..\\venv\\Scripts\\activate.bat && python ..\\scripts\\pca_analysis.py";
+    exec($command, $output, $returnVar);
+
+    if ($returnVar !== 0) {
+        return response()->json([
+            'error' => 'Failed to run PCA analysis',
+            'output' => $output,
+            'command' => $command
+        ], 500);
+    }
+
+    // Validate PCA results and metadata existence
+    if (!file_exists($pcaResultPath) || !file_exists($pcaMetadataPath)) {
+        return response()->json([
+            'error' => 'PCA results or metadata file is missing.',
+        ], 500);
+    }
+
+    // Read PCA results
+    $pcaResults = array_map('str_getcsv', file($pcaResultPath));
+    $pcaMetadata = json_decode(file_get_contents($pcaMetadataPath), true);
+
+    if (!$pcaMetadata || !isset($pcaMetadata['explained_variance'], $pcaMetadata['components'])) {
+        return response()->json([
+            'error' => 'Invalid or incomplete PCA metadata.',
+        ], 500);
+    }
+
+    // Parse PCA results
+    $header = array_shift($pcaResults);
+    $pcaData = array_map(function ($row) use ($header) {
+        return array_combine($header, $row);
+    }, $pcaResults);
+
+    $survey = Survey::with('questions')->findOrFail($id);
+    $surveyTitle = $survey->title;
+    $questions = $survey->questions->keyBy('id');
+
+    // Use headers from the metadata JSON to map question IDs to texts in the component weights
+    $numericColumns = $pcaMetadata['headers'];
+    $components = $pcaMetadata['components'];
+    $topContributors = $pcaMetadata['top_contributors'];
+    $componentsWithText = [];
+
+    foreach ($numericColumns as $index => $header) {
+        if (preg_match('/answer_(\d+)/', $header, $matches)) {
+            $questionId = $matches[1];
+            $questionText = isset($questions[$questionId]) ? $questions[$questionId]->question : 'Unknown question';
+
+            $componentsWithText[] = [
+                'question_id' => $questionId,
+                'question_text' => $questionText,
+                'PC1' => round($components[0][$index], 4),
+                'PC2' => round($components[1][$index], 4),
+            ];
         }
+    }
 
-        // Define paths
-        $csvFilePath = storage_path('app/survey_responses.csv');
-        $pcaResultPath = storage_path('app/pca_results.csv');
-        $pcaMetadataPath = storage_path('app/pca_metadata.json');
-
-        // Execute the Python script
-        $command = "..\\venv\\Scripts\\activate.bat && python ..\\scripts\\pca_analysis.py";
-        exec($command, $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            return response()->json([
-                'error' => 'Failed to run PCA analysis',
-                'output' => $output,
-                'command' => $command
-            ], 500);
-        }
-
-        // Read PCA results
-        $pcaResults = array_map('str_getcsv', file($pcaResultPath));
-        $pcaMetadata = json_decode(file_get_contents($pcaMetadataPath), true);
-
-        // Parse PCA results
-        $header = array_shift($pcaResults);
-        Log::info($header);
-        $pcaData = array_map(function ($row) use ($header) {
-            return array_combine($header, $row);
-        }, $pcaResults);
-
-        $survey = Survey::with('questions')->findOrFail($id);
-        $surveyTitle = $survey->title;
-        $questions = $survey->questions->keyBy('id');
-
-        // Use headers from the metadata JSON to map question IDs to texts in the component weights
-        $numericColumns = $pcaMetadata['headers'];
-        $components = $pcaMetadata['components'];
-        $componentsWithText = [];
-
-        foreach ($numericColumns as $index => $header) {
-            if (preg_match('/answer_(\d+)/', $header, $matches)) {
+    // Add top contributors to response
+    $formattedTopContributors = [];
+    foreach ($topContributors as $component => $contributors) {
+        $formattedTopContributors[$component] = array_map(function ($contributor) use ($questions) {
+            if (preg_match('/answer_(\d+)/', $contributor[0], $matches)) {
                 $questionId = $matches[1];
-                if (isset($questions[$questionId])) {
-                    $questionText = $questions[$questionId]->question;
-                } else {
-                    $questionText = '';
-                }
-
-                $componentWithText = [
+                $questionText = isset($questions[$questionId]) ? $questions[$questionId]->question : 'Unknown question';
+                return [
                     'question_id' => $questionId,
                     'question_text' => $questionText,
-                    'PC1' => $components[0][$index],
-                    'PC2' => $components[1][$index]
+                    'weight' => round($contributor[1], 4),
                 ];
-
-                $componentsWithText[] = $componentWithText;
             }
-        }
-
-        return response()->json([
-            'surveyTitle' => $surveyTitle,
-            'explainedVariance' => $pcaMetadata['explained_variance'],
-            'componentWeights' => $components,
-            'pairedComponentWeights' => $componentsWithText,
-            'pcaData' => $pcaData,
-        ]);
+            return null;
+        }, $contributors);
     }
+
+    return response()->json([
+        'surveyTitle' => $surveyTitle,
+        'explainedVariance' => $pcaMetadata['explained_variance'],
+        'componentWeights' => $components,
+        'pairedComponentWeights' => $componentsWithText,
+        'topContributors' => $formattedTopContributors,
+        'pcaData' => $pcaData,
+    ]);
+}
+
+
+
+    // public function runPCA($id)
+    // {
+    //     $csvExportResponse = $this->exportSurveyResponsesToCSV($id);
+
+    //     if ($csvExportResponse->status() !== 200) {
+    //         return $csvExportResponse;
+    //     }
+
+    //     // Define paths
+    //     $csvFilePath = storage_path('app/survey_responses.csv');
+    //     $pcaResultPath = storage_path('app/pca_results.csv');
+    //     $pcaMetadataPath = storage_path('app/pca_metadata.json');
+
+    //     // Execute the Python script
+    //     $command = "..\\venv\\Scripts\\activate.bat && python ..\\scripts\\pca_analysis.py";
+    //     exec($command, $output, $returnVar);
+
+    //     if ($returnVar !== 0) {
+    //         return response()->json([
+    //             'error' => 'Failed to run PCA analysis',
+    //             'output' => $output,
+    //             'command' => $command
+    //         ], 500);
+    //     }
+
+    //     // Read PCA results
+    //     $pcaResults = array_map('str_getcsv', file($pcaResultPath));
+    //     $pcaMetadata = json_decode(file_get_contents($pcaMetadataPath), true);
+
+    //     // Parse PCA results
+    //     $header = array_shift($pcaResults);
+    //     Log::info($header);
+    //     $pcaData = array_map(function ($row) use ($header) {
+    //         return array_combine($header, $row);
+    //     }, $pcaResults);
+
+    //     $survey = Survey::with('questions')->findOrFail($id);
+    //     $surveyTitle = $survey->title;
+    //     $questions = $survey->questions->keyBy('id');
+
+    //     // Use headers from the metadata JSON to map question IDs to texts in the component weights
+    //     $numericColumns = $pcaMetadata['headers'];
+    //     $components = $pcaMetadata['components'];
+    //     $componentsWithText = [];
+
+    //     foreach ($numericColumns as $index => $header) {
+    //         if (preg_match('/answer_(\d+)/', $header, $matches)) {
+    //             $questionId = $matches[1];
+    //             if (isset($questions[$questionId])) {
+    //                 $questionText = $questions[$questionId]->question;
+    //             } else {
+    //                 $questionText = '';
+    //             }
+
+    //             $componentWithText = [
+    //                 'question_id' => $questionId,
+    //                 'question_text' => $questionText,
+    //                 'PC1' => $components[0][$index],
+    //                 'PC2' => $components[1][$index]
+    //             ];
+
+    //             $componentsWithText[] = $componentWithText;
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'surveyTitle' => $surveyTitle,
+    //         'explainedVariance' => $pcaMetadata['explained_variance'],
+    //         'componentWeights' => $components,
+    //         'pairedComponentWeights' => $componentsWithText,
+    //         'pcaData' => $pcaData,
+    //     ]);
+    // }
 
 
 

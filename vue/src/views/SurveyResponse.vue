@@ -24,6 +24,41 @@
                 </div>
             </div>
         </div> -->
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table
+                class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+            >
+                <thead
+                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+                >
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Question</th>
+                        <th scope="col" class="px-6 py-3">Answer</th>
+                        <!-- <th scope="col" class="px-6 py-3">Information</th> -->
+                        <!-- <th scope="col" class="px-6 py-3">Responded Date</th> -->
+                        <!-- <th scope="col" class="px-6 py-3">Survey Link</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="(answer, answerIndex) of surveyResponses.answers"
+                        :key="answer.id"
+                        class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
+                    >
+                        <th
+                            scope="row"
+                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                        >
+                           {{ answer.question.question }}
+                        </th>
+                        <td class="px-6 py-4">
+                            <div  v-if="answer.answer_scale">{{ answer.answer_scale }}</div>
+                            <div v-else>{{ answer.answer_text }}</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700"
         >

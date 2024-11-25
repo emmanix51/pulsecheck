@@ -310,6 +310,9 @@ const store = createStore({
         getSurveyById: (state) => (id) => {
             return state.surveys.find((survey) => survey.id === id);
         },
+        currentUser(state) {
+            return state.user.data;
+          },
     },
     actions: {
         fetchDashboard({ commit }, id) {
@@ -576,6 +579,12 @@ const store = createStore({
                 commit("setToken", data.token);
                 return data;
             });
+        },
+        forgotPassword({commit},email){
+            console.log(email);
+            return axiosClient.post("/forgot-password",{ email: email }).then(({data})=>{
+                return data;
+            })
         },
         logout({ commit }) {
             return axiosClient.post("/logout").then((response) => {
