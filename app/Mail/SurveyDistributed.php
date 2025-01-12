@@ -38,11 +38,13 @@ class SurveyDistributed extends Mailable
      * @return $this
      */
     public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'new suryve',
-        );
-    }
+{
+    return new Envelope(
+        from: new Address(config('mail.from.address'), config('mail.from.name')),
+        subject: 'New Survey',
+    );
+}
+
     public function content(): Content
     {
         return new Content(

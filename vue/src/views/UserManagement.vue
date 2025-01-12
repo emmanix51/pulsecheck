@@ -114,48 +114,132 @@
                     </div>
                     <!-- Conditional rendering based on respondentType -->
                     <div v-if="userForm.respondent_type === 'student'">
-                        <label
-                            for="studentCategory"
-                            class="block text-sm font-medium leading-6 text-gray-900"
-                            >Student Category</label
-                        >
-                        <div class="mt-2">
+                        <div>
+                            <label
+                                for="year_level"
+                                class="block text-sm font-medium text-gray-700"
+                                >Year Level</label
+                            >
                             <select
-                                id="studentCategory"
-                                v-model="userForm.category"
+                                id="year_level"
+                                v-model="userForm.year_level"
                                 required
-                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
                             >
                                 <option value="" disabled>
-                                    Select student category
+                                    Select Year Level
                                 </option>
-                                <option value="BSCS">BSCS</option>
-                                <option value="BSIT">BSIT</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label
+                                for="college"
+                                class="block text-sm font-medium text-gray-700"
+                                >College</label
+                            >
+                            <select
+                                id="college"
+                                v-model="userForm.college_id"
+                                @change="fetchPrograms"
+                                required
+                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                            >
+                                <option value="" disabled>
+                                    Select College
+                                </option>
+                                <option
+                                    v-for="college in colleges"
+                                    :key="college.id"
+                                    :value="college.id"
+                                >
+                                    {{ college.college_name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div v-if="userForm.college_id">
+                            <label
+                                for="program"
+                                class="block text-sm font-medium text-gray-700"
+                                >Program</label
+                            >
+                            <select
+                                id="program"
+                                v-model="userForm.program_id"
+                                required
+                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                            >
+                                <option value="" disabled>
+                                    Select Program
+                                </option>
+                                <option
+                                    v-for="program in programs"
+                                    :key="program.id"
+                                    :value="program.id"
+                                >
+                                    {{ program.program_name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div v-if="userForm.respondent_type === 'faculty'">
+                        
+                        <div>
+                            <label
+                                for="college"
+                                class="block text-sm font-medium text-gray-700"
+                                >College</label
+                            >
+                            <select
+                                id="college"
+                                v-model="userForm.college_id"
+                                @change="fetchPrograms"
+                                required
+                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                            >
+                                <option value="" disabled>
+                                    Select College
+                                </option>
+                                <option
+                                    v-for="college in colleges"
+                                    :key="college.id"
+                                    :value="college.id"
+                                >
+                                    {{ college.college_name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div v-if="userForm.college_id">
+                            <label
+                                for="program"
+                                class="block text-sm font-medium text-gray-700"
+                                >Program</label
+                            >
+                            <select
+                                id="program"
+                                v-model="userForm.program_id"
+                                required
+                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                            >
+                                <option value="" disabled>
+                                    Select Program
+                                </option>
+                                <option
+                                    v-for="program in programs"
+                                    :key="program.id"
+                                    :value="program.id"
+                                >
+                                    {{ program.program_name }}
+                                </option>
                             </select>
                         </div>
                     </div>
 
-                    <div v-if="userForm.respondent_type === 'faculty'">
-                        <label
-                            for="facultyCategory"
-                            class="block text-sm font-medium leading-6 text-gray-900"
-                            >Faculty Category</label
-                        >
-                        <div class="mt-2">
-                            <select
-                                id="facultyCategory"
-                                v-model="userForm.category"
-                                required
-                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            >
-                                <option value="" disabled>
-                                    Select faculty category
-                                </option>
-                                <option value="HR">HR</option>
-                                <option value="OSAS">OSAS</option>
-                            </select>
-                        </div>
-                    </div>
+                    
 
                     <div v-if="userForm.respondent_type === 'staff'">
                         <label
@@ -178,17 +262,17 @@
                             </select>
                         </div>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="flex items-end justify-items-end">
                         <button
                             type="button"
                             @click="closeForm"
-                            class="py-2 px-4 bg-gray-500 text-white rounded mr-2"
+                            class="h-20 px-4 bg-gray-500 text-white rounded mr-2"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="py-2 px-4 bg-emerald-500 text-white rounded"
+                            class="h-20 px-4 bg-emerald-500 text-white rounded"
                         >
                             {{ isEditMode ? "Update" : "Add" }} User
                         </button>
@@ -199,23 +283,7 @@
 
         <!-- User Table -->
         <section class="container mx-auto p-6 font-mono">
-            <div class="mt-3 mb-2 flex max-w-md gap-x-4">
-                <input
-                    id="email-address"
-                    name="email"
-                    type="email"
-                    autocomplete="email"
-                    required=""
-                    class="min-w-0 flex-auto rounded-md border-0 bg-white/5 px-3.5 py-2 text-black shadow ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                    placeholder="Search here"
-                />
-                <button
-                    type="submit"
-                    class="flex-none rounded-md bg-spccolor-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-spccolor-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                >
-                    Search
-                </button>
-            </div>
+          
             <div class="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
                 <div class="w-full overflow-x-auto">
                     <table class="w-full">
@@ -354,6 +422,7 @@
 import { ref, computed, onMounted } from "vue";
 import PageComponent from "../components/PageComponent.vue";
 import store from "../store";
+import axiosClient from "../axios"; // You'll need axios for making API calls
 
 const showAddUserForm = ref(false);
 const isEditMode = ref(false);
@@ -367,12 +436,28 @@ const userForm = ref({
     role: "respondent",
     respondent_type: "student",
     category: "",
+    year_level: "",
+    college_id: null,
+    program_id: null,
 });
+
+const colleges = ref([]);
+const programs = ref([]);
+
+const handleRespondentTypeChange = () => {
+    userForm.value.category = ""; // Reset category when respondent type changes
+    userForm.value.college_id = ""; // Reset college when respondent type changes
+    userForm.value.program_id = "";
+     // Reset program when respondent type changes
+};
+
 const currentPage = ref(1);
 const pageLinks = ref([]);
 
 const users = computed(() => store.state.users);
 onMounted(async () => {
+    fetchColleges();
+    fetchPrograms();
     try {
         const response = await store.dispatch("getAllUsers");
         const links = response.users.links;
@@ -385,6 +470,28 @@ onMounted(async () => {
         console.log(pageLinks);
     } catch (error) {}
 });
+
+const fetchColleges = async () => {
+    try {
+        const response = await axiosClient.get("/college"); // Fetch colleges from your backend
+        colleges.value = response.data;
+    } catch (error) {
+        console.error("Error fetching colleges:", error);
+    }
+};
+
+const fetchPrograms = async () => {
+    if (!userForm.value.college_id) return;
+
+    try {
+        const response = await axiosClient.get(
+            `program?college_id=${userForm.value.college_id}`
+        ); // Fetch programs based on selected college
+        programs.value = response.data;
+    } catch (error) {
+        console.error("Error fetching programs:", error);
+    }
+};
 
 async function fetchUsers(page) {
     try {

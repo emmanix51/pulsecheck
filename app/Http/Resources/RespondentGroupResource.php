@@ -16,6 +16,8 @@ class RespondentGroupResource extends JsonResource
             'id' => $this->id,
             'type' => $this->type,
             'category' => $this->category,
+            'college_ids' => $this->college_ids,
+            'program_ids' => $this->program_ids,
         ];
     }
 }

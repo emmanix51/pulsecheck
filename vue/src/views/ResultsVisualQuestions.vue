@@ -7,11 +7,11 @@
                 </h1>
             </div>
         </template>
-        <pre>{{ questions }}</pre>
+        <!-- <pre>{{ questions }}</pre> -->
         <div>
             <form class="max-w-lg mx-auto">
                 <div class="flex">
-                    <div class="relative w-full">
+                    <!-- <div class="relative w-full">
                         <input
                             type="search"
                             id="search-dropdown"
@@ -40,7 +40,7 @@
                             </svg>
                             <span class="sr-only">Search</span>
                         </button>
-                    </div>
+                    </div> -->
                 </div>
             </form>
         </div>

@@ -26,6 +26,9 @@ class User extends Authenticatable
         'role',
         'respondent_type',
         'category',
+        'year_level',
+        'college_id',
+        'program_id'
     ];
 
     /**
@@ -49,5 +52,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    // A user belongs to a college (nullable)
+    public function college()
+    {
+        return $this->belongsTo(College::class, 'college_id');
+    }
+
+    // A user belongs to a program (nullable)
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'program_id');
     }
 }

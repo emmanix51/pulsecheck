@@ -56,7 +56,7 @@ class DashboardController extends Controller
     {
         $currentDateTime = now();
         // $publicSurveys = Survey::where('is_public', 1)->where('expire_date', '>=', $currentDateTime)->get();
-        $publicSurveys = Survey::where('is_public', 1)->paginate(1);
+        $publicSurveys = Survey::where('is_public', 1)->paginate(4);
         return response()->json([
             'public_surveys' => $publicSurveys
         ]);
@@ -66,18 +66,41 @@ class DashboardController extends Controller
     {
         Log::info($id);
 
-
         // Fetch the respondent details
         $respondent = User::where('id', $id)->firstOrFail();
 
         // Retrieve surveys that match respondent's type or category
         $surveys = Survey::whereHas('respondentGroups', function ($query) use ($respondent) {
             $query->where('type', $respondent->respondent_type)
-                ->orWhere('category', $respondent->category);
+                ->where(function ($query) use ($respondent) {
+                    // If respondent type is "student", match categories
+                    if ($respondent->respondent_type === 'student' || $respondent->respondent_type === 'faculty') {
+                        $query->whereRaw(
+                            'FIND_IN_SET(?, category)',
+                            [$respondent->category]
+                        );
+                    } else {
+                        // Exact match for other respondent types
+                        $categories = explode(',', $respondent->category);
+                        $query->where(function ($subQuery) use ($categories) {
+                            foreach ($categories as $category) {
+                                $subQuery->orWhereRaw(
+                                    'FIND_IN_SET(?, category)',
+                                    [trim($category)]
+                                );
+                            }
+                        });
+                    }
+                });
         })
             ->with(['respondentGroups'])
             ->get();
 
+        // $surveys = Survey::whereHas('respondentGroups', function ($query) use ($respondent) {
+        //     $query->where('type', $respondent->respondent_type);
+        // })->with(['respondentGroups'])->get();
+
+        Log::info($surveys);
         // Fetch respondent's responses
         $respondentResponses = Response::where('respondent_id', $id)->pluck('survey_id')->toArray();
 
@@ -89,6 +112,9 @@ class DashboardController extends Controller
         // Return JSON response with surveys including responded status
         return response()->json($surveys);
     }
+
+
+
     public function getRespondentResponses($id)
     {
         // Log the $id for debugging

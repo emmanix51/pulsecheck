@@ -60,16 +60,26 @@
             </router-link>
             .
           </p>
+          <p class="mt-6 text-sm text-gray-600">
+            Forgot password?
+            <router-link
+              :to="{ name: 'ForgotPassword' }"
+              class="font-medium text-[#722F37] hover:underline"
+            >
+              Click here
+            </router-link>
+            .
+          </p>
         </div>
       </div>
     </div>
 
     <!-- Right side with seal -->
-    <div class="hidden lg:block flex-1 bg-gradient-to-br pr-8">
+    <div class="hidden lg:block flex-1 bg-gradient-to-br pr-8 self-center">
       <img 
         src="/spcbg.png" 
         alt="St. Peter's College Seal" 
-        class="w-full h-full opacity-30"
+        class="w-2/3 h-2/3 opacity-30"
       />
     </div>
   </div>

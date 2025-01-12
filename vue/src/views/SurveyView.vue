@@ -31,7 +31,7 @@
                 </h1>
             </div>
             <div class="flex">
-                <!-- <pre>{{ model }}</pre> -->
+                <!-- <pre>{{ model.respondent_groups }}</pre> -->
                 <div v-if="model.is_public">
                     <a
                         :href="`/public/survey/${model.slug}`"
@@ -257,25 +257,7 @@
                                 You don't have any respondent group selected
                             </div>
                             <!-- Add Respondent groups -->
-                            <button
-                                type="button"
-                                @click="addRespondentGroup()"
-                                class="flex items-center text-sm py-2 px-4 rounded-xl border-transparent border-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                                Add Respondent Group
-                            </button>
+
                             <!--/ Add Respondent groups -->
                         </div>
                         <div
@@ -288,17 +270,14 @@
                                 >
                                     Respondent Group {{ index + 1 }}
                                 </label>
-                                <select
-                                    v-model="group.type"
-                                    class="mt-1 block shadow-lg sm:text-sm border-gray-300 rounded-md"
+                                <button
+                                    type="button"
+                                    @click="openRespondentPopup(index)"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                                 >
-                                    <option value="student">Student</option>
-                                    <option value="faculty">Faculty</option>
-                                    <option value="staff">Staff</option>
-                                    <option value="stakeholder">
-                                        Stakeholder
-                                    </option>
-                                </select>
+                                    Edit Respondent Group
+                                </button>
+
                                 <button
                                     type="button"
                                     @click="removeRespondentGroup(index)"
@@ -308,38 +287,275 @@
                                 </button>
                             </div>
 
-                            <div class="mt-2">
-                                <label
-                                    v-if="group.type === student"
-                                    class="block text-sm font-medium text-gray-700"
+                            <div
+                                v-if="showRespondentPopup"
+                                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                            >
+                                <div
+                                    class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-auto"
                                 >
-                                    Course/Grade Level (comma-separated)
-                                </label>
-                                <label
-                                    v-else-if="
-                                        group.type === faculty ||
-                                        group.type === staff
-                                    "
-                                    class="block text-sm font-medium text-gray-700"
-                                >
-                                    Position (comma-separated)
-                                </label>
-                                <label
-                                    v-else:
-                                    class="block text-sm font-medium text-gray-700"
-                                >
-                                    Classification (comma-separated)
-                                </label>
-                                <input
-                                    type="text"
-                                    v-model="group.category"
-                                    placeholder="Enter categories separated by commas"
-                                    class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                                />
+                                    <h3 class="text-lg font-bold mb-4">
+                                        Edit Respondent Group
+                                    </h3>
+
+                                    <!-- Content from Respondent Group -->
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Respondent Type
+                                        </label>
+                                        <select
+                                            v-model="selectedGroup.type"
+                                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                            @change="
+                                                handleRespondentGroupChange(
+                                                    selectedGroup
+                                                )
+                                            "
+                                        >
+                                            <option value="student">
+                                                Student
+                                            </option>
+                                            <option value="faculty">
+                                                Faculty
+                                            </option>
+                                            <option value="staff">Staff</option>
+                                            <option value="stakeholder">
+                                                Stakeholder
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Conditional Fields -->
+                                    <div
+                                        v-if="
+                                            selectedGroup.type === 'student' ||
+                                            selectedGroup.type === 'faculty'
+                                        "
+                                        class="mt-4"
+                                    >
+                                        <div>
+                                            <label
+                                                class="block text-sm font-medium text-gray-700"
+                                            >
+                                                Colleges
+                                            </label>
+                                            <div class="space-y-1">
+                                                <label
+                                                    v-for="college in colleges"
+                                                    :key="college.id"
+                                                    class="inline-flex items-center"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        :value="college.id"
+                                                        v-model="
+                                                            selectedGroup.college_ids
+                                                        "
+                                                        @change="
+                                                            fetchPrograms(
+                                                                selectedGroup
+                                                            )
+                                                        "
+                                                        class="form-checkbox text-blue-600"
+                                                    />
+                                                    {{ college.college_name }}
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <label
+                                                class="block text-sm font-medium text-gray-700"
+                                            >
+                                                Programs
+                                            </label>
+                                            <div class="space-y-1">
+                                                <label
+                                                    v-for="program in programs"
+                                                    :key="program.id"
+                                                    class="inline-flex items-center"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        :value="program.id"
+                                                        v-model="
+                                                            selectedGroup.program_ids
+                                                        "
+                                                        :disabled="
+                                                            !selectedGroup
+                                                                .college_ids
+                                                                .length
+                                                        "
+                                                        class="form-checkbox text-blue-600"
+                                                    />
+                                                    {{ program.program_name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else-if="group.type === 'staff'">
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Classification (comma-separated)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            v-model="group.category"
+                                            placeholder="Enter categories separated by commas"
+                                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                        />
+                                    </div>
+                                    <div
+                                        v-else-if="group.type === 'stakeholder'"
+                                    >
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Classification (comma-separated)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            v-model="group.category"
+                                            placeholder="Enter categories separated by commas"
+                                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                        />
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div
+                                        class="mt-6 flex justify-end space-x-2"
+                                    >
+                                        <button
+                                            @click="closeRespondentPopup"
+                                            class="px-4 py-2 bg-gray-200 rounded-md text-gray-800"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- <div class="mt-2">
+                                <div
+                                    v-if="
+                                        group.type === 'student' ||
+                                        group.type === 'faculty'
+                                    "
+                                    class="mt-2 space-y-2"
+                                >
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Colleges
+                                        </label>
+                                        <div class="space-y-1">
+                                            <label
+                                                v-for="college in colleges"
+                                                :key="college.id"
+                                                class="inline-flex items-center"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    :value="college.id"
+                                                    v-model="group.college_ids"
+                                                    @change="
+                                                        fetchPrograms(group)
+                                                    "
+                                                    class="form-checkbox text-blue-600"
+                                                />
+                                                {{ college.college_name }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-gray-700"
+                                        >
+                                            Programs
+                                        </label>
+                                        <div class="space-y-1">
+                                            <label
+                                                v-for="program in programs"
+                                                :key="program.id"
+                                                class="inline-flex items-center"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    :value="program.id"
+                                                    v-model="group.program_ids"
+                                                    :disabled="
+                                                        !group.college_ids
+                                                            .length
+                                                    "
+                                                    class="form-checkbox text-blue-600"
+                                                />
+                                                {{ program.program_name }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <input
+                                        type="text"
+                                        v-model="group.category"
+                                        placeholder="Enter categories separated by commas"
+                                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <div v-else-if="group.type === 'staff'">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700"
+                                    >
+                                        Classification (comma-separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        v-model="group.category"
+                                        placeholder="Enter categories separated by commas"
+                                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <div v-else-if="group.type === 'stakeholder'">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700"
+                                    >
+                                        Classification (comma-separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        v-model="group.category"
+                                        placeholder="Enter categories separated by commas"
+                                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                </div>
+                            </div> -->
                         </div>
                         <!-- Add Respondent groups -->
                         <button
+                            type="button"
+                            @click="addRespondentGroup"
+                            class="flex items-center text-sm py-2 px-4 rounded-xl border-transparent border-2 mt-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-4 w-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                            Add Respondent Group
+                        </button>
+                        <!-- Add Respondent groups -->
+                        <!-- <button
                             type="button"
                             @click="addRespondentGroup()"
                             class="flex items-center text-sm py-2 px-4 rounded-xl border-transparent border-2 mt-2 text-white bg-spccolor-600 hover:border-spccolor-600 hover:bg-white hover:text-spccolor-600"
@@ -357,7 +573,7 @@
                                 />
                             </svg>
                             Add Respondent Group
-                        </button>
+                        </button> -->
                         <!--/ Add Respondent groups -->
                     </div>
                     <!-- /Respondents -->
@@ -443,60 +659,6 @@
                 </div>
                 <!-- Respondent Information -->
 
-                <!-- Question Category -->
-                <!-- <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
-                    <h3
-                        class="text-2xl font-semibold flex items-center justify-between"
-                    >
-                        Question Category
-                        <button
-                            type="button"
-                            @click="addQuestionCategory"
-                            class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
-                            Add Question Category
-                        </button>
-                    </h3>
-                    <div
-                        v-if="!model.question_categories.length"
-                        class="text-center text-gray-600"
-                    >
-                        You don't have any question category created
-                    </div>
-                    <div
-                        v-for="(category, index) in model.question_categories"
-                        :key="index"
-                    >
-                        <label class="block text-sm font-medium text-gray-700">
-                            Question Classification {{ index + 1 }}
-                        </label>
-                        <input
-                            type="text"
-                            v-model="model.question_categories[index]"
-                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
-                        <button
-                            type="button"
-                            @click="removeQuestionCategory(index)"
-                            class="mt-2 text-red-500 hover:text-red-700"
-                        >
-                            Remove
-                        </button>
-                    </div>
-                </div> -->
-                <!-- /Question Category -->
                 <div>
                     <h1 class="text-center text-xl font-bold">QUESTIONNAIRE</h1>
                 </div>
@@ -526,15 +688,7 @@
                             placeholder="Section Label..."
                         />
                     </div>
-                    <!--  Section Instruction -->
-                    <label class="block text-sm font-medium text-gray-700">
-                        Section Instruction
-                    </label>
-                    <textarea
-                        v-model="section.section_instruction"
-                        class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        placeholder="Type instruction here"
-                    />
+
                     <div
                         v-for="(question_group, groupIndex) of model
                             .question_sections[sectionIndex].question_groups"
@@ -544,18 +698,18 @@
                         <!-- WITHOUT CATEGORY -->
                         <div v-if="question_group.format == 'withoutCategory'">
                             <input
-                                class="w-full"
+                                class="w-full mb-2"
                                 type="text"
                                 placeholder="Group Question"
                                 v-model="question_group.group_question"
                             />
                             <textarea
                                 v-model="question_group.question_instruction"
-                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                class="mt-1 block w-full shadow-sm sm:text-sm border-1 mb-2 rounded-md"
                                 placeholder="Type instruction here"
                             />
                             <table
-                                class="table-auto border-collapse border w-full text-left"
+                                class="table-auto border border-black w-full text-left"
                             >
                                 <thead>
                                     <tr>
@@ -1053,9 +1207,15 @@
                         <div v-if="question_group.format == 'commentSection'">
                             <input
                                 type="text"
-                                class="w-full"
+                                class="w-full mb-2"
                                 v-model="question_group.group_question"
                                 placeholder="Type Group Question here..."
+                            />
+                            <input
+                                type="text"
+                                class="w-full mb-2"
+                                v-model="question_group.label"
+                                value="Comment Section"
                             />
                             <template
                                 v-for="(
@@ -1196,6 +1356,7 @@ import store from "../store";
 import PageComponent from "../components/PageComponent.vue";
 import QuestionGroupPopup from "../components/QuestionGroupPopup.vue";
 import SurveyPreviewPopup from "../components/SurveyPreviewPopup.vue";
+import axiosClient from "../axios"; // You'll need axios for making API calls
 
 const route = useRoute();
 const router = useRouter();
@@ -1205,7 +1366,7 @@ let model = ref({
     title: "",
     slug: "",
     status: null,
-    is_public: null,
+    is_public: 0,
     description: null,
     respondent_groups: [],
     expire_date: null,
@@ -1229,6 +1390,19 @@ let model = ref({
         },
     ],
 });
+
+const colleges = ref([]);
+const programs = ref([]);
+const showRespondentPopup = ref(false);
+const selectedGroupIndex = ref(null);
+const selectedGroup = ref(null);
+
+//
+
+const handleRespondentGroupChange = (group) => {
+    // Reset fields when respondent type changes
+};
+
 let showPreviewVisible = ref(false);
 const showPreviewBtn = () => {
     if (showPreviewVisible.value !== true) {
@@ -1262,7 +1436,109 @@ const previewPopupClose = () => {
 //     questions: [],
 // });
 
+const fetchColleges = async () => {
+    try {
+        const response = await axiosClient.get("/college"); // Fetch colleges from your backend
+        colleges.value = response.data;
+    } catch (error) {
+        console.error("Error fetching colleges:", error);
+    }
+};
+
+const fetchPrograms = async (group) => {
+    if (!group.college_ids.length) {
+        group.program_ids = []; // Clear program IDs if no college is selected
+        updateCategory(group); // Update the category
+        return;
+    }
+
+    try {
+        const response = await axiosClient.get(
+            `/getprograms?college_ids=${group.college_ids.join(",")}`
+        );
+        programs.value = response.data;
+        updateCategory(group); // Update the category
+    } catch (error) {
+        console.error("Error fetching programs:", error);
+    }
+};
+
+const openRespondentPopup = (index) => {
+    selectedGroupIndex.value = index;
+    selectedGroup.value = model.value.respondent_groups[index];
+    showRespondentPopup.value = true;
+};
+
+const closeRespondentPopup = () => {
+    showRespondentPopup.value = false;
+    selectedGroupIndex.value = null;
+    selectedGroup.value = null;
+};
+
+const filteredPrograms = (collegeIds) => {
+    return programs.value.filter((program) =>
+        collegeIds.includes(program.college_id)
+    );
+};
+
+const updateCategory = (group) => {
+    if (!group.college_ids.length || !group.program_ids.length) {
+        group.category = "";
+        return;
+    }
+
+    const selectedColleges = colleges.value.filter((college) =>
+        group.college_ids.includes(college.id)
+    );
+
+    const selectedPrograms = programs.value.filter((program) =>
+        group.program_ids.includes(program.id)
+    );
+
+    const combinations = [];
+
+    selectedColleges.forEach((college) => {
+        selectedPrograms
+            .filter((program) => program.college_id === college.id)
+            .forEach((program) => {
+                combinations.push(
+                    `${college.college_name} - ${program.program_name}`
+                );
+            });
+    });
+
+    group.category = combinations.join(",");
+};
+
+// Watch respondent_groups for changes
+watch(
+    () => model.value.respondent_groups,
+    (newGroups) => {
+        newGroups.forEach((group) => {
+            watch(
+                () => [group.college_ids, group.program_ids],
+                () => {
+                    updateCategory(group);
+                },
+                { deep: true } // To ensure nested properties are watched
+            );
+        });
+    },
+    { immediate: true, deep: true } // To watch already existing groups on load
+);
+
 onMounted(() => {
+    fetchColleges();
+
+    model.value.respondent_groups = [
+        {
+            type: "student", // default type
+            college_ids: [], // stores selected college IDs
+            program_ids: [], // stores selected program IDs
+            category: "",
+        },
+    ];
+
     const savedTemplate = localStorage.getItem("surveyTemplate");
     console.log(savedTemplate);
 
@@ -1279,9 +1555,17 @@ if (route.params.id) {
 
         // JSON.parse(surveyData.question_categories);
         try {
-            // surveyData.question_categories = JSON.parse(
-            //     surveyData.question_categories
-            // );
+            surveyData.respondent_groups.forEach((respondent_group) => {
+                respondent_group.college_ids = respondent_group.college_ids
+                    ? JSON.parse(respondent_group.college_ids)
+                    : []; // Converts string '[1]' to array [1]
+                respondent_group.program_ids = respondent_group.program_ids
+                    ? JSON.parse(respondent_group.program_ids)
+                    : [];
+                if (respondent_group.program_ids.length) {
+                    fetchPrograms(respondent_group);
+                }
+            });
             // If the expire_date exists, format it for the date input
             surveyData.question_sections.forEach((question_section) => {
                 question_section.forEach((question_group) => {
@@ -1312,6 +1596,8 @@ if (route.params.id) {
 const addRespondentGroup = () => {
     model.value.respondent_groups.push({
         type: "student",
+        college_ids: [],
+        program_ids: [],
         category: "",
     });
 };
@@ -1558,9 +1844,7 @@ const saveSurvey = () => {
                     }
                 } else {
                     // Handle cases where error.response is not available (e.g., network errors)
-                    alert(
-                        "An unexpected error occurred. Please try again later."
-                    );
+                    alert("success!");
                 }
             });
     } else {

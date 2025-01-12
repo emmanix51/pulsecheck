@@ -25,4 +25,17 @@ class NotificationController extends Controller
 
         return response()->json(['error' => 'Unauthorized'], 403);
     }
+
+    public function deleteNotification($id)
+    {
+        $notif = Notification::find($id);
+
+        if (!$notif) {
+            return response()->json(['error' => 'notif not found'], 404);
+        }
+
+        $notif->delete();
+
+        return response()->json(['message' => 'notif deleted successfully'], 200);
+    }
 }

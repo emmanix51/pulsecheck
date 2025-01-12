@@ -2,14 +2,14 @@
     <div class="flex min-h-screen">
         <!-- Left side with registration form -->
         <div class="flex-1 flex flex-col p-8">
-            <div class="flex items-center gap-3 text-[#722F37] ">
+            <div class="flex items-center gap-3 text-[#722F37]">
                 <img class="h-12 w-12" src="/logo.png" alt="Pulse Check" />
                 <h1 class="text-xl font-bold">Pulse Check</h1>
             </div>
 
             <div class="flex-1 flex items-center justify-center">
                 <div class="w-full max-w-md">
-                    <h2 class="text-2xl font-bold text-[#722F37] mb-8 ">
+                    <h2 class="text-2xl font-bold text-[#722F37] mb-8">
                         Register
                     </h2>
 
@@ -40,6 +40,7 @@
                                 >format: 20241234</small
                             >
                         </div>
+
                         <div class="flex justify-between">
                             <!-- First Name -->
                             <div>
@@ -128,110 +129,206 @@
                         </div>
 
                         <div class="flex justify-between">
-                        <!-- Respondent Type -->
-                        <div>
-                            <label
-                                for="respondentType"
-                                class="block text-sm font-medium text-gray-700"
-                                >Respondent Type</label
-                            >
-                            <select
-                                id="respondentType"
-                                v-model="user.respondent_type"
-                                @change="handleRespondentTypeChange"
-                                required
-                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
-                            >
-                                <option value="" disabled>
-                                    Select respondent type
-                                </option>
-                                <option value="student">Student</option>
-                                <option value="faculty">Faculty</option>
-                                <option value="staff">Staff</option>
-                                <option value="stakeholder">Stakeholder</option>
-                            </select>
-                        </div>
+                            <!-- Respondent Type -->
+                            <div>
+                                <label
+                                    for="respondentType"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Respondent Type</label
+                                >
+                                <select
+                                    id="respondentType"
+                                    v-model="user.respondent_type"
+                                    @change="handleRespondentTypeChange"
+                                    required
+                                    class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                >
+                                    <option value="" disabled>
+                                        Select respondent type
+                                    </option>
+                                    <option value="student">Student</option>
+                                    <option value="faculty">Faculty</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="stakeholder">
+                                        Stakeholder
+                                    </option>
+                                </select>
+                            </div>
 
-                        <!-- Conditional Category Selection -->
-                        <div v-if="user.respondent_type === 'student'">
-                            <label
-                                for="studentCategory"
-                                class="block text-sm font-medium text-gray-700"
-                                >Student Category</label
-                            >
-                            <select
-                                id="studentCategory"
-                                v-model="user.category"
-                                required
-                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
-                            >
-                                <option value="" disabled>
-                                    Select student category
-                                </option>
-                                <option value="BSCS">BSCS</option>
-                                <option value="BSIT">BSIT</option>
-                            </select>
-                        </div>
+                            <!-- Conditional Fields for Student Respondent Type -->
+                            <div v-if="user.respondent_type === 'student'">
+                                <div>
+                                    <label
+                                        for="year_level"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Year Level</label
+                                    >
+                                    <select
+                                        id="year_level"
+                                        v-model="user.year_level"
+                                        required
+                                        class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                    >
+                                        <option value="" disabled>
+                                            Select Year Level
+                                        </option>
+                                        <option value="1">1st Year</option>
+                                        <option value="2">2nd Year</option>
+                                        <option value="3">3rd Year</option>
+                                        <option value="4">4th Year</option>
+                                    </select>
+                                </div>
 
-                        <div v-if="user.respondent_type === 'faculty'">
-                            <label
-                                for="facultyCategory"
-                                class="block text-sm font-medium text-gray-700"
-                                >Faculty Category</label
-                            >
-                            <select
-                                id="facultyCategory"
-                                v-model="user.category"
-                                required
-                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
-                            >
-                                <option value="" disabled>
-                                    Select faculty category
-                                </option>
-                                <option value="HR">HR</option>
-                                <option value="OSAS">OSAS</option>
-                            </select>
-                        </div>
+                                <div>
+                                    <label
+                                        for="college"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >College</label
+                                    >
+                                    <select
+                                        id="college"
+                                        v-model="user.college_id"
+                                        @change="fetchPrograms"
+                                        required
+                                        class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                    >
+                                        <option value="" disabled>
+                                            Select College
+                                        </option>
+                                        <option
+                                            v-for="college in colleges"
+                                            :key="college.id"
+                                            :value="college.id"
+                                        >
+                                            {{ college.college_name }}
+                                        </option>
+                                    </select>
+                                </div>
 
-                        <div v-if="user.respondent_type === 'staff'">
-                            <label
-                                for="staffCategory"
-                                class="block text-sm font-medium text-gray-700"
-                                >Staff Category</label
-                            >
-                            <select
-                                id="staffCategory"
-                                v-model="user.category"
-                                required
-                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
-                            >
-                                <option value="" disabled>
-                                    Select staff category
-                                </option>
-                                <option value="HR">HR</option>
-                                <option value="OSAS">OSAS</option>
-                            </select>
-                        </div>
+                                <!-- Dynamic Programs Based on Selected College -->
+                                <div v-if="user.college_id">
+                                    <label
+                                        for="program"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Program</label
+                                    >
+                                    <select
+                                        id="program"
+                                        v-model="user.program_id"
+                                        required
+                                        class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                    >
+                                        <option value="" disabled>
+                                            Select Program
+                                        </option>
+                                        <option
+                                            v-for="program in programs"
+                                            :key="program.id"
+                                            :value="program.id"
+                                        >
+                                            {{ program.program_name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div v-else-if="user.respondent_type === 'faculty'">
+                                <div>
+                                    <label
+                                        for="college"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >College</label
+                                    >
+                                    <select
+                                        id="college"
+                                        v-model="user.college_id"
+                                        @change="fetchPrograms"
+                                        required
+                                        class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                    >
+                                        <option value="" disabled>
+                                            Select College
+                                        </option>
+                                        <option
+                                            v-for="college in colleges"
+                                            :key="college.id"
+                                            :value="college.id"
+                                        >
+                                            {{ college.college_name }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <!-- Dynamic Programs Based on Selected College -->
+                                <div v-if="user.college_id">
+                                    <label
+                                        for="program"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Program</label
+                                    >
+                                    <select
+                                        id="program"
+                                        v-model="user.program_id"
+                                        required
+                                        class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                    >
+                                        <option value="" disabled>
+                                            Select Program
+                                        </option>
+                                        <option
+                                            v-for="program in programs"
+                                            :key="program.id"
+                                            :value="program.id"
+                                        >
+                                            {{ program.program_name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
 
-                        <div v-if="user.respondent_type === 'stakeholder'">
-                            <label
-                                for="stakeholderCategory"
-                                class="block text-sm font-medium text-gray-700"
-                                >Stakeholder Category</label
+                            <div v-else-if="user.respondent_type === 'staff'">
+                                <label
+                                    for="staffCategory"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Staff Category</label
+                                >
+                                <select
+                                    id="staffCategory"
+                                    v-model="user.category"
+                                    required
+                                    class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                >
+                                    <option value="" disabled>
+                                        Select staff category
+                                    </option>
+                                    <option value="HR">HR</option>
+                                    <option value="OSAS">OSAS</option>
+                                </select>
+                            </div>
+
+                            <div
+                                v-else-if="
+                                    user.respondent_type === 'stakeholder'
+                                "
                             >
-                            <select
-                                id="stakeholderCategory"
-                                v-model="user.category"
-                                required
-                                class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
-                            >
-                                <option value="" disabled>
-                                    Select stakeholder category
-                                </option>
-                                <option value="stakeholder">Stakeholder</option>
-                                <option value="alumni">Alumni</option>
-                            </select>
-                        </div>
+                                <label
+                                    for="stakeholderCategory"
+                                    class="block text-sm font-medium text-gray-700"
+                                    >Stakeholder Category</label
+                                >
+                                <select
+                                    id="stakeholderCategory"
+                                    v-model="user.category"
+                                    required
+                                    class="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#722F37] focus:outline-none focus:ring-[#722F37]"
+                                >
+                                    <option value="" disabled>
+                                        Select stakeholder category
+                                    </option>
+                                    <option value="Parents of SPC student">
+                                        Parents of SPC student
+                                    </option>
+                                    <option value="Alumni">Alumni</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Register Button -->
@@ -251,30 +348,29 @@
                         <router-link
                             :to="{ name: 'Login' }"
                             class="font-medium text-[#722F37] hover:underline"
-                        >
-                            Log in here
-                        </router-link>
-                        .
+                            >Log in here</router-link
+                        >.
                     </p>
                 </div>
             </div>
         </div>
 
         <!-- Right side with seal (same as login.vue) -->
-        <div class="hidden lg:block flex-1 bg-gradient-to-br pr-8">
+        <div class="hidden lg:block flex-1 bg-gradient-to-br pr-8 self-center">
             <img
                 src="/spcbg.png"
                 alt="St. Peter's College Seal"
-                class="w-full h-full opacity-30"
+                class="w-2/3 h-2/3 opacity-30"
             />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import axiosClient from "../axios"; // You'll need axios for making API calls
 
 const store = useStore();
 const router = useRouter();
@@ -289,100 +385,60 @@ const user = ref({
     role: "respondent", // default to respondent
     respondent_type: "",
     category: "",
+    year_level: "",
+    college_id: "",
+    program_id: "",
 });
+
+const colleges = ref([]);
+const programs = ref([]);
 
 const handleRespondentTypeChange = () => {
     user.value.category = ""; // Reset category when respondent type changes
+    user.value.college_id = ""; // Reset college when respondent type changes
+    user.value.program_id = ""; // Reset program when respondent type changes
 };
+
+const fetchColleges = async () => {
+    try {
+        const response = await axiosClient.get("/college"); // Fetch colleges from your backend
+        colleges.value = response.data;
+    } catch (error) {
+        console.error("Error fetching colleges:", error);
+    }
+};
+
+const fetchPrograms = async () => {
+    if (!user.value.college_id) return;
+
+    try {
+        const response = await axiosClient.get(
+            `program?college_id=${user.value.college_id}`
+        ); // Fetch programs based on selected college
+        programs.value = response.data;
+    } catch (error) {
+        console.error("Error fetching programs:", error);
+    }
+};
+
+onMounted(() => {
+    fetchColleges(); // Fetch colleges when component is mounted
+});
 
 function register(ev) {
     ev.preventDefault();
     store
         .dispatch("register", user.value)
         .then(() => {
-            alert("registered successfully");
-            router.push({
-                name: "Dashboard",
-            });
+            alert("Registered successfully");
+            // router.push({ name: "Dashboard" });
         })
         .catch((error) => {
-            // loading.value = false;
-            if (error.response) {
-                alert(error.response.data);
-
-                console.error("API error response:", error.response.data);
-            } else {
-                alert(error.message);
-                console.error("API error message:", error.message);
-            }
+            alert(error.message);
         });
 }
-const register1 = async (ev) => {
-    ev.preventDefault();
-    try {
-        await store.dispatch("register", user.value);
-        router.push({ name: "Login" });
-    } catch (error) {
-        console.error(error);
-    }
-};
-
-// const router = useRouter();
-
-// // Data properties
-// const email = ref("");
-// const password = ref("");
-// const respondentType = ref("");
-// const studentCategory = ref("");
-// const facultyCategory = ref("");
-// const staffCategory = ref("");
-
-// // Register user function
-// const registerUser = () => {
-//     // Prepare data based on respondent type
-//     let userData = {
-//         email: email.value,
-//         password: password.value,
-//         respondent_type: respondentType.value,
-//     };
-
-//     // Add category based on respondent type
-//     switch (respondentType.value) {
-//         case "student":
-//             userData.student_category = studentCategory.value;
-//             break;
-//         case "faculty":
-//             userData.faculty_category = facultyCategory.value;
-//             break;
-//         case "staff":
-//             userData.staff_category = staffCategory.value;
-//             break;
-//         default:
-//             // Stakeholder case
-//             break;
-//     }
-
-//     // Example Axios POST request to Laravel API
-//     axios
-//         .post("/api/register", userData)
-//         .then((response) => {
-//             // Handle successful registration
-//             console.log(response.data);
-//             router.push({ name: "Login" }); // Redirect to login page after registration
-//         })
-//         .catch((error) => {
-//             // Handle registration error
-//             console.error("Registration error:", error);
-//         });
-// };
-
-// // Handle respondent type change
-// const handleRespondentTypeChange = () => {
-//     // Reset category values when respondent type changes
-//     studentCategory.value = "";
-//     facultyCategory.value = "";
-//     staffCategory.value = "";
-// };
 </script>
 
-<style></style>
+<style scoped>
+/* Your styling can go here */
+</style>

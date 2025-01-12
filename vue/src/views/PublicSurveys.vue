@@ -8,12 +8,10 @@
                 <h2 class="mb-4 font-bold text-xl text-gray-600">
                     Pulse Check Available Public Surveys
                 </h2>
-                <div
-                    class="grid w-full sm:grid-cols-2 xl:grid-cols-4 gap-6"
-                    v-for="(survey, index) of publicSurveys"
-                    :key="index"
-                >
+                <div class="grid w-full sm:grid-cols-2 xl:grid-cols-4 gap-6">
                     <div
+                        v-for="(survey, index) of publicSurveys"
+                        :key="index"
                         class="relative flex flex-col shadow-md rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 max-w-sm"
                     >
                         <div class="h-auto overflow-hidden">
@@ -28,56 +26,33 @@
                             </div>
                         </div>
                         <div class="bg-white py-4 px-3">
-                            <h3 class="text-xs mb-2 font-medium">
+                            <a
+                                :href="`/public/survey/${survey.slug}`"
+                                target="_blank"
+                                v-if="survey.slug"
+                                class="text-xs mb-2 font-medium"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    />
+                                </svg>
                                 {{ survey.title }}
-                            </h3>
+                            </a>
                             <div class="flex justify-between items-center">
                                 <p class="text-xs text-gray-400">
                                     Expired at: {{ survey.expire_date }}
                                 </p>
-                                <div
-                                    class="relative z-40 flex items-center gap-2"
-                                >
-                                    <a
-                                        class="text-orange-600 hover:text-blue-500"
-                                        :href="`public/survey/${survey.slug}`"
-                                        target="_blank"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke-width="1.5"
-                                            stroke="currentColor"
-                                            class="w-6 h-6"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                                            />
-                                        </svg>
-                                    </a>
-                                    <a
-                                        class="text-orange-600 hover:text-blue-500"
-                                        href=""
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke-width="1.5"
-                                            stroke="currentColor"
-                                            class="w-6 h-6"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-                                            />
-                                        </svg>
-                                    </a>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>

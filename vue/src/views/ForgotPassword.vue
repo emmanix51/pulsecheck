@@ -46,7 +46,7 @@
                     </button>
                 </div>
             </form>
-            <pre>{{user}}</pre>
+            <!-- <pre>{{user}}</pre> -->
 
             <p class="mt-10 text-center text-sm text-gray-500">
                 Want to login?

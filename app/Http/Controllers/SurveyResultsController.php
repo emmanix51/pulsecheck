@@ -58,7 +58,7 @@ class SurveyResultsController extends Controller
     public function index()
     {
         // Get paginated results for surveys
-        $surveys = Survey::paginate(2); // 5 items per page
+        $surveys = Survey::paginate(5); // 5 items per page
 
         // Return a paginated response using a resource collection
         return response()->json(['surveys' => $surveys], 200);
@@ -87,7 +87,8 @@ class SurveyResultsController extends Controller
         $averageAnswerScale = $totalAnswers > 0 ? $totalAnswerScale / $totalAnswers : 0;
 
         return response()->json([
-            'survey' => $survey, 'totalResponses' => $totalResponses,
+            'survey' => $survey,
+            'totalResponses' => $totalResponses,
             'totalAnswerScale' => $totalAnswerScale,
             'averageAnswerScale' => $averageAnswerScale,
         ]);
@@ -356,8 +357,10 @@ class SurveyResultsController extends Controller
 
         foreach ($filteredResponses as $response) {
             foreach ($response->answers as $answer) {
-                $totalAnswers++;
-                $totalAnswerScale += $answer->answer_scale;
+                if ($answer->answer_scale !== null) {
+                    $totalAnswers++;
+                    $totalAnswerScale += $answer->answer_scale;
+                }
             }
         }
 
@@ -377,29 +380,90 @@ class SurveyResultsController extends Controller
         ]);
     }
 
+    // use Illuminate\Support\Facades\Log;
+    // use Rap2hpoutre\FastExcel\FastExcel;
+
     public function exportAllResponses($id)
     {
         // Log the survey ID
         Log::info('Survey ID: ' . $id);
 
-        // Fetch all responses for the given survey ID
-        $responses = Response::where('survey_id', $id)->get();
+        // Fetch all responses for the given survey ID, including answers
+        $responses = Response::with('answers')->where('survey_id', $id)->get();
 
         // Check if any responses are found
         if ($responses->isEmpty()) {
             Log::info('No responses found for survey ID: ' . $id);
-            return response()->json('error bruh');
-        } else {
-            Log::info('Responses found: ' . $responses->count());
-            Log::info('First response: ' . $responses->first()->toJson());
-            $fileName = 'survey_responses_' . $id . '.csv';
-
-            return (new FastExcel($responses))->download($fileName);
+            return response()->json('No responses found', 404);
         }
 
-        // Define the file name
+        Log::info('Responses found: ' . $responses->count());
 
+        // Fetch all unique question IDs from the responses
+        $allQuestionIds = $responses->flatMap(function ($response) {
+            return $response->answers->pluck('question_id');
+        })->unique()->sort()->values();
+
+        // Fetch the questions and map question_id to question text
+        $questions = Question::whereIn('id', $allQuestionIds)->pluck('question', 'id');
+
+        // Transform the responses into the desired structure
+        $transformedResponses = $responses->map(function ($response) use ($questions) {
+            // Decode the information_fields JSON
+            $informationFields = json_decode($response->information_fields, true);
+
+            // Start with respondent's metadata
+            $row = [
+                'id' => $response->id,
+                'survey_id' => $response->survey_id,
+                'respondent_id' => $response->respondent_id,
+                'respondent_type' => $response->respondent_type,
+                'respondent_category' => $response->respondent_category,
+                'created_at' => $response->created_at,
+                'updated_at' => $response->updated_at,
+            ];
+
+            // Add information fields to the row
+            $row = array_merge($row, $informationFields ?? []);
+
+            // Add answers with question text as column headers
+            foreach ($questions as $questionId => $questionText) {
+                $answer = $response->answers->firstWhere('question_id', $questionId);
+                $row[$questionText] = $answer ? ($answer->answer_scale ?? $answer->answer_text) : null;
+            }
+
+            return $row;
+        });
+
+        // Define the file name
+        $fileName = 'survey_responses_' . $id . '.csv';
+
+        // Export the transformed data
+        return (new FastExcel($transformedResponses))->download($fileName);
     }
+
+    // public function exportAllResponses($id)
+    // {
+    //     // Log the survey ID
+    //     Log::info('Survey ID: ' . $id);
+
+    //     // Fetch all responses for the given survey ID
+    //     $responses = Response::with('answers')->where('survey_id', $id)->get();
+
+    //     Log::info('Survey ID: ' . $responses);
+    //     // Check if any responses are found
+    //     if ($responses->isEmpty()) {
+    //         Log::info('No responses found for survey ID: ' . $id);
+    //         return response()->json('error bruh');
+    //     } else {
+    //         Log::info('Responses found: ' . $responses->count());
+    //         Log::info('First response: ' . $responses->first()->toJson());
+    //         $fileName = 'survey_responses_' . $id . '.csv';
+
+    //         return (new FastExcel($responses))->download($fileName);
+    //     }
+    //     // Define the file name
+    // }
 
     // // FOR VISUALS
 
@@ -500,103 +564,103 @@ class SurveyResultsController extends Controller
 
 
     public function runPCA($id)
-{
-    $csvExportResponse = $this->exportSurveyResponsesToCSV($id);
+    {
+        $csvExportResponse = $this->exportSurveyResponsesToCSV($id);
 
-    if ($csvExportResponse->status() !== 200) {
-        return $csvExportResponse;
-    }
-
-    // Define paths
-    $csvFilePath = storage_path('app/survey_responses.csv');
-    $pcaResultPath = storage_path('app/pca_results.csv');
-    $pcaMetadataPath = storage_path('app/pca_metadata.json');
-
-    // Execute the Python script
-    $command = "..\\venv\\Scripts\\activate.bat && python ..\\scripts\\pca_analysis.py";
-    exec($command, $output, $returnVar);
-
-    if ($returnVar !== 0) {
-        return response()->json([
-            'error' => 'Failed to run PCA analysis',
-            'output' => $output,
-            'command' => $command
-        ], 500);
-    }
-
-    // Validate PCA results and metadata existence
-    if (!file_exists($pcaResultPath) || !file_exists($pcaMetadataPath)) {
-        return response()->json([
-            'error' => 'PCA results or metadata file is missing.',
-        ], 500);
-    }
-
-    // Read PCA results
-    $pcaResults = array_map('str_getcsv', file($pcaResultPath));
-    $pcaMetadata = json_decode(file_get_contents($pcaMetadataPath), true);
-
-    if (!$pcaMetadata || !isset($pcaMetadata['explained_variance'], $pcaMetadata['components'])) {
-        return response()->json([
-            'error' => 'Invalid or incomplete PCA metadata.',
-        ], 500);
-    }
-
-    // Parse PCA results
-    $header = array_shift($pcaResults);
-    $pcaData = array_map(function ($row) use ($header) {
-        return array_combine($header, $row);
-    }, $pcaResults);
-
-    $survey = Survey::with('questions')->findOrFail($id);
-    $surveyTitle = $survey->title;
-    $questions = $survey->questions->keyBy('id');
-
-    // Use headers from the metadata JSON to map question IDs to texts in the component weights
-    $numericColumns = $pcaMetadata['headers'];
-    $components = $pcaMetadata['components'];
-    $topContributors = $pcaMetadata['top_contributors'];
-    $componentsWithText = [];
-
-    foreach ($numericColumns as $index => $header) {
-        if (preg_match('/answer_(\d+)/', $header, $matches)) {
-            $questionId = $matches[1];
-            $questionText = isset($questions[$questionId]) ? $questions[$questionId]->question : 'Unknown question';
-
-            $componentsWithText[] = [
-                'question_id' => $questionId,
-                'question_text' => $questionText,
-                'PC1' => round($components[0][$index], 4),
-                'PC2' => round($components[1][$index], 4),
-            ];
+        if ($csvExportResponse->status() !== 200) {
+            return $csvExportResponse;
         }
-    }
 
-    // Add top contributors to response
-    $formattedTopContributors = [];
-    foreach ($topContributors as $component => $contributors) {
-        $formattedTopContributors[$component] = array_map(function ($contributor) use ($questions) {
-            if (preg_match('/answer_(\d+)/', $contributor[0], $matches)) {
+        // Define paths
+        $csvFilePath = storage_path('app/survey_responses.csv');
+        $pcaResultPath = storage_path('app/pca_results.csv');
+        $pcaMetadataPath = storage_path('app/pca_metadata.json');
+
+        // Execute the Python script
+        $command = "..\\venv\\Scripts\\activate.bat && python ..\\scripts\\pca_analysis.py";
+        exec($command, $output, $returnVar);
+
+        if ($returnVar !== 0) {
+            return response()->json([
+                'error' => 'Failed to run PCA analysis',
+                'output' => $output,
+                'command' => $command
+            ], 500);
+        }
+
+        // Validate PCA results and metadata existence
+        if (!file_exists($pcaResultPath) || !file_exists($pcaMetadataPath)) {
+            return response()->json([
+                'error' => 'PCA results or metadata file is missing.',
+            ], 500);
+        }
+
+        // Read PCA results
+        $pcaResults = array_map('str_getcsv', file($pcaResultPath));
+        $pcaMetadata = json_decode(file_get_contents($pcaMetadataPath), true);
+
+        if (!$pcaMetadata || !isset($pcaMetadata['explained_variance'], $pcaMetadata['components'])) {
+            return response()->json([
+                'error' => 'Invalid or incomplete PCA metadata.',
+            ], 500);
+        }
+
+        // Parse PCA results
+        $header = array_shift($pcaResults);
+        $pcaData = array_map(function ($row) use ($header) {
+            return array_combine($header, $row);
+        }, $pcaResults);
+
+        $survey = Survey::with('questions')->findOrFail($id);
+        $surveyTitle = $survey->title;
+        $questions = $survey->questions->keyBy('id');
+
+        // Use headers from the metadata JSON to map question IDs to texts in the component weights
+        $numericColumns = $pcaMetadata['headers'];
+        $components = $pcaMetadata['components'];
+        $topContributors = $pcaMetadata['top_contributors'];
+        $componentsWithText = [];
+
+        foreach ($numericColumns as $index => $header) {
+            if (preg_match('/answer_(\d+)/', $header, $matches)) {
                 $questionId = $matches[1];
                 $questionText = isset($questions[$questionId]) ? $questions[$questionId]->question : 'Unknown question';
-                return [
+
+                $componentsWithText[] = [
                     'question_id' => $questionId,
                     'question_text' => $questionText,
-                    'weight' => round($contributor[1], 4),
+                    'PC1' => round($components[0][$index], 4),
+                    'PC2' => round($components[1][$index], 4),
                 ];
             }
-            return null;
-        }, $contributors);
-    }
+        }
 
-    return response()->json([
-        'surveyTitle' => $surveyTitle,
-        'explainedVariance' => $pcaMetadata['explained_variance'],
-        'componentWeights' => $components,
-        'pairedComponentWeights' => $componentsWithText,
-        'topContributors' => $formattedTopContributors,
-        'pcaData' => $pcaData,
-    ]);
-}
+        // Add top contributors to response
+        $formattedTopContributors = [];
+        foreach ($topContributors as $component => $contributors) {
+            $formattedTopContributors[$component] = array_map(function ($contributor) use ($questions) {
+                if (preg_match('/answer_(\d+)/', $contributor[0], $matches)) {
+                    $questionId = $matches[1];
+                    $questionText = isset($questions[$questionId]) ? $questions[$questionId]->question : 'Unknown question';
+                    return [
+                        'question_id' => $questionId,
+                        'question_text' => $questionText,
+                        'weight' => round($contributor[1], 4),
+                    ];
+                }
+                return null;
+            }, $contributors);
+        }
+
+        return response()->json([
+            'surveyTitle' => $surveyTitle,
+            'explainedVariance' => $pcaMetadata['explained_variance'],
+            'componentWeights' => $components,
+            'pairedComponentWeights' => $componentsWithText,
+            'topContributors' => $formattedTopContributors,
+            'pcaData' => $pcaData,
+        ]);
+    }
 
 
 

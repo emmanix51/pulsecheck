@@ -159,11 +159,7 @@
             >
                 <h3 class="text-2xl font-semibold">Survey PCA results</h3>
                 <div>
-                    <h3 class="font-bold text-xl mb-3">Survey Title</h3>
-                    <div class="flex justify-between text-sm mb-1">
-                        <div>Variance Explained:</div>
-                        <div>PC1 = 80%, PC2= 15%</div>
-                    </div>
+                    <h3 class="font-bold text-xl mb-3">Survey Title: {{model.title}}</h3>
                     <div class="flex justify-between text-sm mb-1">
                         <div>Respondent Groups:</div>
                         <div
@@ -177,10 +173,7 @@
                         <div>Status:</div>
                         <div>Active</div>
                     </div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <div>Questions:</div>
-                        <div>100</div>
-                    </div>
+                    
 
                     <div class="flex justify-between">
                         <button

@@ -7,7 +7,7 @@
                 </h1>
             </div>
             <div class="flex">
-                <pre>{{ model }}</pre>
+                <!-- <pre>{{ model }}</pre> -->
                
                 <button
                     v-if="route.params.id"

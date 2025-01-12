@@ -39,12 +39,12 @@
                             >
                                 <span class="sr-only">View notifications</span>
                                 <BellIcon class="h-6 w-6" aria-hidden="true" />
-
                                 <span
                                     v-if="unreadCount > 0"
                                     class="absolute top-0 right-0 inline-block h-4 w-4 transform rounded-full bg-red-600 ring-2 text-white ring-white"
-                                    >1</span
                                 >
+                                    {{ unreadCount }}
+                                </span>
                             </button>
 
                             <!-- Notifications dropdown -->
@@ -58,19 +58,28 @@
                             >
                                 <div
                                     v-if="showNotifications"
-                                    class="absolute right-[13%] mt-3 w-80 origin-top-left bg-white py-1 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                    class="z-10 absolute right-[13%] mt-3 w-80 origin-top-left bg-white py-1 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                                 >
-                                    <button
-                                        @click="toggleNotifications"
-                                        class="absolute top-0 right-0 text-gray-400 hover:text-gray-600"
-                                    ></button>
                                     <div
                                         v-for="notification in notifications"
                                         :key="notification.id"
-                                        class="block w-full px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
-                                        @click="markAsRead(notification.id)"
+                                        class="relative z-10 block w-full px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
                                     >
-                                        {{ notification.message }}
+                                        <span
+                                            @click="markAsRead(notification.id)"
+                                        >
+                                            {{ notification.message }}
+                                        </span>
+                                        <button
+                                            class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                                            @click.stop="
+                                                deleteNotification(
+                                                    notification.id
+                                                )
+                                            "
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 </div>
                             </transition>
@@ -211,7 +220,7 @@
                         <div
                             v-for="notification in notifications"
                             :key="notification.id"
-                            class="block max-w-sm justify-center mx-auto px-4 py-2 text-sm text-gray-700 cursor-pointer bg-gray-100"
+                            class="block max-w-sm justify-center mx-auto px-4 py-2 text-sm text-gray-700 cursor-pointer bg-gray-100 z-100"
                             @click="markAsRead(notification.id)"
                         >
                             {{ notification.message }}
@@ -278,6 +287,10 @@ const toggleNotifications = () => {
 
 const markAsRead = async (notificationId) => {
     await store.dispatch("markAsRead", notificationId);
+};
+
+const deleteNotification = async (notificationId) => {
+    await store.dispatch("deleteNotification", notificationId);
 };
 onMounted(async () => {
     await store.dispatch("fetchNotifications");

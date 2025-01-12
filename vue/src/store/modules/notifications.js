@@ -36,7 +36,14 @@ const notificationsModule = {
             } catch (error) {
                 console.error("Error marking notification as read:", error);
             }
-        },
+        }, async deleteNotification({ commit }, notificationId) {
+            try {
+                await axiosClient.delete(`/notifications/${notificationId}`);
+                commit("removeNotification", notificationId);
+            } catch (error) {
+                console.error("Error deleting notification:", error);
+            }
+        }
     },
     mutations: {
         setNotifications: (state, notifications) => {
@@ -53,6 +60,13 @@ const notificationsModule = {
                 notification.read = true;
                 state.unreadCount -= 1;
             }
+        }, removeNotification: (state, notificationId) => {
+            state.notifications = state.notifications.filter(
+                (notification) => notification.id !== notificationId
+            );
+            state.unreadCount = state.notifications.filter(
+                (notification) => !notification.read
+            ).length;
         },
     },
 };

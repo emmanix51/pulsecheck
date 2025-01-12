@@ -2,9 +2,9 @@
     <div>
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
             <div
-                class="flex flex-col rounded-md py-4 px-6 shadow-md bg-spccolor-600"
+                class="flex flex-col rounded-md py-4 px-6  shadow-lg border-2 bg-white"
             >
-                <h1 class="text-lg font-semibold text-white">Latest Users</h1>
+                <h1 class="text-lg font-semibold text-spccolor-600 mb-4">Latest Users</h1>
                 <ul>
                     <li
                         v-for="(user, userIndex) in users"
@@ -13,7 +13,7 @@
                     >
                         <th
                             scope="row"
-                            class="font-medium text-sm text-white dark:text-white"
+                            class="font-medium text-sm text-spccolor-600 mb-4 dark:text-white"
                         >
                             {{ user.idnum }}-{{ user.first_name }}
                             {{ user.last_name }}<br />
@@ -23,9 +23,9 @@
                 </ul>
             </div>
             <div
-                class="flex flex-col rounded-md py-4 px-6 shadow-md bg-spccolor-600"
+                class="flex flex-col rounded-md py-4 px-6  shadow-lg border-2 bg-white"
             >
-                <h1 class="text-lg font-semibold text-white">Latest Surveys</h1>
+                <h1 class="text-lg font-semibold text-spccolor-600 mb-4">Latest Surveys</h1>
                 <ul>
                     <li
                         v-for="(survey, surveyIndex) in surveys"
@@ -34,7 +34,7 @@
                     >
                         <th
                             scope="row"
-                            class="font-medium text-sm text-white dark:text-white"
+                            class="font-medium text-sm text-spccolor-600 mb-4 dark:text-white"
                         >
                             {{ survey.title }}<br/>
                             <div v-if="survey.status === 0">
@@ -50,9 +50,9 @@
                 </ul>
             </div>
             <div
-                class="flex flex-col rounded-md py-4 px-6 shadow-md bg-spccolor-600"
+                class="flex flex-col rounded-md py-4 px-6  shadow-lg border-2 bg-white"
             >
-                <h1 class="text-lg font-semibold text-white">
+                <h1 class="text-lg font-semibold text-spccolor-600 mb-4">
                     Latest Responses
                 </h1>
                 <ul>
@@ -63,7 +63,7 @@
                     >
                         <th
                             scope="row"
-                            class="font-medium text-sm text-white dark:text-white"
+                            class="font-medium text-sm text-spccolor-600 mb-4 dark:text-white"
                         >
                             <h6 class="text-xs">
                                 Survey: {{ response.survey.title }}<br />

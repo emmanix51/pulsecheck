@@ -8,7 +8,7 @@
 
         <!-- Results Table -->
         <section class="container mx-auto p-6 font-mono">
-            <div class="mt-3 mb-2 flex max-w-md gap-x-4">
+            <!-- <div class="mt-3 mb-2 flex max-w-md gap-x-4">
                 <input
                     id="email-address"
                     name="email"
@@ -24,7 +24,7 @@
                 >
                     Search
                 </button>
-            </div>
+            </div> -->
 
             <div class="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
                 <div class="w-full overflow-x-auto">
@@ -102,7 +102,7 @@
                     <a
                         href="#"
                         @click.prevent="fetchSurveys(currentPage - 1)"
-                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-spccolor-600 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                         :class="{
                             'opacity-50 cursor-not-allowed': !prevPageUrl,
                         }"
@@ -112,16 +112,26 @@
                     </a>
 
                     <!-- Page Links -->
-                    <div v-for="(link, i) in pageLinks" :key="i">
+                  <div v-for="(link, i) of pageLinks" :key="i">
                         <a
                             :href="link.url"
-                            class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                            class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-spccolor-600 hover:border-violet-100 text-white font-semibold leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                             :class="{
-                                'opacity-50 cursor-not-allowed': !link.url || link.active,
+                                ' cursor-not-allowed':
+                                    !link.url ||
+                                    parseInt(link.label) === currentPage,
                                 'bg-blue-500': link.active,
                             }"
-                            :disabled="!link.url || link.active"
-                            @click.prevent="fetchSurveys(link.label)"
+                            :disabled="
+                                !link.url ||
+                                parseInt(link.label) === currentPage
+                            "
+                            @click.prevent="
+                                !(
+                                    !link.url ||
+                                    parseInt(link.label) === currentPage
+                                ) && fetchSurveys(parseInt(link.label))
+                            "
                         >
                             {{ link.label }}
                         </a>
@@ -131,7 +141,7 @@
                     <a
                         href="#"
                         @click.prevent="fetchSurveys(currentPage + 1)"
-                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-gradient-to-r from-violet-300 to-indigo-300 border border-fuchsia-100 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
+                        class="cursor-pointer relative inline-flex items-center px-4 py-2 text-sm bg-spccolor-600 hover:border-violet-100 text-white font-semibold cursor-pointer leading-5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:z-10"
                         :class="{
                             'opacity-50 cursor-not-allowed': !nextPageUrl,
                         }"
@@ -140,6 +150,8 @@
                         Next
                     </a>
                 </nav>
+                <!-- <pre>{{pageLinks}}</pre> -->
+
             </div>
         </div>
     </PageComponent>
@@ -160,7 +172,11 @@ const fetchSurveys = async (page = 1) => {
     try {
         const response = await store.dispatch("getAllResults", page);
         surveys.value = response.surveys.data;
-        pageLinks.value = response.surveys.links;
+        const links = response.surveys.links;
+
+         if (links.length > 0) {
+            pageLinks.value = links.slice(1, -1);
+        }
         currentPage.value = page;
 
         prevPageUrl.value = response.surveys.prev_page_url;

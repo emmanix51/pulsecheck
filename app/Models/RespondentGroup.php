@@ -10,7 +10,7 @@ class RespondentGroup extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'type', 'category',
+        'name', 'type', 'category','college_ids','program_ids'
     ];
 
     public function surveys()

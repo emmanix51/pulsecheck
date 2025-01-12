@@ -59,7 +59,7 @@
                 </tbody>
             </table>
         </div>
-        <div
+        <!-- <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700"
         >
             <div
@@ -74,7 +74,7 @@
                     {{ answer.answer_text }}
                 </div>
             </div>
-        </div>
+        </div> -->
     </PageComponent>
 </template>
 

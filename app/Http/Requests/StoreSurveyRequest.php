@@ -79,6 +79,8 @@ class StoreSurveyRequest extends FormRequest
             'respondent_groups' => 'required|array',
             'respondent_groups.*.type' => 'required|string|in:student,faculty,staff,stakeholder',
             'respondent_groups.*.category' => 'nullable|string',
+            'respondent_groups.*.college_ids' => 'nullable|array',
+            'respondent_groups.*.program_ids' => 'nullable|array',
             // 'questions.*.data.*' => 'integer|in:1,2,3,4,5',
             'information_fields' => 'required|array',
             'information_fields.*.label' => 'required|string|max:255',

@@ -1,16 +1,18 @@
 <template>
-    <PageComponent>
-        <template v-slot:header>
-            <div class="flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-gray-900">
-                    Result Analysis for: {{ surveyTitle }}
-                </h1>
-            </div>
-        </template>
+    <div>
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-gray-900">
+                Result Analysis for: {{ surveyTitle }}
+            </h1>
+        </div>
+
+        <!-- Content -->
         <div class="text-gray-700">
-            <div class="shadow-md sm:rounded-md sm:overflow-hidden"></div>
+            <!-- Main Container -->
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
                 <div class="flex flex-wrap justify-between">
+                    <!-- Respondent Type Distribution -->
                     <div class="w-full lg:w-1/2 px-4 mb-8">
                         <h2 class="text-2xl font-semibold mb-4">
                             Respondent Type Distribution
@@ -21,6 +23,8 @@
                             :options="chartOptions"
                         />
                     </div>
+
+                    <!-- Respondent Category Distribution -->
                     <div class="w-full lg:w-1/2 px-4 mb-8">
                         <h2 class="text-2xl font-semibold mb-4">
                             Respondent Category Distribution
@@ -28,26 +32,32 @@
                         <Doughnut
                             v-if="respondentCategoryChartData"
                             :data="respondentCategoryChartData"
-                            :options="chartOptions"
+                            :options="doughnutChartOptions"
                         />
                     </div>
                 </div>
 
+                <!-- Dynamic Fields -->
                 <div class="flex flex-wrap justify-between">
                     <div
                         v-for="(field, index) in informationFields"
                         :key="field.name"
                         class="w-full lg:w-1/2 px-4 mb-8 relative"
                     >
+                        <!-- Close Button -->
                         <button
                             @click="closeChart(index)"
                             class="shadow-md px-2 absolute top-2 right-2 text-red-500 hover:px-4 hover:transition-all"
                         >
                             close
                         </button>
+
+                        <!-- Field Title -->
                         <h2 class="text-2xl font-semibold mb-4">
                             {{ field.name }} Distribution
                         </h2>
+
+                        <!-- Field Chart -->
                         <Bar
                             v-if="field.chartData"
                             :data="field.chartData"
@@ -57,14 +67,13 @@
                 </div>
             </div>
         </div>
-    </PageComponent>
+    </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axiosClient from "../axios";
-import PageComponent from "../components/PageComponent.vue";
 import { Bar, Doughnut } from "vue-chartjs";
 import {
     Chart as ChartJS,
@@ -76,6 +85,7 @@ import {
     LinearScale,
     ArcElement,
 } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 ChartJS.register(
     Title,
@@ -84,19 +94,56 @@ ChartJS.register(
     BarElement,
     CategoryScale,
     LinearScale,
-    ArcElement
+    ArcElement,
+    ChartDataLabels // Register DataLabels plugin
 );
 
+// Vue State Variables
 const route = useRoute();
-
 const surveyTitle = ref("");
 const respondentTypeChartData = ref(null);
 const respondentCategoryChartData = ref(null);
 const informationFields = ref([]);
 
-const BarchartOptions = {
+// Color Palette
+const colorPalette = [
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#4BC0C0",
+    "#9966FF",
+    "#FF9F40",
+    "#42A5F5",
+    "#FFA726",
+    "#66BB6A",
+    "#FF5722",
+    "#E91E63",
+    "#3F51B5",
+];
+
+// Chart Options for Bar Charts
+const chartOptions = {
     responsive: true,
     maintainAspectRatio: true,
+    plugins: {
+        datalabels: {
+            anchor: "end",
+            align: "top",
+            formatter: (value, context) => {
+                const total = context.dataset.data.reduce(
+                    (sum, val) => sum + val,
+                    0
+                );
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${value} (${percentage}%)`; // Show count and percentage
+            },
+            color: "#000", // Label text color
+            font: {
+                weight: "bold",
+                size: 12,
+            },
+        },
+    },
     scales: {
         y: {
             beginAtZero: true,
@@ -107,53 +154,81 @@ const BarchartOptions = {
         },
     },
 };
-const DoughnutchartOptions = {
+
+// Chart Options for Doughnut Charts
+const doughnutChartOptions = {
     responsive: true,
     maintainAspectRatio: true,
+    layout: {
+        padding: {
+            top: 20, // Top padding
+        },
+    },
+    plugins: {
+        datalabels: {
+            anchor: "end", // Position labels at the end of each segment
+            align: "center", // Align the labels outside the chart
+            offset: 20, // Add spacing to move labels further out
+            formatter: (value, context) => {
+                const total = context.dataset.data.reduce(
+                    (sum, val) => sum + val,
+                    0
+                );
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${percentage}%`;
+            },
+            color: "#000", // Label text color
+            font: {
+                weight: "bold",
+                size: 12,
+            },
+        },
+    },
+    tooltip: {
+        callbacks: {
+            label: function (context) {
+                const total = context.dataset.data.reduce(
+                    (sum, val) => sum + val,
+                    0
+                );
+                const percentage = ((context.raw / total) * 100).toFixed(1);
+                return `${context.label}: ${context.raw} (${percentage}%)`;
+            },
+        },
+    },
 };
 
-// Function to count occurrences of respondent types
+// Helper Functions
 const countOccurrences = (details, key) => {
     const counts = {};
     details.forEach((detail) => {
         const value = detail[key];
-        if (counts[value]) {
-            counts[value]++;
-        } else {
-            counts[value] = 1;
-        }
+        counts[value] = (counts[value] || 0) + 1;
     });
     return counts;
 };
-// Function to count occurrences of information fields
+
 const countInformationFieldOccurrences = (details, fieldName) => {
     const counts = {};
     details.forEach((detail) => {
         const fieldValues = detail.information_fields;
         if (fieldValues && fieldValues[fieldName]) {
             const value = fieldValues[fieldName];
-            if (counts[value]) {
-                counts[value]++;
-            } else {
-                counts[value] = 1;
-            }
+            counts[value] = (counts[value] || 0) + 1;
         }
     });
     return counts;
 };
 
-// Function to get unique responses by response_id
 const getUniqueResponses = (details) => {
     const uniqueResponses = [];
     const responseIds = new Set();
-
     details.forEach((detail) => {
         if (!responseIds.has(detail.response_id)) {
             responseIds.add(detail.response_id);
             uniqueResponses.push(detail);
         }
     });
-
     return uniqueResponses;
 };
 
@@ -161,6 +236,7 @@ const closeChart = (index) => {
     informationFields.value.splice(index, 1);
 };
 
+// Fetch Survey Data
 const fetchSurveyData = async () => {
     try {
         const response = await axiosClient.get(
@@ -170,10 +246,9 @@ const fetchSurveyData = async () => {
 
         surveyTitle.value = data.survey.title || "";
 
-        // Filter unique responses
         const uniqueResponseDetails = getUniqueResponses(data.responseDetails);
 
-        // Process respondent types
+        // Respondent Type Chart
         const respondentTypeCounts = countOccurrences(
             uniqueResponseDetails,
             "respondent_type"
@@ -183,13 +258,16 @@ const fetchSurveyData = async () => {
             datasets: [
                 {
                     label: "Count",
-                    backgroundColor: "#42A5F5",
+                    backgroundColor: colorPalette.slice(
+                        0,
+                        Object.keys(respondentTypeCounts).length
+                    ),
                     data: Object.values(respondentTypeCounts),
                 },
             ],
         };
 
-        // Process respondent categories
+        // Respondent Category Chart
         const respondentCategoryCounts = countOccurrences(
             uniqueResponseDetails,
             "respondent_category"
@@ -199,24 +277,20 @@ const fetchSurveyData = async () => {
             datasets: [
                 {
                     label: "Count",
-                    backgroundColor: [
-                        "#FF6384",
-                        "#36A2EB",
-                        "#FFCE56",
-                        "#4BC0C0",
-                        "#9966FF",
-                        "#FF9F40",
-                    ],
+                    backgroundColor: colorPalette.slice(
+                        0,
+                        Object.keys(respondentCategoryCounts).length
+                    ),
                     data: Object.values(respondentCategoryCounts),
                 },
             ],
         };
 
-        // Process information fields
+        // Information Field Charts
         const allInformationFields = Object.keys(
             uniqueResponseDetails[0].information_fields
         );
-        informationFields.value = allInformationFields.map((field) => {
+        informationFields.value = allInformationFields.map((field, idx) => {
             const fieldCounts = countInformationFieldOccurrences(
                 uniqueResponseDetails,
                 field
@@ -228,7 +302,8 @@ const fetchSurveyData = async () => {
                     datasets: [
                         {
                             label: "Count",
-                            backgroundColor: "#FFA726",
+                            backgroundColor:
+                                colorPalette[idx % colorPalette.length],
                             data: Object.values(fieldCounts),
                         },
                     ],
@@ -240,8 +315,10 @@ const fetchSurveyData = async () => {
     }
 };
 
+// Lifecycle Hook
 onMounted(fetchSurveyData);
 </script>
+
 <style scoped>
-/* Add any relevant styles here */
+/* Add styles if needed */
 </style>

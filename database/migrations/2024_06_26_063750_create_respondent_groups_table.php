@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('respondent_groups', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['student', 'faculty', 'staff', 'stakeholder']);
-            $table->string('category')->nullable();
+            $table->text('category')->nullable();
             $table->timestamps();
         });
 

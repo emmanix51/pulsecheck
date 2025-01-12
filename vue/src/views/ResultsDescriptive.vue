@@ -90,13 +90,13 @@
                             :key="field.id"
                             class="space-y-2"
                         >
-                            <h4 class="text-xs font-medium text-gray-600">
-                                {{ field.label }}
-                            </h4>
                             <div
                                 v-if="field.type === 'select'"
                                 class="space-y-1"
                             >
+                            <h4 class="text-xs font-medium text-gray-600">
+                                {{ field.label }}
+                            </h4>
                                 <label
                                     v-for="option in field.options"
                                     :key="option"
@@ -261,7 +261,7 @@
         </div>
         <!-- /TEST -->
 
-        <PageComponent>
+        <PCAPageComponent>
             <template v-slot:header>
                 <div class="flex items-center justify-between">
                     <h1 class="text-3xl font-bold text-gray-900">
@@ -815,7 +815,7 @@
                 <button class="mt-4 px-2 py-1 text-s font-medium rounded-full bg-blue-100 text-blue-800">View Full Report</button>
             </router-link>
             <!-- /PREVIEW -->
-        </PageComponent>
+        </PCAPageComponent>
     </div>
 </template>
 
@@ -824,7 +824,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import axiosClient from "../axios";
 import store from "../store";
-import PageComponent from "../components/PageComponent.vue";
+import PCAPageComponent from "../components/PCAPageComponent.vue";
 import AnalysisReportPreview from "../components/AnalysisReportPreview.vue";
 
 const route = useRoute();

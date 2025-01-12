@@ -1,12 +1,12 @@
 <template>
-    <PageComponent>
-        <template v-slot:header>
+    <div>
+        <div >
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-900">
                     Data Visualization for Question:
                 </h1>
             </div>
-        </template>
+        </div>
         <div class="text-gray-700">
             <div class="shadow-md sm:rounded-md sm:overflow-hidden">
                 <PolarArea
@@ -38,7 +38,7 @@
                 <Radar v-if="data" :data="data" :options="RadarChartOptions" />
             </div>
         </div>
-    </PageComponent>
+    </div>
 </template>
 
 <script setup>
@@ -61,6 +61,8 @@ import {
     LineElement,
     Filler,
 } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+
 
 ChartJS.register(
     Title,
@@ -73,7 +75,8 @@ ChartJS.register(
     LinearScale,
     PointElement,
     LineElement,
-    Filler
+    Filler,
+    ChartDataLabels 
 );
 
 const route = useRoute();

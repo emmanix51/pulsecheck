@@ -3,16 +3,16 @@
         <template v-slot:header>
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-900">
-                    Result Analysis for: {{ surveyTitle }}
+                    Result Tally for: {{ surveyTitle }}
                 </h1>
             </div>
         </template>
-        <pre>{{ filteredResponses }}</pre>
+        <!-- <pre>{{ filteredResponses }}</pre>
         <pre>{{ respondentGroups }}</pre>
-        <pre>{{ informationFields }}</pre>
+        <pre>{{ informationFields }}</pre> -->
         <div class="text-gray-700">
             <div class="shadow-md sm:rounded-md sm:overflow-hidden">
-                <div class="px-4 py-5 bg-white space-y-1 sm:p-6">
+                <!-- <div class="px-4 py-5 bg-white space-y-1 sm:p-6">
                     <div>
                         <h1>Filter Data Analysis Here</h1>
                     </div>
@@ -126,7 +126,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
                 <table
@@ -199,10 +199,10 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="p-4">
+                <!-- <div class="p-4">
                     Selected Responses Average:
                     {{ averageAnswerScale.toFixed(2) }}
-                </div>
+                </div> -->
             </div>
         </div>
     </PageComponent>
@@ -243,8 +243,22 @@ const questions = ref([]);
 
 const calculateAverage = (answers) => {
     if (!answers || !answers.length) return 0;
-    const total = answers.reduce((sum, answer) => sum + answer.answer_scale, 0);
-    return (total / answers.length).toFixed(2);
+    // Filter out answers where answer_scale is null or 0
+    const validAnswers = answers.filter(
+        (answer) => answer.answer_scale !== null && answer.answer_scale !== 0
+    );
+
+    // If there are no valid answers after filtering, return 0
+    if (validAnswers.length === 0) return 0;
+
+    // Calculate the total of valid answers
+    const total = validAnswers.reduce(
+        (sum, answer) => sum + answer.answer_scale,
+        0
+    );
+
+    // Return the average rounded to two decimal places
+    return (total / validAnswers.length).toFixed(2);
 };
 
 const applyFilters = () => {

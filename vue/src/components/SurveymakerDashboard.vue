@@ -2,18 +2,18 @@
     <div>
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
             <div
-                class="flex flex-col rounded-md py-4 px-6 shadow-md bg-spccolor-600"
+                class="flex flex-col rounded-md py-4 px-6 shadow-lg border-2 bg-white"
             >
-                <h1 class="text-lg font-semibold text-white">Latest Surveys</h1>
+                <h1 class="text-lg font-semibold text-spccolor-600 mb-4">Latest Surveys</h1>
                 <ul>
                     <li
                         v-for="(survey, surveyIndex) in surveys"
                         :key="surveyIndex"
-                        class="rounded-md p-2 border border-gray-200"
+                        class="rounded-md p-2 border border-gray-300 mb-2 shadow-md"
                     >
                         <th
                             scope="row"
-                            class="font-medium text-sm text-white dark:text-white"
+                            class="font-medium text-sm text-spccolor-600 dark:text-white"
                         >
                             {{ survey.title }}<br />
                             <div v-if="survey.status === 0">
@@ -29,22 +29,22 @@
                 </ul>
             </div>
             <div
-                class="flex flex-col rounded-md py-4 px-6 shadow-md bg-spccolor-600"
+                class="flex flex-col rounded-md py-4 px-6 shadow-lg border-2 bg-white"
             >
-                <h1 class="text-lg font-semibold text-white">
+                <h1 class="text-xl font-semibold text-spccolor-600 mb-4">
                     Latest Responses to my surveys
                 </h1>
                 <ul>
                     <li
                         v-for="(response, responseIndex) in responses"
                         :key="responseIndex"
-                        class="rounded-md p-2 border border-gray-200"
+                        class="rounded-md p-2 border border-gray-300 mb-2 shadow-md"
                     >
                         <th
                             scope="row"
-                            class="font-medium text-sm text-white dark:text-white"
+                            class="font-medium text-sm text-spccolor-600 dark:text-white"
                         >
-                            <h6 class="text-xs">
+                            <h6 class="text-md font-semibold">
                                 Survey: {{ response.survey.title }}<br />
                             </h6>
                             average: {{ response.average_scale }}<br />
